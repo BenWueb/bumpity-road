@@ -24,8 +24,12 @@ export default function RootLayout({
     <SidebarProvider>
       <AppSidebar collapsible="icon" />
       <html lang="en">
-        <SidebarTrigger />
-        <body className={`${poppins.className} antialiased`}>{children}</body>
+        <body className={`${poppins.className} antialiased`}>
+          <main className="w-full">
+            <SidebarTrigger />
+            {children}
+          </main>
+        </body>
       </html>
     </SidebarProvider>
   );

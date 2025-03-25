@@ -5,6 +5,7 @@ import {
   Calendar,
   ChefHat,
   Binoculars,
+  Map,
 } from "lucide-react";
 import {
   Sidebar,
@@ -26,9 +27,10 @@ const data = {
   user: {
     name: "Ben",
     email: "Ben@bumpityroad.com",
-    avatar: "/avatars/shadcn.jpg",
+    avatar:
+      "https://images.pexels.com/photos/19501326/pexels-photo-19501326/free-photo-of-woman-hands-cutting-simit-for-breakfast.jpeg?auto=compress&cs=tinysrgb&w=600&lazy=load",
   },
-  versions: ["1.0.1", "1.1.0-alpha", "2.0.0-beta1"],
+
   navMain: [
     {
       title: "Getting Started",
@@ -63,6 +65,11 @@ const data = {
           title: "Wildlife",
           url: "#",
           icon: <Binoculars />,
+        },
+        {
+          title: "Adventure",
+          url: "#",
+          icon: <Map />,
         },
       ],
     },
