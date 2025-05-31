@@ -1,1 +1,4 @@
 []  add common questions to the homepage
+[]  things to do generator
+[]  blog
+[]  

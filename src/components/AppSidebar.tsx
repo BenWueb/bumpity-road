@@ -6,6 +6,7 @@ import {
   ChefHat,
   Binoculars,
   Map,
+  Notebook,
 } from "lucide-react";
 import {
   Sidebar,
@@ -70,6 +71,11 @@ const data = {
           title: "Adventure",
           url: "#",
           icon: <Map />,
+        },
+        {
+          title: "Blog",
+          url: "#",
+          icon: <Notebook />,
         },
       ],
     },

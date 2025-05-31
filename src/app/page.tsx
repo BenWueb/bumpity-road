@@ -1,10 +1,7 @@
 import Header from "@/components/Header";
-import { Skeleton } from "@/components/ui/skeleton";
-import dynamic from "next/dynamic";
-import { Suspense } from "react";
 import Calendar from "@/components/Calendar";
-
-const WeatherCard = dynamic(() => import("@/components/WeatherCard"));
+import WeatherCard from "@/components/WeatherCard";
+import { Suspense } from "react";
 
 export default function Home() {
   const data = [
@@ -35,9 +32,13 @@ export default function Home() {
       <div className="p-8 flex flex-col gap-8">
         <Header />
         <div className="flex gap-8">
-          <WeatherCard />
-          <Calendar />
+          <Suspense fallback={<div>Loading weather...</div>}>
+            <WeatherCard />
+          </Suspense>
         </div>
+        <Suspense fallback={<div>Loading weather...</div>}>
+          <Calendar />
+        </Suspense>
       </div>
     </>
   );
