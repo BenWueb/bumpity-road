@@ -1,14 +1,18 @@
 "use client";
 
-import { useSession } from "next-auth/react";
-import { signIn } from "next-auth/react";
+import { useSession, signIn, signOut } from "next-auth/react";
+import { Button } from "@/components/ui/button";
 
 function Login() {
-  const { data, status } = useSession();
+  const { status } = useSession();
 
-  return (
+  return status === "unauthenticated" ? (
     <div>
-      <button onClick={() => signIn("google")}>singn in </button>
+      <Button onClick={() => signIn("google")}>Sign in </Button>
+    </div>
+  ) : (
+    <div>
+      <Button onClick={() => signOut()}>Sign Out</Button>
     </div>
   );
 }

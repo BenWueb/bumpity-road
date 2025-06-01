@@ -39,7 +39,7 @@ const data = {
       items: [
         {
           title: "Cabin",
-          url: "#",
+          url: "/",
           icon: <Home />,
         },
         {
@@ -74,7 +74,7 @@ const data = {
         },
         {
           title: "Blog",
-          url: "#",
+          url: "/blog",
           icon: <Notebook />,
         },
       ],

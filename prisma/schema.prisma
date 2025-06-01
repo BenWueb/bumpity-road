@@ -16,8 +16,8 @@ datasource db {
 
 model User {
   id            String          @id @default(auto()) @map("_id") @db.ObjectId
-  name          String?
-  email         String?         @unique
+  name          String
+  email         String         @unique
   emailVerified DateTime?
   image         String?
   accounts      Account[]
@@ -25,6 +25,7 @@ model User {
   posts        Post[]         
   // Optional for WebAuthn support
   Authenticator Authenticator[]
+  comments     Comment[]
  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -94,8 +95,20 @@ model Post {
   content   String
   slug      String    @unique
   published Boolean   @default(false)
-  authorId  String    @db.ObjectId
-  author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  userEmail String 
+  user    User      @relation(fields: [userEmail], references: [email], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  comments  Comment[]
+}
+
+model Comment {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  content   String
+  postId    String    @db.ObjectId
+  userEmail  String    
+  post      Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user    User      @relation(fields: [userEmail], references: [email], onDelete: Cascade)
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 }
