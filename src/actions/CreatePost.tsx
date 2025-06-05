@@ -29,5 +29,5 @@ export async function CreatePost(formData: FormData) {
     console.log("Error creating post:", error);
     throw new Error("Failed to create post");
   }
-  redirect("/");
+  redirect(`/blog/${slug}`);
 }
