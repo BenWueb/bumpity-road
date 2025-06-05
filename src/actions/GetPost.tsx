@@ -4,7 +4,6 @@ import { prisma } from "@/utils/prisma";
 import { NextResponse } from "next/server";
 
 export async function GetPost(slug: string) {
-  console.log("this is slug", slug);
   try {
     const post = await prisma.post.findUnique({
       where: {
@@ -13,6 +12,7 @@ export async function GetPost(slug: string) {
       include: {
         user: true,
         comments: true,
+        images: true,
       },
     });
 

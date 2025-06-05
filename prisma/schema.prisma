@@ -100,6 +100,7 @@ model Post {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   comments  Comment[]
+  images   Image[]
 }
 
 model Comment {
@@ -109,6 +110,15 @@ model Comment {
   userEmail  String    
   post      Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
   user    User      @relation(fields: [userEmail], references: [email], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Image {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  imageId   String    @unique
+  postId    String    @db.ObjectId
+  post      Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 }

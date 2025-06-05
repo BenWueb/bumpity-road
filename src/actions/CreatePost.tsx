@@ -15,7 +15,9 @@ export async function CreatePost(formData: FormData) {
   const content = formData.get("content") as string;
   const slug = title.toLowerCase().replace(/\s+/g, "-");
   const userEmail = session.user.email;
-
+  const imageIds = formData.get("imageIds")
+    ? JSON.parse(formData.get("imageIds") as string)
+    : [];
   try {
     await prisma.post.create({
       data: {
@@ -23,6 +25,11 @@ export async function CreatePost(formData: FormData) {
         content,
         slug,
         userEmail,
+        images: {
+          createMany: {
+            data: imageIds.map((imageId: string) => ({ imageId })),
+          },
+        },
       },
     });
   } catch (error) {

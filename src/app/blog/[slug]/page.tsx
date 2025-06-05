@@ -1,7 +1,8 @@
 import { GetPost } from "@/actions/GetPost";
+import CloudImage from "@/components/CloudImage";
 
 export default async function Page({ params }: { params: { slug: string } }) {
-  const { slug } = params;
+  const { slug } = await params;
   const res = await GetPost(slug);
   const post = await res.json();
 
@@ -23,6 +24,11 @@ export default async function Page({ params }: { params: { slug: string } }) {
             {new Date(post.createdAt).toLocaleDateString()}
           </p>
           <p className="mt-2">{post.content}</p>
+          {post.images && post.images.length > 0 && (
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              <CloudImage images={post.images} />
+            </div>
+          )}
         </div>
       </div>
     </div>
