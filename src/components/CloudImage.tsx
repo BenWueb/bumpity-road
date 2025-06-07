@@ -2,9 +2,26 @@
 
 import { CldImage } from "next-cloudinary";
 
-function CloudImage({ images }: { images: { id: string; imageId: string }[] }) {
-  return (
-    <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+function CloudImage({
+  images,
+  single,
+}: {
+  images: { id: string; imageId: string }[];
+  single: boolean;
+}) {
+  return single ? (
+    <>
+      <CldImage
+        key={images[0].id}
+        src={images[0].imageId}
+        alt="Post Image"
+        className=" max-h-[200px]  object-cover rounded-lg"
+        width="800"
+        height="600"
+      />
+    </>
+  ) : (
+    <>
       {images.map((image) => (
         <CldImage
           key={image.id}
@@ -15,7 +32,7 @@ function CloudImage({ images }: { images: { id: string; imageId: string }[] }) {
           height="600"
         />
       ))}
-    </div>
+    </>
   );
 }
 

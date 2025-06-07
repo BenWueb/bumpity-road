@@ -25,8 +25,8 @@ export default async function Page({ params }: { params: { slug: string } }) {
           </p>
           <p className="mt-2">{post.content}</p>
           {post.images && post.images.length > 0 && (
-            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              <CloudImage images={post.images} />
+            <div className="flex">
+              <CloudImage images={post.images} single={false} />
             </div>
           )}
         </div>
