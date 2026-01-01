@@ -24,7 +24,7 @@ export default function RootLayout({
       <body className={`${poppins.className} antialiased`}>
         <div className="flex min-h-screen w-full">
           <AppSidebar />
-          <main className="w-full">{children}</main>
+          <main className="w-full pt-14 md:pt-0">{children}</main>
         </div>
       </body>
     </html>

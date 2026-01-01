@@ -8,8 +8,8 @@ type Props = {
   todo: Todo;
   isOwner: boolean;
   isExpanded: boolean;
-  onToggle: () => void;
-  onDelete: () => void;
+  onToggle?: () => void;
+  onDelete?: () => void;
   onExpand: () => void;
   children?: React.ReactNode; // For expanded content
 };
@@ -26,17 +26,27 @@ export function TodoItem({
   return (
     <div className="group relative rounded-lg border bg-background/60 shadow-sm backdrop-blur">
       <div className="flex items-start gap-3 px-3 py-2">
-        <button
-          type="button"
-          onClick={onToggle}
-          className="mt-0.5 shrink-0 text-muted-foreground transition-colors hover:text-foreground"
-        >
-          {todo.completed ? (
-            <CircleCheck className="h-5 w-5 text-emerald-500" />
-          ) : (
-            <Circle className="h-5 w-5" />
-          )}
-        </button>
+        {onToggle ? (
+          <button
+            type="button"
+            onClick={onToggle}
+            className="mt-0.5 shrink-0 text-muted-foreground transition-colors hover:text-foreground"
+          >
+            {todo.completed ? (
+              <CircleCheck className="h-5 w-5 text-emerald-500" />
+            ) : (
+              <Circle className="h-5 w-5" />
+            )}
+          </button>
+        ) : (
+          <div className="mt-0.5 shrink-0 text-muted-foreground">
+            {todo.completed ? (
+              <CircleCheck className="h-5 w-5 text-emerald-500" />
+            ) : (
+              <Circle className="h-5 w-5" />
+            )}
+          </div>
+        )}
         <div className="min-w-0 flex-1">
           <span
             className={[
@@ -66,7 +76,7 @@ export function TodoItem({
           </div>
         </div>
 
-        {isOwner && (
+        {isOwner && onDelete && (
           <button
             type="button"
             onClick={onDelete}

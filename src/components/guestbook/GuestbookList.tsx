@@ -3,7 +3,7 @@
 import { GuestbookEntry } from "@/types/guestbook";
 import { useGuestbook } from "@/hooks/use-guestbook";
 import { getTokenForEntry } from "@/lib/guestbook-ownership";
-import { BookOpen } from "lucide-react";
+import { BookOpen, PenLine } from "lucide-react";
 import { useState } from "react";
 import { GuestbookEntryCard } from "./GuestbookEntryCard";
 import { GuestbookEditModal } from "./GuestbookEditModal";
@@ -31,8 +31,25 @@ export function GuestbookList({ initialEntries, initialIsAdmin }: Props) {
 
   const [editingEntry, setEditingEntry] = useState<GuestbookEntry | null>(null);
 
+  function scrollToForm() {
+    const form = document.getElementById("guestbook-form");
+    if (form) {
+      form.scrollIntoView({ behavior: "smooth" });
+    }
+  }
+
   return (
     <div className="grid gap-6 lg:grid-cols-[3fr,400px]">
+      {/* Mobile sign button - shows on small screens only */}
+      <button
+        type="button"
+        onClick={scrollToForm}
+        className="flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 lg:hidden"
+      >
+        <PenLine className="h-4 w-4" />
+        Sign the Guestbook
+      </button>
+
       {/* Entries list */}
       <div className="space-y-4">
         {isLoading ? (
@@ -71,7 +88,7 @@ export function GuestbookList({ initialEntries, initialIsAdmin }: Props) {
       </div>
 
       {/* Sign form */}
-      <GuestbookForm onSubmit={createEntry} />
+      <GuestbookForm id="guestbook-form" onSubmit={createEntry} />
 
       {/* Edit modal */}
       {editingEntry && (

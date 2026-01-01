@@ -24,14 +24,10 @@ export function useTodos(userId: string | undefined) {
     }
   }, []);
 
+  // Load todos for everyone - the board is public
   useEffect(() => {
-    if (userId) {
-      loadTodos();
-    } else {
-      setTodos([]);
-      setIsLoading(false);
-    }
-  }, [userId, loadTodos]);
+    loadTodos();
+  }, [loadTodos]);
 
   const addTodo = useCallback(async (input: TodoCreateInput): Promise<Todo | null> => {
     try {

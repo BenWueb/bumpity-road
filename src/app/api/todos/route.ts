@@ -13,20 +13,8 @@ function revalidateTodosCache() {
 }
 
 export async function GET() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-    asResponse: false,
-  });
-
-  if (!session?.user?.id) {
-    return NextResponse.json({ todos: [] });
-  }
-
-  // Fetch todos user owns OR is assigned to
+  // Fetch ALL todos - the tasks board is viewable by everyone
   const todos = await prisma.todo.findMany({
-    where: {
-      OR: [{ userId: session.user.id }, { assignedToId: session.user.id }],
-    },
     orderBy: { createdAt: "desc" },
     include: {
       assignedTo: { select: { id: true, name: true, email: true } },

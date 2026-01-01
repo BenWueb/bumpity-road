@@ -130,13 +130,9 @@ export default function TodoCard({ initialTodos }: TodoCardClientProps = {}) {
               Tasks
             </div>
             <div className="mt-1 text-xs text-muted-foreground sm:text-sm">
-              {isLoggedIn
-                ? pendingCount === 0
-                  ? "All done!"
-                  : `${pendingCount} task${
-                      pendingCount === 1 ? "" : "s"
-                    } remaining`
-                : "Sign in to use"}
+              {pendingCount === 0
+                ? "All done!"
+                : `${pendingCount} task${pendingCount === 1 ? "" : "s"} remaining`}
             </div>
           </div>
           <div className="flex h-8 w-8 items-center justify-center rounded-md border bg-background/60 shadow-sm backdrop-blur sm:h-9 sm:w-9">
@@ -146,13 +142,9 @@ export default function TodoCard({ initialTodos }: TodoCardClientProps = {}) {
       </div>
 
       <div className="relative px-4 pb-4 pt-3 sm:px-6 sm:pb-6 sm:pt-4">
-        {!isLoggedIn ? (
-          <div className="text-sm text-muted-foreground">
-            Log in to manage your tasks.
-          </div>
-        ) : (
+        {/* Add new todo - only for logged in users */}
+        {isLoggedIn && (
           <>
-            {/* Add new todo */}
             {showInput ? (
               <form
                 ref={addFormRef}
@@ -218,104 +210,114 @@ export default function TodoCard({ initialTodos }: TodoCardClientProps = {}) {
                 Add task
               </button>
             )}
+          </>
+        )}
 
-            {/* Todo list */}
-            {todos && todos.length > 0 ? (
-              <div className="space-y-2">
-                {/* Pending tasks */}
-                {pendingTodos.slice(0, 6).map((todo) => {
-                  const isOwner = todo.userId === userId;
-                  const isExpanded = expandedId === todo.id;
+        {/* Todo list - visible to everyone */}
+        {todos && todos.length > 0 ? (
+          <div className="space-y-2">
+            {/* Pending tasks */}
+            {pendingTodos.slice(0, 6).map((todo) => {
+              const isOwner = isLoggedIn && todo.userId === userId;
+              const canInteract = isLoggedIn && (isOwner || todo.assignedToId === userId);
+              const isExpanded = expandedId === todo.id;
 
-                  return (
-                    <TodoItem
-                      key={todo.id}
+              return (
+                <TodoItem
+                  key={todo.id}
+                  todo={todo}
+                  isOwner={isOwner}
+                  isExpanded={isExpanded}
+                  onToggle={canInteract ? () => toggleComplete(todo.id, true) : undefined}
+                  onDelete={isOwner ? () => deleteTodo(todo.id) : undefined}
+                  onExpand={() =>
+                    setExpandedId(isExpanded ? null : todo.id)
+                  }
+                >
+                  {/* Expanded edit form for owners */}
+                  {isOwner ? (
+                    <ExpandedEditForm
                       todo={todo}
-                      isOwner={isOwner}
-                      isExpanded={isExpanded}
-                      onToggle={() => toggleComplete(todo.id, true)}
-                      onDelete={() => deleteTodo(todo.id)}
-                      onExpand={() =>
-                        setExpandedId(isExpanded ? null : todo.id)
+                      onUpdateTitle={(title) =>
+                        handleUpdateTodo(todo.id, { title })
                       }
-                    >
-                      {/* Expanded edit form for owners */}
-                      {isOwner ? (
-                        <ExpandedEditForm
+                      onUpdateDetails={(details) =>
+                        handleUpdateTodo(todo.id, { details })
+                      }
+                      onUpdateRecurring={(recurring) =>
+                        handleUpdateTodo(todo.id, { recurring })
+                      }
+                      onAssign={(user) => assignTodo(todo.id, user)}
+                      onDone={() => setExpandedId(null)}
+                    />
+                  ) : (
+                    <div className="space-y-1">
+                      <p className="text-sm text-muted-foreground">
+                        {todo.details || "No details."}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        by {todo.user.name}
+                      </p>
+                    </div>
+                  )}
+                </TodoItem>
+              );
+            })}
+            {pendingTodos.length > 6 && (
+              <div className="text-center text-xs text-muted-foreground">
+                +{pendingTodos.length - 6} more
+              </div>
+            )}
+
+            {/* Completed section */}
+            {completedTodos.length > 0 && (
+              <div className="mt-3 rounded-lg border bg-background/40">
+                <button
+                  type="button"
+                  onClick={() => setCompletedCollapsed(!completedCollapsed)}
+                  className="flex w-full items-center justify-between px-3 py-2 text-sm text-muted-foreground hover:text-foreground"
+                >
+                  <span className="flex items-center gap-2">
+                    <CircleCheck className="h-4 w-4 text-emerald-500" />
+                    Completed ({completedTodos.length})
+                  </span>
+                  <ChevronDown
+                    className={[
+                      "h-4 w-4 transition-transform",
+                      completedCollapsed ? "" : "rotate-180",
+                    ].join(" ")}
+                  />
+                </button>
+
+                {!completedCollapsed && (
+                  <div className="space-y-2 border-t px-3 py-2">
+                    {completedTodos.slice(0, 5).map((todo) => {
+                      const isOwner = isLoggedIn && todo.userId === userId;
+                      const canInteract = isLoggedIn && (isOwner || todo.assignedToId === userId);
+                      return (
+                        <CompletedTodoItem
+                          key={todo.id}
                           todo={todo}
-                          onUpdateTitle={(title) =>
-                            handleUpdateTodo(todo.id, { title })
-                          }
-                          onUpdateDetails={(details) =>
-                            handleUpdateTodo(todo.id, { details })
-                          }
-                          onUpdateRecurring={(recurring) =>
-                            handleUpdateTodo(todo.id, { recurring })
-                          }
-                          onAssign={(user) => assignTodo(todo.id, user)}
-                          onDone={() => setExpandedId(null)}
+                          isOwner={isOwner}
+                          onUncomplete={canInteract ? () => toggleComplete(todo.id, false) : undefined}
+                          onDelete={isOwner ? () => deleteTodo(todo.id) : undefined}
                         />
-                      ) : (
-                        <p className="text-sm text-muted-foreground">
-                          {todo.details || "No details."}
-                        </p>
-                      )}
-                    </TodoItem>
-                  );
-                })}
-                {pendingTodos.length > 6 && (
-                  <div className="text-center text-xs text-muted-foreground">
-                    +{pendingTodos.length - 6} more
-                  </div>
-                )}
-
-                {/* Completed section */}
-                {completedTodos.length > 0 && (
-                  <div className="mt-3 rounded-lg border bg-background/40">
-                    <button
-                      type="button"
-                      onClick={() => setCompletedCollapsed(!completedCollapsed)}
-                      className="flex w-full items-center justify-between px-3 py-2 text-sm text-muted-foreground hover:text-foreground"
-                    >
-                      <span className="flex items-center gap-2">
-                        <CircleCheck className="h-4 w-4 text-emerald-500" />
-                        Completed ({completedTodos.length})
-                      </span>
-                      <ChevronDown
-                        className={[
-                          "h-4 w-4 transition-transform",
-                          completedCollapsed ? "" : "rotate-180",
-                        ].join(" ")}
-                      />
-                    </button>
-
-                    {!completedCollapsed && (
-                      <div className="space-y-2 border-t px-3 py-2">
-                        {completedTodos.slice(0, 5).map((todo) => (
-                          <CompletedTodoItem
-                            key={todo.id}
-                            todo={todo}
-                            isOwner={todo.userId === userId}
-                            onUncomplete={() => toggleComplete(todo.id, false)}
-                            onDelete={() => deleteTodo(todo.id)}
-                          />
-                        ))}
-                        {completedTodos.length > 5 && (
-                          <div className="text-center text-xs text-muted-foreground">
-                            +{completedTodos.length - 5} more
-                          </div>
-                        )}
+                      );
+                    })}
+                    {completedTodos.length > 5 && (
+                      <div className="text-center text-xs text-muted-foreground">
+                        +{completedTodos.length - 5} more
                       </div>
                     )}
                   </div>
                 )}
               </div>
-            ) : (
-              <div className="text-sm text-muted-foreground">
-                No tasks yet. Add one above!
-              </div>
             )}
-          </>
+          </div>
+        ) : (
+          <div className="text-sm text-muted-foreground">
+            {isLoggedIn ? "No tasks yet. Add one above!" : "No tasks yet."}
+          </div>
         )}
       </div>
     </div>

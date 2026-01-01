@@ -43,16 +43,15 @@ export default function AccountBar({ collapsed }: { collapsed: boolean }) {
     router.refresh();
   }
   return (
-    <div className="border-t p-1.5 sm:p-2">
+    <div className="border-t p-2">
       {isPending ? (
-        <div className="flex items-center gap-2 rounded-md px-1.5 py-1.5 sm:gap-3 sm:px-2 sm:py-2">
-          <div className="h-7 w-7 animate-pulse rounded-full bg-accent sm:h-9 sm:w-9" />
-          {collapsed ? null : (
-            <div className="min-w-0 flex-1">
-              <div className="h-3 w-20 animate-pulse rounded-md bg-accent sm:h-4 sm:w-28" />
-              <div className="mt-1.5 h-2.5 w-28 animate-pulse rounded-md bg-accent sm:mt-2 sm:h-3 sm:w-36" />
-            </div>
-          )}
+        <div className="flex items-center gap-3 rounded-md px-2 py-2">
+          <div className="h-9 w-9 animate-pulse rounded-full bg-accent" />
+          {/* Mobile: always show. Desktop: hide when collapsed */}
+          <div className={["min-w-0 flex-1", collapsed ? "md:hidden" : ""].join(" ")}>
+            <div className="h-4 w-28 animate-pulse rounded-md bg-accent" />
+            <div className="mt-2 h-3 w-36 animate-pulse rounded-md bg-accent" />
+          </div>
         </div>
       ) : (
         <div ref={containerRef} className="relative">
@@ -60,8 +59,8 @@ export default function AccountBar({ collapsed }: { collapsed: boolean }) {
             type="button"
             onClick={() => setOpen((v) => !v)}
             className={[
-              "w-full rounded-md px-1.5 py-1.5 transition-colors sm:px-2 sm:py-2",
-              "flex cursor-pointer items-center gap-2 sm:gap-3",
+              "w-full rounded-md px-2 py-2 transition-colors",
+              "flex cursor-pointer items-center gap-3",
               "hover:bg-accent",
             ].join(" ")}
             title={
@@ -70,30 +69,27 @@ export default function AccountBar({ collapsed }: { collapsed: boolean }) {
                 : undefined
             }
           >
-            <div className="flex h-7 w-7 items-center justify-center rounded-full border bg-background text-xs font-semibold sm:h-9 sm:w-9 sm:text-sm">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full border bg-background text-sm font-semibold">
               {initialsFromName(session?.user?.name)}
             </div>
 
-            {collapsed ? null : (
-              <div className="min-w-0 flex-1 text-left">
-                <div className="truncate text-xs font-medium sm:text-sm">
-                  {session?.user?.name ?? "Guest"}
-                </div>
-                <div className="hidden truncate text-xs text-muted-foreground sm:block">
-                  {session?.user?.email ?? "Not signed in"}
-                </div>
+            {/* Mobile: always show. Desktop: hide when collapsed */}
+            <div className={["min-w-0 flex-1 text-left", collapsed ? "md:hidden" : ""].join(" ")}>
+              <div className="truncate text-sm font-medium">
+                {session?.user?.name ?? "Guest"}
               </div>
-            )}
+              <div className="truncate text-xs text-muted-foreground">
+                {session?.user?.email ?? "Not signed in"}
+              </div>
+            </div>
 
-            {collapsed ? null : (
-              <Settings className="hidden h-4 w-4 text-muted-foreground sm:block" />
-            )}
+            <Settings className={["h-4 w-4 text-muted-foreground", collapsed ? "md:hidden" : ""].join(" ")} />
           </button>
 
           {open ? (
             <div
               className={[
-                "absolute bottom-12 z-20 min-w-[140px] rounded-md border bg-background shadow-lg sm:bottom-14",
+                "absolute bottom-12 z-50 min-w-[140px] rounded-md border bg-background shadow-lg sm:bottom-14",
                 collapsed ? "left-0" : "left-0 right-0",
               ].join(" ")}
             >

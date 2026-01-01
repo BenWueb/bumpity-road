@@ -11,7 +11,9 @@ import {
   Sun,
   Snowflake,
   TreeDeciduous,
+  LogIn,
 } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 type GalleryImage = {
@@ -210,16 +212,26 @@ export default function GalleryPage() {
           </div>
         </div>
 
-        {isLoggedIn && !pendingUpload && (
-          <CldUploadButton
-            uploadPreset="bumpity-road"
-            onSuccess={handleUploadSuccess}
-            options={{ multiple: false, maxFiles: 1 }}
-            className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+        {isLoggedIn ? (
+          !pendingUpload && (
+            <CldUploadButton
+              uploadPreset="bumpity-road"
+              onSuccess={handleUploadSuccess}
+              options={{ multiple: false, maxFiles: 1 }}
+              className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            >
+              <ImagePlus className="h-4 w-4" />
+              Upload Photo
+            </CldUploadButton>
+          )
+        ) : (
+          <Link
+            href="/login"
+            className="flex items-center gap-2 rounded-md border bg-background px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           >
-            <ImagePlus className="h-4 w-4" />
-            Upload Photo
-          </CldUploadButton>
+            <LogIn className="h-4 w-4" />
+            Sign in to upload
+          </Link>
         )}
       </div>
 

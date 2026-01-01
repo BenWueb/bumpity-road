@@ -8,9 +8,10 @@ import { useState } from "react";
 
 type Props = {
   onSubmit: (input: GuestbookCreateInput) => Promise<boolean>;
+  id?: string;
 };
 
-export function GuestbookForm({ onSubmit }: Props) {
+export function GuestbookForm({ onSubmit, id }: Props) {
   const [name, setName] = useState("");
   const [message, setMessage] = useState("");
   const [color, setColor] = useState<ColorValue>(DEFAULT_COLOR);
@@ -46,7 +47,7 @@ export function GuestbookForm({ onSubmit }: Props) {
   }
 
   return (
-    <div className="lg:sticky lg:top-6 lg:self-start">
+    <div id={id} className="lg:sticky lg:top-6 lg:self-start scroll-mt-4">
       <div className="relative overflow-hidden rounded-xl border bg-card shadow-sm">
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-violet-50 via-background to-purple-50 dark:from-violet-950/30 dark:via-background dark:to-purple-950/20" />
         <div className="relative p-6">
