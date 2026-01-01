@@ -250,12 +250,6 @@ export default function TodosKanban({ initialTodos }: Props) {
                               </p>
                             )}
                             <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                              {todo.recurring && (
-                                <RecurringBadge
-                                  recurring={todo.recurring}
-                                  anchorDate={todo.dueDate ?? todo.createdAt}
-                                />
-                              )}
                               {todo.assignedTo && (
                                 <span className="inline-flex items-center gap-1 rounded-full bg-violet-100 px-1.5 py-0.5 text-[10px] font-medium text-violet-700 dark:bg-violet-900/40 dark:text-violet-300">
                                   → {todo.assignedTo.name}
@@ -267,9 +261,28 @@ export default function TodosKanban({ initialTodos }: Props) {
                               {todo.completedBy && (
                                 <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
                                   ✓ {todo.completedBy.name}
+                                  {todo.completedAt && (
+                                    <span className="text-emerald-600/70 dark:text-emerald-400/70">
+                                      {new Date(
+                                        todo.completedAt
+                                      ).toLocaleDateString(undefined, {
+                                        month: "short",
+                                        day: "numeric",
+                                        year: "numeric",
+                                      })}
+                                    </span>
+                                  )}
                                 </span>
                               )}
                             </div>
+                            {todo.recurring && (
+                              <div className="mt-2">
+                                <RecurringBadge
+                                  recurring={todo.recurring}
+                                  anchorDate={todo.dueDate ?? todo.createdAt}
+                                />
+                              </div>
+                            )}
 
                             {/* Mobile status dropdown */}
                             {canMove && (
@@ -392,12 +405,6 @@ export default function TodosKanban({ initialTodos }: Props) {
                             </p>
                           )}
                           <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                            {todo.recurring && (
-                              <RecurringBadge
-                                recurring={todo.recurring}
-                                anchorDate={todo.dueDate ?? todo.createdAt}
-                              />
-                            )}
                             {todo.assignedTo && (
                               <span className="inline-flex items-center gap-1 rounded-full bg-violet-100 px-1.5 py-0.5 text-[10px] font-medium text-violet-700 dark:bg-violet-900/40 dark:text-violet-300">
                                 → {todo.assignedTo.name}
@@ -409,9 +416,28 @@ export default function TodosKanban({ initialTodos }: Props) {
                             {todo.completedBy && (
                               <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
                                 ✓ {todo.completedBy.name}
+                                {todo.completedAt && (
+                                  <span className="text-emerald-600/70 dark:text-emerald-400/70">
+                                    {new Date(
+                                      todo.completedAt
+                                    ).toLocaleDateString(undefined, {
+                                      month: "short",
+                                      day: "numeric",
+                                      year: "numeric",
+                                    })}
+                                  </span>
+                                )}
                               </span>
                             )}
                           </div>
+                          {todo.recurring && (
+                            <div className="mt-2">
+                              <RecurringBadge
+                                recurring={todo.recurring}
+                                anchorDate={todo.dueDate ?? todo.createdAt}
+                              />
+                            </div>
+                          )}
                         </div>
                         {isLoggedIn && isOwner && (
                           <div className="flex shrink-0 gap-1">

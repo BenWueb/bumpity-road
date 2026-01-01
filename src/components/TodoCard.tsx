@@ -6,6 +6,7 @@ import { Todo, UserInfo } from "@/types/todo";
 import { useTodos } from "@/hooks/use-todos";
 import { useClickOutside } from "@/hooks/use-click-outside";
 import { CheckSquare, ChevronDown, CircleCheck, Plus } from "lucide-react";
+import Link from "next/link";
 import { useCallback, useRef, useState } from "react";
 import {
   CompletedTodoItem,
@@ -123,7 +124,10 @@ export default function TodoCard({ initialTodos }: TodoCardClientProps = {}) {
     <div className="relative w-full  overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm">
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-emerald-50 via-background to-teal-50 dark:from-emerald-950/30 dark:via-background dark:to-teal-950/20" />
 
-      <div className="relative px-4 pt-4 sm:px-6 sm:pt-6">
+      <Link
+        href="/todos"
+        className="relative block px-4 pt-4 transition-colors hover:bg-accent/50 sm:px-6 sm:pt-6"
+      >
         <div className="flex items-start justify-between gap-3 sm:gap-4">
           <div className="min-w-0">
             <div className="truncate text-sm font-semibold leading-none sm:text-base">
@@ -132,14 +136,16 @@ export default function TodoCard({ initialTodos }: TodoCardClientProps = {}) {
             <div className="mt-1 text-xs text-muted-foreground sm:text-sm">
               {pendingCount === 0
                 ? "All done!"
-                : `${pendingCount} task${pendingCount === 1 ? "" : "s"} remaining`}
+                : `${pendingCount} task${
+                    pendingCount === 1 ? "" : "s"
+                  } remaining`}
             </div>
           </div>
           <div className="flex h-8 w-8 items-center justify-center rounded-md border bg-background/60 shadow-sm backdrop-blur sm:h-9 sm:w-9">
             <CheckSquare className="h-4 w-4 text-muted-foreground sm:h-5 sm:w-5" />
           </div>
         </div>
-      </div>
+      </Link>
 
       <div className="relative px-4 pb-4 pt-3 sm:px-6 sm:pb-6 sm:pt-4">
         {/* Add new todo - only for logged in users */}
@@ -219,7 +225,8 @@ export default function TodoCard({ initialTodos }: TodoCardClientProps = {}) {
             {/* Pending tasks */}
             {pendingTodos.slice(0, 6).map((todo) => {
               const isOwner = isLoggedIn && todo.userId === userId;
-              const canInteract = isLoggedIn && (isOwner || todo.assignedTo?.id === userId);
+              const canInteract =
+                isLoggedIn && (isOwner || todo.assignedTo?.id === userId);
               const isExpanded = expandedId === todo.id;
 
               return (
@@ -228,11 +235,13 @@ export default function TodoCard({ initialTodos }: TodoCardClientProps = {}) {
                   todo={todo}
                   isOwner={isOwner}
                   isExpanded={isExpanded}
-                  onToggle={canInteract ? () => toggleComplete(todo.id, true) : undefined}
-                  onDelete={isOwner ? () => deleteTodo(todo.id) : undefined}
-                  onExpand={() =>
-                    setExpandedId(isExpanded ? null : todo.id)
+                  onToggle={
+                    canInteract
+                      ? () => toggleComplete(todo.id, true)
+                      : undefined
                   }
+                  onDelete={isOwner ? () => deleteTodo(todo.id) : undefined}
+                  onExpand={() => setExpandedId(isExpanded ? null : todo.id)}
                 >
                   {/* Expanded edit form for owners */}
                   {isOwner ? (
@@ -293,14 +302,22 @@ export default function TodoCard({ initialTodos }: TodoCardClientProps = {}) {
                   <div className="space-y-2 border-t px-3 py-2">
                     {completedTodos.slice(0, 5).map((todo) => {
                       const isOwner = isLoggedIn && todo.userId === userId;
-                      const canInteract = isLoggedIn && (isOwner || todo.assignedTo?.id === userId);
+                      const canInteract =
+                        isLoggedIn &&
+                        (isOwner || todo.assignedTo?.id === userId);
                       return (
                         <CompletedTodoItem
                           key={todo.id}
                           todo={todo}
                           isOwner={isOwner}
-                          onUncomplete={canInteract ? () => toggleComplete(todo.id, false) : undefined}
-                          onDelete={isOwner ? () => deleteTodo(todo.id) : undefined}
+                          onUncomplete={
+                            canInteract
+                              ? () => toggleComplete(todo.id, false)
+                              : undefined
+                          }
+                          onDelete={
+                            isOwner ? () => deleteTodo(todo.id) : undefined
+                          }
                         />
                       );
                     })}

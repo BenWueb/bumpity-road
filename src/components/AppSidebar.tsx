@@ -115,15 +115,15 @@ export default function AppSidebar() {
       {/* Sidebar */}
       <aside
         className={[
-          // Mobile: fixed overlay
-          "fixed left-0 top-0 z-50 h-screen border-r bg-background transition-transform duration-200 md:relative md:z-auto md:translate-x-0 md:transition-[width]",
+          // Mobile: fixed overlay with dynamic viewport height for mobile browsers
+          "fixed left-0 top-0 z-50 h-dvh max-h-dvh border-r bg-background transition-transform duration-200 md:relative md:z-auto md:h-screen md:max-h-screen md:translate-x-0 md:transition-[width]",
           // Mobile: slide in/out
           collapsed ? "-translate-x-full md:translate-x-0" : "translate-x-0",
           // Width
           collapsed ? "w-56 md:w-16" : "w-56 md:w-60",
         ].join(" ")}
       >
-        <div className="flex h-full flex-col">
+        <div className="flex h-full flex-col overflow-hidden">
           <div className="flex items-center justify-between gap-2 border-b px-3 py-3">
             <button
               type="button"
@@ -141,7 +141,7 @@ export default function AppSidebar() {
             </button>
           </div>
 
-          <nav className="flex-1 px-2 py-3">
+          <nav className="flex-1 overflow-y-auto px-2 py-3">
             <ul className="space-y-1">
               {items.map((item) => {
                 const active = isActivePath(pathname, item.href);
@@ -179,7 +179,7 @@ export default function AppSidebar() {
           </nav>
 
           {/* Feedback button */}
-          <div className="border-t px-2 py-2">
+          <div className="shrink-0 border-t px-2 py-2">
             <button
               type="button"
               onClick={() => setFeedbackOpen(true)}

@@ -43,7 +43,7 @@ export default function AccountBar({ collapsed }: { collapsed: boolean }) {
     router.refresh();
   }
   return (
-    <div className="border-t p-2">
+    <div className="shrink-0 border-t p-2">
       {isPending ? (
         <div className="flex items-center gap-3 rounded-md px-2 py-2">
           <div className="h-9 w-9 animate-pulse rounded-full bg-accent" />

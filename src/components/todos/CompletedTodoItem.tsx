@@ -34,6 +34,16 @@ export function CompletedTodoItem({ todo, isOwner, onUncomplete, onDelete }: Pro
         {todo.completedBy && (
           <p className="mt-0.5 text-xs text-emerald-600/80 dark:text-emerald-400/80">
             Completed by {todo.completedBy.name}
+            {todo.completedAt && (
+              <span className="ml-1 text-muted-foreground">
+                on{" "}
+                {new Date(todo.completedAt).toLocaleDateString(undefined, {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })}
+              </span>
+            )}
           </p>
         )}
       </div>

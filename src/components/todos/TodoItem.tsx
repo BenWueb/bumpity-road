@@ -51,29 +51,47 @@ export function TodoItem({
           <span
             className={[
               "block text-sm font-medium",
-              todo.completed ? "text-muted-foreground line-through" : "text-foreground",
+              todo.completed
+                ? "text-muted-foreground line-through"
+                : "text-foreground",
             ].join(" ")}
           >
             {todo.title}
           </span>
-          {todo.details && (
-            <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">
-              {todo.details}
-            </p>
-          )}
+
           <div className="mt-1 flex flex-wrap items-center gap-1.5">
-            {todo.recurring && <RecurringBadge recurring={todo.recurring} anchorDate={todo.dueDate ?? todo.createdAt} />}
             {todo.assignedTo ? (
-              <span className="text-xs text-muted-foreground">→ {todo.assignedTo.name}</span>
+              <span className="text-xs text-muted-foreground">
+                → {todo.assignedTo.name}
+              </span>
             ) : !isOwner ? (
-              <span className="text-xs text-muted-foreground">from {todo.user.name}</span>
+              <span className="text-xs text-muted-foreground">
+                from {todo.user.name}
+              </span>
             ) : null}
             {todo.completedBy && (
               <span className="text-xs text-emerald-600 dark:text-emerald-400">
                 ✓ {todo.completedBy.name}
+                {todo.completedAt && (
+                  <span className="ml-1 text-muted-foreground">
+                    {new Date(todo.completedAt).toLocaleDateString(undefined, {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                  </span>
+                )}
               </span>
             )}
           </div>
+          {todo.recurring && (
+            <div className="mt-1.5">
+              <RecurringBadge
+                recurring={todo.recurring}
+                anchorDate={todo.dueDate ?? todo.createdAt}
+              />
+            </div>
+          )}
         </div>
 
         {isOwner && onDelete && (
@@ -101,8 +119,9 @@ export function TodoItem({
         </button>
       </div>
 
-      {isExpanded && children && <div className="border-t px-3 py-3">{children}</div>}
+      {isExpanded && children && (
+        <div className="border-t px-3 py-3">{children}</div>
+      )}
     </div>
   );
 }
-

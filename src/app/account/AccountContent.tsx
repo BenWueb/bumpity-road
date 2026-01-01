@@ -309,6 +309,11 @@ export function AccountContent({ user, todos: initialTodos, posts, galleryImages
                           {todo.completedBy && (
                             <span className="text-xs text-emerald-600 dark:text-emerald-400">
                               ✓ by {todo.completedBy.name}
+                              {todo.completedAt && (
+                                <span className="ml-1 text-muted-foreground">
+                                  {new Date(todo.completedAt).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
+                                </span>
+                              )}
                             </span>
                           )}
                         </div>
