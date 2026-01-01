@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { google } from "googleapis";
 
 export const runtime = "nodejs";
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 function getServiceAccountCreds() {
   const json = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
