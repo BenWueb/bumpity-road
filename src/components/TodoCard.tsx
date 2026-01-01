@@ -219,7 +219,7 @@ export default function TodoCard({ initialTodos }: TodoCardClientProps = {}) {
             {/* Pending tasks */}
             {pendingTodos.slice(0, 6).map((todo) => {
               const isOwner = isLoggedIn && todo.userId === userId;
-              const canInteract = isLoggedIn && (isOwner || todo.assignedToId === userId);
+              const canInteract = isLoggedIn && (isOwner || todo.assignedTo?.id === userId);
               const isExpanded = expandedId === todo.id;
 
               return (
@@ -293,7 +293,7 @@ export default function TodoCard({ initialTodos }: TodoCardClientProps = {}) {
                   <div className="space-y-2 border-t px-3 py-2">
                     {completedTodos.slice(0, 5).map((todo) => {
                       const isOwner = isLoggedIn && todo.userId === userId;
-                      const canInteract = isLoggedIn && (isOwner || todo.assignedToId === userId);
+                      const canInteract = isLoggedIn && (isOwner || todo.assignedTo?.id === userId);
                       return (
                         <CompletedTodoItem
                           key={todo.id}

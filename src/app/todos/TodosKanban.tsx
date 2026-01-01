@@ -232,7 +232,7 @@ export default function TodosKanban({ initialTodos }: Props) {
                   {columnTodos.map((todo) => {
                     const isOwner = todo.userId === userId;
                     const canMove =
-                      isLoggedIn && (isOwner || todo.assignedToId === userId);
+                      isLoggedIn && (isOwner || todo.assignedTo?.id === userId);
 
                     return (
                       <div
@@ -363,7 +363,7 @@ export default function TodosKanban({ initialTodos }: Props) {
                 {columnTodos.map((todo) => {
                   const isOwner = todo.userId === userId;
                   const canDrag =
-                    isLoggedIn && (isOwner || todo.assignedToId === userId);
+                    isLoggedIn && (isOwner || todo.assignedTo?.id === userId);
 
                   return (
                     <div

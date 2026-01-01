@@ -1,5 +1,6 @@
 import { auth } from "@/utils/auth";
 import { prisma } from "@/utils/prisma";
+import { deleteCloudinaryImages } from "@/utils/cloudinary";
 import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
@@ -125,6 +126,20 @@ export async function PATCH(req: NextRequest) {
 
   // Remove images if specified
   if (removeImageIds && removeImageIds.length > 0) {
+    // Get the publicIds before deleting
+    const imagesToDelete = await prisma.postImage.findMany({
+      where: {
+        id: { in: removeImageIds },
+        postId: id,
+      },
+      select: { publicId: true },
+    });
+
+    // Delete from Cloudinary
+    const publicIds = imagesToDelete.map((img) => img.publicId);
+    await deleteCloudinaryImages(publicIds);
+
+    // Delete from database
     await prisma.postImage.deleteMany({
       where: {
         id: { in: removeImageIds },
@@ -203,6 +218,17 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
+  // Get all images associated with the post before deleting
+  const images = await prisma.postImage.findMany({
+    where: { postId: id },
+    select: { publicId: true },
+  });
+
+  // Delete images from Cloudinary
+  const publicIds = images.map((img) => img.publicId);
+  await deleteCloudinaryImages(publicIds);
+
+  // Delete the post (cascades to images in database)
   await prisma.post.delete({ where: { id } });
 
   revalidatePath("/blog");

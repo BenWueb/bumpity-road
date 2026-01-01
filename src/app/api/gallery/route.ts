@@ -1,5 +1,6 @@
 import { auth } from "@/utils/auth";
 import { prisma } from "@/utils/prisma";
+import { deleteCloudinaryImage } from "@/utils/cloudinary";
 import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -99,6 +100,10 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
+  // Delete from Cloudinary first
+  await deleteCloudinaryImage(existing.publicId);
+
+  // Then delete from database
   await prisma.galleryImage.delete({ where: { id } });
 
   return NextResponse.json({ success: true });
