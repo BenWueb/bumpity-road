@@ -1,19 +1,25 @@
 "use client";
-import { useSession } from "next-auth/react";
+import { authClient } from "@/lib/auth-client";
 import { CreatePost } from "@/actions/CreatePost";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
+
 import { CldUploadButton } from "next-cloudinary";
 import { useState } from "react";
 import Image from "next/image";
 
 export default function Blog() {
-  const { data: session } = useSession();
+  const { data: session, isPending } = authClient.useSession();
   const [imageUrl, setImageUrl] = useState<string[]>([]);
   const [imageId, setImageId] = useState<string[]>([]);
 
-  if (!session) {
+  if (isPending) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <h1 className="text-2xl font-bold">Loading...</h1>
+      </div>
+    );
+  }
+
+  if (!session?.user) {
     return (
       <div className="flex items-center justify-center h-screen">
         <h1 className="text-2xl font-bold">Please log in to create a post</h1>
@@ -22,9 +28,9 @@ export default function Blog() {
   }
 
   return (
-    <div>
+    <div className="p-8">
       <form
-        className="flex flex-col gap-2 m-auto w-full max-w-md"
+        className="flex flex-col gap-4 m-auto w-full max-w-md"
         action={async (formData: FormData) => {
           if (imageId) {
             formData.append("imageIds", JSON.stringify(imageId));
@@ -32,24 +38,36 @@ export default function Blog() {
           await CreatePost(formData);
         }}
       >
-        <label htmlFor="title" />
-        <Input
-          type="text"
-          id="title"
-          name="title"
-          placeholder="Title"
-          required
-        />
-        <label htmlFor="content" />
-        <Textarea
-          id="content"
-          name="content"
-          placeholder="Content"
-          required
-        ></Textarea>
+        <div>
+          <label htmlFor="title" className="block text-sm font-medium mb-1">
+            Title
+          </label>
+          <input
+            type="text"
+            id="title"
+            name="title"
+            placeholder="Enter title..."
+            required
+            className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="content" className="block text-sm font-medium mb-1">
+            Content
+          </label>
+          <textarea
+            id="content"
+            name="content"
+            placeholder="Write your content..."
+            required
+            rows={6}
+            className="w-full resize-none rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          />
+        </div>
 
         <CldUploadButton
-          className="cursor-pointer"
+          className="cursor-pointer rounded-md border bg-background px-4 py-2 text-sm font-medium hover:bg-accent"
           uploadPreset="bumpity-road"
           onSuccess={(result) => {
             console.log("Upload successful:", result);
@@ -75,10 +93,17 @@ export default function Blog() {
               width={800}
               height={600}
               src={image}
-              alt="Description of my image"
+              alt="Uploaded image"
+              className="rounded-md"
             />
           ))}
-        <Button className="cursor-pointer mt-2  ">Submit</Button>
+
+        <button
+          type="submit"
+          className="cursor-pointer rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+        >
+          Submit
+        </button>
       </form>
     </div>
   );

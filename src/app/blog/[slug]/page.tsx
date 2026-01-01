@@ -1,36 +1,155 @@
-import { GetPost } from "@/actions/GetPost";
-import CloudImage from "@/components/CloudImage";
+import { Suspense } from "react";
+import { notFound } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
+import { ArrowLeft } from "lucide-react";
+import { fetchPostBySlug, fetchOtherPosts } from "@/lib/blog-server";
+import { formatShortDate } from "@/lib/blog-utils";
+import BlogPostContent from "./BlogPostContent";
 
-export default async function Page({ params }: { params: { slug: string } }) {
-  const { slug } = await params;
-  const res = await GetPost(slug);
-  const post = await res.json();
+type Props = {
+  params: Promise<{ slug: string }>;
+};
+
+function PostSkeleton() {
+  return (
+    <div className="mx-auto flex max-w-6xl flex-col gap-6 min-[1440px]:flex-row min-[1440px]:gap-8">
+      <article className="min-w-0 flex-1 animate-pulse overflow-hidden rounded-xl border bg-card shadow-sm">
+        <div className="h-96 w-full bg-accent" />
+        <div className="p-6 sm:p-8">
+          <div className="mb-4 h-4 w-48 rounded bg-accent" />
+          <div className="mb-6 h-8 w-3/4 rounded bg-accent" />
+          <div className="space-y-3">
+            <div className="h-4 w-full rounded bg-accent" />
+            <div className="h-4 w-full rounded bg-accent" />
+            <div className="h-4 w-2/3 rounded bg-accent" />
+          </div>
+        </div>
+      </article>
+      <aside className="w-full shrink-0 min-[1440px]:w-72">
+        <div className="animate-pulse rounded-xl border bg-card p-5">
+          <div className="mb-4 h-6 w-32 rounded bg-accent" />
+          <div className="space-y-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="flex gap-3">
+                <div className="h-16 w-16 shrink-0 rounded-lg bg-accent" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 w-full rounded bg-accent" />
+                  <div className="h-3 w-24 rounded bg-accent" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </aside>
+    </div>
+  );
+}
+
+async function PostContent({ slug }: { slug: string }) {
+  const [post, otherPosts] = await Promise.all([
+    fetchPostBySlug(slug),
+    fetchOtherPosts(slug),
+  ]);
 
   if (!post) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <h1 className="text-2xl font-semibold">Post not found</h1>
-      </div>
-    );
+    notFound();
   }
 
+  const formattedDate = new Intl.DateTimeFormat(undefined, {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  }).format(new Date(post.createdAt));
+
   return (
-    <div>
-      <div className="flex flex-col gap-4 m-auto w-full max-w-5xl">
-        <div key={post.id} className="p-4 border rounded-lg">
-          <h1 className="text-2xl font-semibold">{post.title}</h1>
-          <p className="text-sm text-gray-500">
-            by {post.user.name} on{" "}
-            {new Date(post.createdAt).toLocaleDateString()}
-          </p>
-          <p className="mt-2">{post.content}</p>
-          {post.images && post.images.length > 0 && (
-            <div className="flex">
-              <CloudImage images={post.images} single={false} />
-            </div>
-          )}
+    <div className="mx-auto flex max-w-6xl flex-col gap-6 min-[1440px]:flex-row min-[1440px]:gap-8">
+      {/* Main Article */}
+      <article className="relative min-w-0 flex-1 overflow-hidden rounded-xl border bg-card shadow-sm">
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-slate-50 via-background to-gray-50 dark:from-slate-950/20 dark:via-background dark:to-gray-950/10" />
+
+        <BlogPostContent post={post} formattedDate={formattedDate} />
+      </article>
+
+      {/* Sidebar - Other Posts */}
+      <aside className="w-full shrink-0 min-[1440px]:sticky min-[1440px]:top-6 min-[1440px]:w-72 min-[1440px]:self-start">
+        <div className="relative overflow-hidden rounded-xl border bg-card p-5 shadow-sm">
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-violet-50 via-background to-purple-50 dark:from-violet-950/20 dark:via-background dark:to-purple-950/10" />
+          <div className="relative">
+            <h2 className="mb-4 text-lg font-semibold">More Posts</h2>
+
+            {otherPosts.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No other posts yet.</p>
+            ) : (
+              <div className="space-y-4">
+                {otherPosts.map((p) => (
+                  <Link key={p.id} href={`/blog/${p.slug}`} className="group flex gap-3">
+                    {/* Thumbnail */}
+                    <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-accent">
+                      {p.images[0] ? (
+                        <Image
+                          src={p.images[0].url}
+                          alt={p.title}
+                          width={64}
+                          height={64}
+                          className="h-full w-full object-cover transition-transform group-hover:scale-110"
+                          unoptimized
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-2xl text-muted-foreground/50">
+                          📝
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Info */}
+                    <div className="min-w-0 flex-1">
+                      <h3 className="line-clamp-2 text-sm font-medium leading-tight transition-colors group-hover:text-primary">
+                        {p.title}
+                      </h3>
+                      <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+                        <span>{p.user?.name ?? "Unknown"}</span>
+                        <span>•</span>
+                        <span>{formatShortDate(p.createdAt)}</span>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+
+            <Link
+              href="/blog"
+              className="mt-4 block text-center text-sm font-medium text-primary hover:underline"
+            >
+              View all posts →
+            </Link>
+          </div>
         </div>
+      </aside>
+    </div>
+  );
+}
+
+export default async function BlogPostPage({ params }: Props) {
+  const { slug } = await params;
+
+  return (
+    <div className="p-6">
+      {/* Back Link */}
+      <div className="mx-auto max-w-6xl">
+        <Link
+          href="/blog"
+          className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Blog
+        </Link>
       </div>
+
+      <Suspense fallback={<PostSkeleton />}>
+        <PostContent slug={slug} />
+      </Suspense>
     </div>
   );
 }

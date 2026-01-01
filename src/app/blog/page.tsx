@@ -1,76 +1,57 @@
-import Link from "next/link";
-import CloudImage from "@/components/CloudImage";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import Search from "@/components/Search";
+import { Suspense } from "react";
+import { NotebookPen } from "lucide-react";
+import { fetchPosts } from "@/lib/blog-server";
+import { BlogList } from "@/components/blog";
 
-type Post = {
-  id: string;
-  title: string;
-  content: string;
-  slug: string;
-  userEmail: string;
-  user: {
-    id: string;
-    name: string;
-    email: string;
-    image?: string;
-    posts: Post[];
-  };
-  createdAt: string;
-  updatedAt?: string;
-  comments?: [];
-  images?: {
-    id: string;
-    imageId: string;
-    postId: string;
-    createdAt: string;
-  }[];
-};
-
-const Page = async () => {
-  const res = await fetch("http://localhost:3000/api/posts");
-  const posts: Post[] = await res.json();
-
+function BlogSkeleton() {
   return (
-    <div>
-      <Link href="/add-blog-post">
-        <Button className="cursor-pointer">Add Post</Button>
-      </Link>
+    <>
+      {/* Header skeleton */}
+      <div className="mb-6 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg border bg-background shadow-sm">
+            <NotebookPen className="h-5 w-5 text-muted-foreground" />
+          </div>
+          <div>
+            <div className="h-7 w-24 animate-pulse rounded bg-accent" />
+            <div className="mt-1 h-4 w-48 animate-pulse rounded bg-accent" />
+          </div>
+        </div>
+        <div className="h-10 w-28 animate-pulse rounded-md bg-accent" />
+      </div>
 
-      <Search posts={posts} />
-
-      <div className="flex gap-4 m-auto w-full max-w-5xl">
-        {posts.map((post: Post) => (
-          <Link
-            key={post.id}
-            href={`/blog/${post.slug}`}
-            className="flex-1 min-w-250px max-w-xs  align-stretch"
+      {/* Posts skeleton */}
+      <div className="columns-1 gap-4 sm:columns-2 lg:columns-3">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div
+            key={i}
+            className="mb-4 animate-pulse break-inside-avoid rounded-xl border bg-card"
           >
-            <div className="w-full h-full  rounded-lg flex flex-col">
-              <div>
-                {post.images && post.images.length > 0 && (
-                  <div className="">
-                    <CloudImage images={post.images} single />
-                  </div>
-                )}
-                <h2 className="text-xl font-bold">{post.title}</h2>
-                <div className="text-sm text-gray-600">
-                  <p>
-                    by {post.user.name} on{" "}
-                    {new Date(post.createdAt).toLocaleDateString()}
-                  </p>
-                </div>
-                <div>Card Action</div>
-              </div>
-              <div className="p-4 flex-grow"></div>
-              <div className="p-4"></div>
+            <div className="h-48 w-full rounded-t-xl bg-accent" />
+            <div className="p-4">
+              <div className="mb-2 h-3 w-32 rounded bg-accent" />
+              <div className="mb-3 h-5 w-3/4 rounded bg-accent" />
+              <div className="h-3 w-full rounded bg-accent" />
+              <div className="mt-1 h-3 w-2/3 rounded bg-accent" />
             </div>
-          </Link>
+          </div>
         ))}
       </div>
+    </>
+  );
+}
+
+async function BlogContent() {
+  const posts = await fetchPosts();
+  return <BlogList initialPosts={posts} />;
+}
+
+export default function BlogPage() {
+  return (
+    <div className="flex h-full flex-col p-6">
+      <Suspense fallback={<BlogSkeleton />}>
+        <BlogContent />
+      </Suspense>
     </div>
   );
-};
-
-export default Page;
+}

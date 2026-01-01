@@ -1,117 +1,159 @@
+"use client";
+
+import AccountBar from "@/components/AccountBar";
+import FeedbackModal from "@/components/FeedbackModal";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import {
+  BookOpen,
+  CheckSquare,
   Home,
-  BookText,
   Images,
-  Calendar,
-  ChefHat,
-  Binoculars,
-  Map,
-  Notebook,
+  Info,
+  Menu,
+  MessageSquarePlus,
+  NotebookPen,
+  UtensilsCrossed,
 } from "lucide-react";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarRail,
-} from "@/components/ui/sidebar";
-import { NavUser } from "./NavUser";
 
-// This is sample data.
-const data = {
-  user: {
-    name: "Ben",
-    email: "Ben@bumpityroad.com",
-    avatar:
-      "https://images.pexels.com/photos/19501326/pexels-photo-19501326/free-photo-of-woman-hands-cutting-simit-for-breakfast.jpeg?auto=compress&cs=tinysrgb&w=600&lazy=load",
-  },
-
-  navMain: [
-    {
-      title: "Getting Started",
-      url: "#",
-      items: [
-        {
-          title: "Cabin",
-          url: "/",
-          icon: <Home />,
-        },
-        {
-          title: "SOP",
-          url: "#",
-          icon: <BookText />,
-        },
-        {
-          title: "Gallery",
-          url: "#",
-          icon: <Images />,
-        },
-        {
-          title: "Calendar",
-          url: "#",
-          icon: <Calendar />,
-        },
-        {
-          title: "Recipes",
-          url: "#",
-          icon: <ChefHat />,
-        },
-        {
-          title: "Wildlife",
-          url: "#",
-          icon: <Binoculars />,
-        },
-        {
-          title: "Adventure",
-          url: "#",
-          icon: <Map />,
-        },
-        {
-          title: "Blog",
-          url: "/blog",
-          icon: <Notebook />,
-        },
-      ],
-    },
-  ],
+type NavItem = {
+  href: string;
+  target?: string;
+  label: string;
+  icon: React.ReactNode;
 };
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+function isActivePath(pathname: string, href: string) {
+  if (href === "/") return pathname === "/";
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+export default function AppSidebar() {
+  const pathname = usePathname();
+  const [collapsed, setCollapsed] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
+
+  useEffect(() => {
+    const saved = window.localStorage.getItem("sidebar:collapsed");
+    if (saved === "1") setCollapsed(true);
+  }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem("sidebar:collapsed", collapsed ? "1" : "0");
+  }, [collapsed]);
+
+  const items: NavItem[] = useMemo(
+    () => [
+      { href: "/", label: "Home", icon: <Home className="h-5 w-5" /> },
+      {
+        href: "/todos",
+        label: "Tasks",
+        icon: <CheckSquare className="h-5 w-5" />,
+      },
+      {
+        href: "/gallery",
+        label: "Gallery",
+        icon: <Images className="h-5 w-5" />,
+      },
+      {
+        href: "/guestbook",
+        label: "Guestbook",
+        icon: <BookOpen className="h-5 w-5" />,
+      },
+      {
+        href: "/blog",
+        label: "Blog",
+        icon: <NotebookPen className="h-5 w-5" />,
+      },
+      { href: "/about", label: "About", icon: <Info className="h-5 w-5" /> },
+      {
+        href: "https://www.joanskitchen.app",
+        target: "_blank",
+        label: "Recipes",
+        icon: <UtensilsCrossed className="h-5 w-5" />,
+      },
+    ],
+    []
+  );
+
   return (
-    <Sidebar {...props}>
-      <SidebarHeader></SidebarHeader>
-      <SidebarContent>
-        {/* We create a SidebarGroup for each parent. */}
-        {data.navMain.map((item) => (
-          <SidebarGroup key={item.title}>
-            <SidebarGroupLabel>{item.title}</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {item.items.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild isActive={item.isActive}>
-                      <a href={item.url}>
-                        {item.icon}
-                        {item.title}
-                      </a>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        ))}
-      </SidebarContent>
-      <SidebarFooter>
-        <NavUser user={data.user} />
-      </SidebarFooter>
-      <SidebarRail />
-    </Sidebar>
+    <aside
+      className={[
+        "sticky top-0 h-screen shrink-0 border-r bg-background",
+        collapsed ? "w-16" : "w-60",
+      ].join(" ")}
+    >
+      <div className="flex h-full flex-col">
+        <div className="flex items-center justify-between gap-2 border-b px-3 py-3">
+          <div className="min-w-0">
+            {collapsed ? (
+              <div className="h-8 w-8 rounded-lg bg-muted" />
+            ) : (
+              <div className="truncate text-sm font-semibold">Bumpity Road</div>
+            )}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setCollapsed((v) => !v)}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-md border bg-background text-foreground shadow-sm transition-colors hover:bg-accent"
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+        </div>
+
+        <nav className="flex-1 px-2 py-3">
+          <ul className="space-y-1">
+            {items.map((item) => {
+              const active = isActivePath(pathname, item.href);
+              return (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    target={item.target}
+                    className={[
+                      "group flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
+                      active
+                        ? "bg-accent text-foreground"
+                        : "text-muted-foreground hover:bg-accent hover:text-foreground",
+                    ].join(" ")}
+                    title={collapsed ? item.label : undefined}
+                  >
+                    <span className="shrink-0">{item.icon}</span>
+                    {collapsed ? null : (
+                      <span className="truncate font-medium">{item.label}</span>
+                    )}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+
+        {/* Feedback button */}
+        <div className="border-t px-2 py-2">
+          <button
+            type="button"
+            onClick={() => setFeedbackOpen(true)}
+            className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            title={collapsed ? "Send Feedback" : undefined}
+          >
+            <MessageSquarePlus className="h-5 w-5 shrink-0" />
+            {collapsed ? null : (
+              <span className="truncate font-medium">Send Feedback</span>
+            )}
+          </button>
+        </div>
+
+        <AccountBar collapsed={collapsed} />
+      </div>
+
+      <FeedbackModal
+        isOpen={feedbackOpen}
+        onClose={() => setFeedbackOpen(false)}
+      />
+    </aside>
   );
 }

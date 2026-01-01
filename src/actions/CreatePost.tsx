@@ -1,13 +1,17 @@
 "use server";
 
 import { prisma } from "@/utils/prisma";
-import { auth } from "@/auth";
+import { auth } from "@/utils/auth";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 
 export async function CreatePost(formData: FormData) {
-  const session = await auth();
+  const session = await auth.api.getSession({
+    headers: await headers(),
+    asResponse: false,
+  });
 
-  if (!session || !session.user || !session.user.email) {
+  if (!session?.user?.email) {
     throw new Error("Unauthorized: User not authenticated");
   }
 
