@@ -5,6 +5,9 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { AccountContent } from "./AccountContent";
 
+// Force dynamic rendering to ensure fresh data per user
+export const dynamic = "force-dynamic";
+
 async function getAccountData() {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -40,7 +43,7 @@ async function getAccountData() {
       orderBy: { createdAt: "desc" },
       include: {
         assignedTo: { select: { id: true, name: true, email: true } },
-        user: { select: { id: true, name: true } },
+        user: { select: { id: true, name: true, email: true } },
         completedBy: { select: { id: true, name: true } },
       },
     }),

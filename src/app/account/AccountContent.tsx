@@ -1,7 +1,6 @@
 "use client";
 
 import { authClient } from "@/lib/auth-client";
-import { useTodos } from "@/hooks/use-todos";
 import { KANBAN_COLUMNS } from "@/lib/todo-constants";
 import { Todo } from "@/types/todo";
 import { RecurringBadge } from "@/components/todos";
@@ -10,6 +9,7 @@ import {
   Calendar,
   Camera,
   CheckCircle2,
+  ChevronDown,
   Circle,
   Clock,
   Lightbulb,
@@ -21,6 +21,7 @@ import {
   NotebookPen,
   Trash2,
   User,
+  UserCheck,
 } from "lucide-react";
 import { CldImage } from "next-cloudinary";
 import Link from "next/link";
@@ -73,19 +74,29 @@ type Props = {
   feedback: FeedbackData[];
 };
 
-export function AccountContent({ user, todos: initialTodos, posts, galleryImages, feedback: initialFeedback }: Props) {
+export function AccountContent({
+  user,
+  todos: initialTodos,
+  posts,
+  galleryImages,
+  feedback: initialFeedback,
+}: Props) {
   const router = useRouter();
-  const { todos, getTodosByStatus } = useTodos(user.id);
   const [loggingOut, setLoggingOut] = useState(false);
   const [feedback, setFeedback] = useState(initialFeedback);
+  const [createdExpanded, setCreatedExpanded] = useState(true);
+  const [assignedExpanded, setAssignedExpanded] = useState(true);
 
-  // Use client todos if available, otherwise use initial server data
-  const todoList = todos.length > 0 ? todos : initialTodos;
+  // Split todos into created by user and assigned to user
+  const tasksCreated = initialTodos.filter((t) => t.userId === user.id);
+  const tasksAssigned = initialTodos.filter(
+    (t) => t.assignedTo?.id === user.id && t.userId !== user.id
+  );
 
   const todosByStatus = {
-    todo: todoList.filter((t) => t.status === "todo"),
-    in_progress: todoList.filter((t) => t.status === "in_progress"),
-    done: todoList.filter((t) => t.status === "done"),
+    todo: initialTodos.filter((t) => t.status === "todo"),
+    in_progress: initialTodos.filter((t) => t.status === "in_progress"),
+    done: initialTodos.filter((t) => t.status === "done"),
   };
 
   const createdDate = new Date(user.createdAt).toLocaleDateString("en-US", {
@@ -107,7 +118,9 @@ export function AccountContent({ user, todos: initialTodos, posts, galleryImages
 
   async function handleUpdateFeedbackStatus(id: string, status: string) {
     const prev = feedback;
-    setFeedback((f) => f.map((item) => (item.id === id ? { ...item, status } : item)));
+    setFeedback((f) =>
+      f.map((item) => (item.id === id ? { ...item, status } : item))
+    );
 
     try {
       const res = await fetch("/api/feedback", {
@@ -172,7 +185,9 @@ export function AccountContent({ user, todos: initialTodos, posts, galleryImages
                   {user.name?.[0]?.toUpperCase() ?? "U"}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h2 className="truncate text-xl font-semibold">{user.name}</h2>
+                  <h2 className="truncate text-xl font-semibold">
+                    {user.name}
+                  </h2>
                   <div className="mt-2 space-y-1">
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Mail className="h-4 w-4" />
@@ -251,94 +266,120 @@ export function AccountContent({ user, todos: initialTodos, posts, galleryImages
           </div>
         </div>
 
-        {/* Recent tasks */}
+        {/* Tasks */}
         <div className="relative overflow-hidden rounded-xl border bg-card shadow-sm">
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-slate-50 via-background to-gray-50 dark:from-slate-950/30 dark:via-background dark:to-gray-950/20" />
           <div className="relative">
             <div className="flex items-center justify-between border-b px-6 py-4">
               <h3 className="font-semibold">Your Tasks</h3>
               <span className="text-sm text-muted-foreground">
-                {todoList.length} total
+                {initialTodos.length} total
               </span>
             </div>
-            <div className="divide-y">
-              {todoList.length === 0 ? (
-                <div className="px-6 py-8 text-center text-muted-foreground">
-                  No tasks yet. Create one from the home page or tasks page!
-                </div>
-              ) : (
-                todoList.slice(0, 10).map((todo) => {
-                  const column = KANBAN_COLUMNS.find((c) => c.id === todo.status);
-                  const StatusIcon = column?.icon ?? Circle;
-                  const isOwner = todo.userId === user.id;
 
-                  return (
-                    <div
-                      key={todo.id}
-                      className="flex items-center gap-4 px-6 py-3"
-                    >
-                      <StatusIcon
-                        className={`h-5 w-5 shrink-0 ${
-                          todo.status === "done"
-                            ? "text-emerald-500"
-                            : todo.status === "in_progress"
-                              ? "text-blue-500"
-                              : "text-muted-foreground"
-                        }`}
-                      />
-                      <div className="min-w-0 flex-1">
-                        <div
-                          className={`truncate text-sm font-medium ${
-                            todo.completed ? "text-muted-foreground line-through" : ""
-                          }`}
-                        >
-                          {todo.title}
-                        </div>
-                        <div className="mt-0.5 flex flex-wrap items-center gap-2">
-                          {todo.recurring && <RecurringBadge recurring={todo.recurring} anchorDate={todo.dueDate ?? todo.createdAt} />}
-                          {todo.assignedTo && (
-                            <span className="text-xs text-muted-foreground">
-                              → {todo.assignedTo.name}
-                            </span>
-                          )}
-                          {!isOwner && (
-                            <span className="text-xs text-muted-foreground">
-                              from {todo.user.name}
-                            </span>
-                          )}
-                          {todo.completedBy && (
-                            <span className="text-xs text-emerald-600 dark:text-emerald-400">
-                              ✓ by {todo.completedBy.name}
-                              {todo.completedAt && (
-                                <span className="ml-1 text-muted-foreground">
-                                  {new Date(todo.completedAt).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
-                                </span>
-                              )}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      <div
-                        className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${
-                          todo.status === "done"
-                            ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
-                            : todo.status === "in_progress"
-                              ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300"
-                              : "bg-slate-100 text-slate-700 dark:bg-slate-900/40 dark:text-slate-300"
-                        }`}
-                      >
-                        {column?.label ?? todo.status}
-                      </div>
+            {initialTodos.length === 0 ? (
+              <div className="px-6 py-8 text-center text-muted-foreground">
+                No tasks yet. Create one from the home page or tasks page!
+              </div>
+            ) : (
+              <div className="divide-y">
+                {/* Tasks You Created */}
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => setCreatedExpanded(!createdExpanded)}
+                    className="flex w-full items-center justify-between px-6 py-3 text-left hover:bg-accent/50"
+                  >
+                    <div className="flex items-center gap-2">
+                      <ListTodo className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm font-medium">
+                        Tasks You Created
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        ({tasksCreated.length})
+                      </span>
                     </div>
-                  );
-                })
-              )}
-              {todoList.length > 10 && (
-                <div className="px-6 py-3 text-center text-sm text-muted-foreground">
-                  +{todoList.length - 10} more tasks
+                    <ChevronDown
+                      className={`h-4 w-4 text-muted-foreground transition-transform ${
+                        createdExpanded ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+                  {createdExpanded && (
+                    <div className="border-t bg-background/50">
+                      {tasksCreated.length === 0 ? (
+                        <div className="px-6 py-4 text-center text-sm text-muted-foreground">
+                          No tasks created yet
+                        </div>
+                      ) : (
+                        <div className="divide-y">
+                          {tasksCreated.slice(0, 10).map((todo) => (
+                            <TaskRow
+                              key={todo.id}
+                              todo={todo}
+                              userId={user.id}
+                            />
+                          ))}
+                          {tasksCreated.length > 10 && (
+                            <div className="px-6 py-2 text-center text-xs text-muted-foreground">
+                              +{tasksCreated.length - 10} more
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
+
+                {/* Tasks Assigned to You */}
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => setAssignedExpanded(!assignedExpanded)}
+                    className="flex w-full items-center justify-between px-6 py-3 text-left hover:bg-accent/50"
+                  >
+                    <div className="flex items-center gap-2">
+                      <UserCheck className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm font-medium">
+                        Tasks Assigned to You
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        ({tasksAssigned.length})
+                      </span>
+                    </div>
+                    <ChevronDown
+                      className={`h-4 w-4 text-muted-foreground transition-transform ${
+                        assignedExpanded ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+                  {assignedExpanded && (
+                    <div className="border-t bg-background/50">
+                      {tasksAssigned.length === 0 ? (
+                        <div className="px-6 py-4 text-center text-sm text-muted-foreground">
+                          No tasks assigned to you
+                        </div>
+                      ) : (
+                        <div className="divide-y">
+                          {tasksAssigned.slice(0, 10).map((todo) => (
+                            <TaskRow
+                              key={todo.id}
+                              todo={todo}
+                              userId={user.id}
+                            />
+                          ))}
+                          {tasksAssigned.length > 10 && (
+                            <div className="px-6 py-2 text-center text-xs text-muted-foreground">
+                              +{tasksAssigned.length - 10} more
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -429,7 +470,8 @@ export function AccountContent({ user, todos: initialTodos, posts, galleryImages
                 <h3 className="font-semibold">Your Photos</h3>
               </div>
               <span className="text-sm text-muted-foreground">
-                {galleryImages.length} photo{galleryImages.length !== 1 ? "s" : ""}
+                {galleryImages.length} photo
+                {galleryImages.length !== 1 ? "s" : ""}
               </span>
             </div>
             <div className="p-4">
@@ -518,12 +560,16 @@ export function AccountContent({ user, todos: initialTodos, posts, galleryImages
                         <div className="min-w-0 flex-1">
                           <div className="flex items-start justify-between gap-2">
                             <div>
-                              <h4 className="text-sm font-medium">{item.title}</h4>
+                              <h4 className="text-sm font-medium">
+                                {item.title}
+                              </h4>
                               <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
                                 <span>{item.user?.name ?? "Anonymous"}</span>
                                 <span>•</span>
                                 <span>
-                                  {new Date(item.createdAt).toLocaleDateString()}
+                                  {new Date(
+                                    item.createdAt
+                                  ).toLocaleDateString()}
                                 </span>
                               </div>
                             </div>
@@ -531,16 +577,19 @@ export function AccountContent({ user, todos: initialTodos, posts, galleryImages
                               <select
                                 value={item.status}
                                 onChange={(e) =>
-                                  handleUpdateFeedbackStatus(item.id, e.target.value)
+                                  handleUpdateFeedbackStatus(
+                                    item.id,
+                                    e.target.value
+                                  )
                                 }
                                 className={`rounded-full border-0 px-2 py-1 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-ring ${
                                   item.status === "resolved"
                                     ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
                                     : item.status === "in_progress"
-                                      ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300"
-                                      : item.status === "closed"
-                                        ? "bg-slate-100 text-slate-500 dark:bg-slate-900/40 dark:text-slate-400"
-                                        : "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300"
+                                    ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300"
+                                    : item.status === "closed"
+                                    ? "bg-slate-100 text-slate-500 dark:bg-slate-900/40 dark:text-slate-400"
+                                    : "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300"
                                 }`}
                               >
                                 <option value="open">Open</option>
@@ -574,3 +623,75 @@ export function AccountContent({ user, todos: initialTodos, posts, galleryImages
   );
 }
 
+// Task row sub-component
+function TaskRow({ todo, userId }: { todo: Todo; userId: string }) {
+  const column = KANBAN_COLUMNS.find((c) => c.id === todo.status);
+  const StatusIcon = column?.icon ?? Circle;
+  const isOwner = todo.userId === userId;
+
+  return (
+    <div className="flex items-center gap-4 px-6 py-3">
+      <StatusIcon
+        className={`h-5 w-5 shrink-0 ${
+          todo.status === "done"
+            ? "text-emerald-500"
+            : todo.status === "in_progress"
+            ? "text-blue-500"
+            : "text-muted-foreground"
+        }`}
+      />
+      <div className="min-w-0 flex-1">
+        <div
+          className={`truncate text-sm font-medium ${
+            todo.completed ? "text-muted-foreground line-through" : ""
+          }`}
+        >
+          {todo.title}
+        </div>
+        <div className="mt-0.5 flex flex-wrap items-center gap-2">
+          {todo.assignedTo && (
+            <span className="text-xs text-muted-foreground">
+              → {todo.assignedTo.name}
+            </span>
+          )}
+          {!isOwner && (
+            <span className="text-xs text-muted-foreground">
+              from {todo.user.name}
+            </span>
+          )}
+          {todo.completedBy && (
+            <span className="text-xs text-emerald-600 dark:text-emerald-400">
+              ✓ by {todo.completedBy.name}
+              {todo.completedAt && (
+                <span className="ml-1 text-muted-foreground">
+                  {new Date(todo.completedAt).toLocaleDateString(undefined, {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                </span>
+              )}
+            </span>
+          )}
+          {todo.recurring && (
+            <RecurringBadge
+              recurring={todo.recurring}
+              anchorDate={todo.dueDate ?? todo.createdAt}
+            />
+          )}
+        </div>
+      </div>
+      <div
+        className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${
+          todo.status === "done"
+            ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
+            : todo.status === "in_progress"
+            ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300"
+            : "bg-slate-100 text-slate-700 dark:bg-slate-900/40 dark:text-slate-300"
+        }`}
+      >
+        {column?.label ?? todo.status}
+      </div>
+    </div>
+  );
+}
