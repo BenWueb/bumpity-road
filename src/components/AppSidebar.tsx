@@ -80,32 +80,24 @@ export default function AppSidebar() {
   return (
     <aside
       className={[
-        "sticky top-0 h-screen shrink-0 border-r bg-background",
-        collapsed ? "w-16" : "w-60",
+        "sticky top-0 h-screen shrink-0 border-r bg-background transition-[width]",
+        collapsed ? "w-12 sm:w-16" : "w-48 sm:w-60",
       ].join(" ")}
     >
       <div className="flex h-full flex-col">
-        <div className="flex items-center justify-between gap-2 border-b px-3 py-3">
-          <div className="min-w-0">
-            {collapsed ? (
-              <div className="h-8 w-8 rounded-lg bg-muted" />
-            ) : (
-              <div className="truncate text-sm font-semibold">Bumpity Road</div>
-            )}
-          </div>
-
+        <div className="flex items-center justify-between gap-2 border-b px-2 py-2 sm:px-3 sm:py-3">
           <button
             type="button"
             onClick={() => setCollapsed((v) => !v)}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-md border bg-background text-foreground shadow-sm transition-colors hover:bg-accent"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-md border bg-background text-foreground shadow-sm transition-colors hover:bg-accent sm:h-9 sm:w-9"
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
-            <Menu className="h-5 w-5" />
+            <Menu className="h-4 w-4 sm:h-5 sm:w-5" />
           </button>
         </div>
 
-        <nav className="flex-1 px-2 py-3">
-          <ul className="space-y-1">
+        <nav className="flex-1 px-1.5 py-2 sm:px-2 sm:py-3">
+          <ul className="space-y-0.5 sm:space-y-1">
             {items.map((item) => {
               const active = isActivePath(pathname, item.href);
               return (
@@ -114,7 +106,7 @@ export default function AppSidebar() {
                     href={item.href}
                     target={item.target}
                     className={[
-                      "group flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
+                      "group flex items-center gap-2 rounded-md px-2 py-1.5 text-xs transition-colors sm:gap-3 sm:px-3 sm:py-2 sm:text-sm",
                       active
                         ? "bg-accent text-foreground"
                         : "text-muted-foreground hover:bg-accent hover:text-foreground",
@@ -133,11 +125,11 @@ export default function AppSidebar() {
         </nav>
 
         {/* Feedback button */}
-        <div className="border-t px-2 py-2">
+        <div className="border-t px-1.5 py-1.5 sm:px-2 sm:py-2">
           <button
             type="button"
             onClick={() => setFeedbackOpen(true)}
-            className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground sm:gap-3 sm:px-3 sm:py-2 sm:text-sm"
             title={collapsed ? "Send Feedback" : undefined}
           >
             <MessageSquarePlus className="h-5 w-5 shrink-0" />

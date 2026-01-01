@@ -42,19 +42,19 @@ export function CalendarSkeleton() {
   return (
     <div className="relative w-full  overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm">
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-sky-50 via-background to-indigo-50 dark:from-sky-950/30 dark:via-background dark:to-indigo-950/20" />
-      <div className="relative px-6 pt-6">
-        <div className="flex items-start justify-between gap-4">
+      <div className="relative px-4 pt-4 sm:px-6 sm:pt-6">
+        <div className="flex items-start justify-between gap-3 sm:gap-4">
           <div className="min-w-0">
-            <div className="h-5 w-32 animate-pulse rounded-md bg-accent" />
-            <div className="mt-2 h-4 w-40 animate-pulse rounded-md bg-accent" />
+            <div className="h-4 w-24 animate-pulse rounded-md bg-accent sm:h-5 sm:w-32" />
+            <div className="mt-2 h-3 w-32 animate-pulse rounded-md bg-accent sm:h-4 sm:w-40" />
           </div>
-          <div className="h-9 w-9 animate-pulse rounded-md bg-accent" />
+          <div className="h-8 w-8 animate-pulse rounded-md bg-accent sm:h-9 sm:w-9" />
         </div>
       </div>
-      <div className="relative space-y-3 px-6 pb-6 pt-4">
+      <div className="relative space-y-2 px-4 pb-4 pt-3 sm:space-y-3 sm:px-6 sm:pb-6 sm:pt-4">
         <div className="h-10 w-full animate-pulse rounded-lg bg-accent" />
         <div className="h-10 w-full animate-pulse rounded-lg bg-accent" />
-        <div className="h-10 w-full animate-pulse rounded-lg bg-accent" />
+        <div className="hidden h-10 w-full animate-pulse rounded-lg bg-accent sm:block" />
       </div>
     </div>
   );
@@ -95,23 +95,23 @@ const Calendar = () => {
       <div className="relative w-full  overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm">
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-sky-50 via-background to-indigo-50 dark:from-sky-950/30 dark:via-background dark:to-indigo-950/20" />
 
-        <div className="relative px-6 pt-6">
-          <div className="flex items-start justify-between gap-4">
+        <div className="relative px-4 pt-4 sm:px-6 sm:pt-6">
+          <div className="flex items-start justify-between gap-3 sm:gap-4">
             <div className="min-w-0">
-              <div className="truncate text-base font-semibold leading-none">
+              <div className="truncate text-sm font-semibold leading-none sm:text-base">
                 Calendar
               </div>
-              <div className="mt-1 text-sm text-muted-foreground">
+              <div className="mt-1 text-xs text-muted-foreground sm:text-sm">
                 Upcoming events
               </div>
             </div>
-            <div className="flex h-9 w-9 items-center justify-center rounded-md border bg-background/60 shadow-sm backdrop-blur">
-              <CalendarDays className="h-5 w-5 text-muted-foreground" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-md border bg-background/60 shadow-sm backdrop-blur sm:h-9 sm:w-9">
+              <CalendarDays className="h-4 w-4 text-muted-foreground sm:h-5 sm:w-5" />
             </div>
           </div>
         </div>
 
-        <div className="relative px-6 pb-6 pt-4">
+        <div className="relative px-4 pb-4 pt-3 sm:px-6 sm:pb-6 sm:pt-4">
           {error ? (
             <div className="text-sm text-muted-foreground">{error}</div>
           ) : events.length === 0 ? (

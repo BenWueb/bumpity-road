@@ -184,18 +184,18 @@ export default async function WeatherCard() {
       <div className="relative w-full overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm">
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-sky-50 via-background to-indigo-50 dark:from-sky-950/30 dark:via-background dark:to-indigo-950/20" />
 
-        <div className="relative px-6 pt-6">
-          <div className="flex items-start justify-between gap-4">
+        <div className="relative px-4 pt-4 sm:px-6 sm:pt-6">
+          <div className="flex items-start justify-between gap-3 sm:gap-4">
             <div className="min-w-0">
-              <div className="truncate text-base font-semibold leading-none">
+              <div className="truncate text-sm font-semibold leading-none sm:text-base">
                 {placeName}
               </div>
-              <div className="mt-1 text-sm text-muted-foreground capitalize">
+              <div className="mt-1 text-xs text-muted-foreground capitalize sm:text-sm">
                 {description || "—"}
               </div>
             </div>
 
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl border bg-background/60 shadow-sm backdrop-blur">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl border bg-background/60 shadow-sm backdrop-blur sm:h-12 sm:w-12">
               {iconUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -203,33 +203,33 @@ export default async function WeatherCard() {
                   alt={description || "Weather icon"}
                   width={48}
                   height={48}
-                  className="h-10 w-10"
+                  className="h-8 w-8 sm:h-10 sm:w-10"
                 />
               ) : (
-                <ThermometerSun className="h-6 w-6 text-muted-foreground" />
+                <ThermometerSun className="h-5 w-5 text-muted-foreground sm:h-6 sm:w-6" />
               )}
             </div>
           </div>
         </div>
 
-        <div className="relative px-6 pb-6">
+        <div className="relative px-4 pb-4 sm:px-6 sm:pb-6">
           <div className="flex items-end justify-between gap-4">
             <div>
               <div className="flex items-baseline gap-2">
-                <div className="text-4xl font-semibold tracking-tight">
+                <div className="text-3xl font-semibold tracking-tight sm:text-4xl">
                   {formatTemp(weatherData.main.temp)}°
                 </div>
                 <div className="text-sm text-muted-foreground">F</div>
               </div>
-              <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
-                <Thermometer className="h-4 w-4" />
+              <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground sm:text-sm">
+                <Thermometer className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span>
                   Feels like {formatTemp(weatherData.main.feels_like)}°F
                 </span>
               </div>
             </div>
 
-            <div className="grid gap-2 text-right text-sm text-muted-foreground">
+            <div className="hidden gap-2 text-right text-sm text-muted-foreground sm:grid">
               <div className="flex items-center justify-end gap-2">
                 <Droplets className="h-4 w-4" />
                 <span>
@@ -241,9 +241,22 @@ export default async function WeatherCard() {
                 {weatherData.coord.lon.toFixed(3)}
               </div>
             </div>
+            
+            {/* Mobile: compact stats */}
+            <div className="flex flex-col items-end gap-1 text-xs text-muted-foreground sm:hidden">
+              <div className="flex items-center gap-1">
+                <Droplets className="h-3 w-3" />
+                <span>{formatPercent(weatherData.main.humidity)}%</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Wind className="h-3 w-3" />
+                <span>{formatNumber(weatherData.wind?.speed)} mph</span>
+              </div>
+            </div>
           </div>
 
-          <div className="mt-4 grid grid-cols-2 gap-2 text-sm text-muted-foreground">
+          {/* Detailed stats grid - hidden on mobile */}
+          <div className="mt-4 hidden grid-cols-2 gap-2 text-sm text-muted-foreground sm:grid">
             <div className="flex items-center gap-2 rounded-lg border bg-background/60 px-3 py-2 shadow-sm backdrop-blur">
               <Thermometer className="h-4 w-4" />
               <div className="min-w-0">

@@ -5,32 +5,32 @@ import { RECURRING_OPTIONS } from "@/lib/todo-constants";
 import { Todo, UserInfo } from "@/types/todo";
 import { useTodos } from "@/hooks/use-todos";
 import { useClickOutside } from "@/hooks/use-click-outside";
-import {
-  CheckSquare,
-  ChevronDown,
-  CircleCheck,
-  Plus,
-} from "lucide-react";
+import { CheckSquare, ChevronDown, CircleCheck, Plus } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
-import { CompletedTodoItem, RecurringBadge, TodoItem, UserSearchPicker } from "./todos";
+import {
+  CompletedTodoItem,
+  RecurringBadge,
+  TodoItem,
+  UserSearchPicker,
+} from "./todos";
 
 export function TodoCardSkeleton() {
   return (
     <div className="relative w-full  overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm">
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-emerald-50 via-background to-teal-50 dark:from-emerald-950/30 dark:via-background dark:to-teal-950/20" />
-      <div className="relative px-6 pt-6">
-        <div className="flex items-start justify-between gap-4">
+      <div className="relative px-4 pt-4 sm:px-6 sm:pt-6">
+        <div className="flex items-start justify-between gap-3 sm:gap-4">
           <div className="min-w-0">
-            <div className="h-5 w-24 animate-pulse rounded-md bg-accent" />
-            <div className="mt-2 h-4 w-32 animate-pulse rounded-md bg-accent" />
+            <div className="h-4 w-20 animate-pulse rounded-md bg-accent sm:h-5 sm:w-24" />
+            <div className="mt-2 h-3 w-28 animate-pulse rounded-md bg-accent sm:h-4 sm:w-32" />
           </div>
-          <div className="h-9 w-9 animate-pulse rounded-md bg-accent" />
+          <div className="h-8 w-8 animate-pulse rounded-md bg-accent sm:h-9 sm:w-9" />
         </div>
       </div>
-      <div className="relative space-y-3 px-6 pb-6 pt-4">
+      <div className="relative space-y-2 px-4 pb-4 pt-3 sm:space-y-3 sm:px-6 sm:pb-6 sm:pt-4">
         <div className="h-10 w-full animate-pulse rounded-lg bg-accent" />
         <div className="h-10 w-full animate-pulse rounded-lg bg-accent" />
-        <div className="h-10 w-full animate-pulse rounded-lg bg-accent" />
+        <div className="hidden h-10 w-full animate-pulse rounded-lg bg-accent sm:block" />
       </div>
     </div>
   );
@@ -43,7 +43,7 @@ type TodoCardClientProps = {
 export default function TodoCard({ initialTodos }: TodoCardClientProps = {}) {
   const { data: session } = authClient.useSession();
   const userId = session?.user?.id;
-  
+
   const {
     todos,
     setTodos,
@@ -123,27 +123,33 @@ export default function TodoCard({ initialTodos }: TodoCardClientProps = {}) {
     <div className="relative w-full  overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm">
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-emerald-50 via-background to-teal-50 dark:from-emerald-950/30 dark:via-background dark:to-teal-950/20" />
 
-      <div className="relative px-6 pt-6">
-        <div className="flex items-start justify-between gap-4">
+      <div className="relative px-4 pt-4 sm:px-6 sm:pt-6">
+        <div className="flex items-start justify-between gap-3 sm:gap-4">
           <div className="min-w-0">
-            <div className="truncate text-base font-semibold leading-none">Tasks</div>
-            <div className="mt-1 text-sm text-muted-foreground">
+            <div className="truncate text-sm font-semibold leading-none sm:text-base">
+              Tasks
+            </div>
+            <div className="mt-1 text-xs text-muted-foreground sm:text-sm">
               {isLoggedIn
                 ? pendingCount === 0
                   ? "All done!"
-                  : `${pendingCount} task${pendingCount === 1 ? "" : "s"} remaining`
+                  : `${pendingCount} task${
+                      pendingCount === 1 ? "" : "s"
+                    } remaining`
                 : "Sign in to use"}
             </div>
           </div>
-          <div className="flex h-9 w-9 items-center justify-center rounded-md border bg-background/60 shadow-sm backdrop-blur">
-            <CheckSquare className="h-5 w-5 text-muted-foreground" />
+          <div className="flex h-8 w-8 items-center justify-center rounded-md border bg-background/60 shadow-sm backdrop-blur sm:h-9 sm:w-9">
+            <CheckSquare className="h-4 w-4 text-muted-foreground sm:h-5 sm:w-5" />
           </div>
         </div>
       </div>
 
-      <div className="relative px-6 pb-6 pt-4">
+      <div className="relative px-4 pb-4 pt-3 sm:px-6 sm:pb-6 sm:pt-4">
         {!isLoggedIn ? (
-          <div className="text-sm text-muted-foreground">Log in to manage your tasks.</div>
+          <div className="text-sm text-muted-foreground">
+            Log in to manage your tasks.
+          </div>
         ) : (
           <>
             {/* Add new todo */}
@@ -180,7 +186,10 @@ export default function TodoCard({ initialTodos }: TodoCardClientProps = {}) {
                   ))}
                 </select>
 
-                <UserSearchPicker value={newAssignee} onChange={setNewAssignee} />
+                <UserSearchPicker
+                  value={newAssignee}
+                  onChange={setNewAssignee}
+                />
 
                 <div className="flex justify-end gap-2">
                   <button
@@ -226,14 +235,20 @@ export default function TodoCard({ initialTodos }: TodoCardClientProps = {}) {
                       isExpanded={isExpanded}
                       onToggle={() => toggleComplete(todo.id, true)}
                       onDelete={() => deleteTodo(todo.id)}
-                      onExpand={() => setExpandedId(isExpanded ? null : todo.id)}
+                      onExpand={() =>
+                        setExpandedId(isExpanded ? null : todo.id)
+                      }
                     >
                       {/* Expanded edit form for owners */}
                       {isOwner ? (
                         <ExpandedEditForm
                           todo={todo}
-                          onUpdateTitle={(title) => handleUpdateTodo(todo.id, { title })}
-                          onUpdateDetails={(details) => handleUpdateTodo(todo.id, { details })}
+                          onUpdateTitle={(title) =>
+                            handleUpdateTodo(todo.id, { title })
+                          }
+                          onUpdateDetails={(details) =>
+                            handleUpdateTodo(todo.id, { details })
+                          }
                           onUpdateRecurring={(recurring) =>
                             handleUpdateTodo(todo.id, { recurring })
                           }
@@ -296,7 +311,9 @@ export default function TodoCard({ initialTodos }: TodoCardClientProps = {}) {
                 )}
               </div>
             ) : (
-              <div className="text-sm text-muted-foreground">No tasks yet. Add one above!</div>
+              <div className="text-sm text-muted-foreground">
+                No tasks yet. Add one above!
+              </div>
             )}
           </>
         )}
