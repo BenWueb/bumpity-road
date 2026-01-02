@@ -11,7 +11,6 @@ function okJson(data: unknown) {
 
 describe("useTodos", () => {
   beforeEach(() => {
-    // @ts-expect-error - override global fetch for tests
     global.fetch = jest.fn();
   });
 

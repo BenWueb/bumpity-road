@@ -5,7 +5,9 @@ import Image from "next/image";
 import { useMemo, useState } from "react";
 import {
   Calendar,
+  Compass,
   Hammer,
+  Home,
   ImagePlus,
   MapPin,
   Pencil,
@@ -13,6 +15,7 @@ import {
   RefreshCw,
   X,
 } from "lucide-react";
+import { InfoCard } from "@/components/ui/InfoCard";
 
 type AboutData = {
   title: string;
@@ -109,7 +112,7 @@ export default function AboutContent({ initialAbout, canEdit }: Props) {
 
   return (
     <article className="relative min-w-0 flex-1 overflow-hidden rounded-xl border bg-card shadow-sm">
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-slate-50 via-background to-gray-50 dark:from-slate-950/20 dark:via-background dark:to-gray-950/10" />
+      <div className="pointer-events-none absolute inset-0 bg-linear-to-br from-slate-50 via-background to-gray-50 dark:from-slate-950/20 dark:via-background dark:to-gray-950/10" />
 
       <div className="relative">
         {/* Hero */}
@@ -122,7 +125,7 @@ export default function AboutContent({ initialAbout, canEdit }: Props) {
               className="object-cover"
               priority
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/20 to-transparent" />
+            <div className="absolute inset-0 bg-linear-to-t from-black/65 via-black/20 to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 lg:p-8">
               <div className="mb-2 flex items-center justify-between gap-3">
                 {editButton}
@@ -155,44 +158,53 @@ export default function AboutContent({ initialAbout, canEdit }: Props) {
         {/* Info cards (hardcoded) */}
         <div className="mt-6 px-4 pb-2 sm:px-6 sm:pb-3 md:px-8 md:pb-4">
           <div className="grid gap-3 sm:grid-cols-3">
-            <div className="rounded-xl border bg-background/70 p-4 shadow-sm">
-              <div className="flex flex-col justify-center mt-3 space-y-2 text-sm text-muted-foreground">
+            <InfoCard
+              title="What is Bumpity Road?"
+              icon={
+                <Home className="h-7 w-7 shrink-0 text-amber-600 dark:text-amber-400" />
+              }
+              className="bg-background/40"
+            >
+              A place to consolidate and share our thoughts, projects,
+              experiences and ideas.
+            </InfoCard>
+            <InfoCard
+              title="At a glance"
+              icon={
+                <MapPin className="h-7 w-7 shrink-0 text-emerald-600 dark:text-emerald-400" />
+              }
+              className="bg-background/70"
+            >
+              <div className="grid gap-2 sm:grid-cols-2">
                 <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                  <MapPin className="h-5 w-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
                   <span className="truncate">{ABOUT_LOCATION.address}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Phone className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                  <Phone className="h-5 w-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
                   <span>{ABOUT_LOCATION.phone}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Hammer className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                  <Hammer className="h-5 w-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
                   <span>Built in {ABOUT_LOCATION.builtIn}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <RefreshCw className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                  <RefreshCw className="h-5 w-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
                   <span>Rebuilt in {ABOUT_LOCATION.rebuiltIn}</span>
                 </div>
               </div>
-            </div>
+            </InfoCard>
 
-            <div className="rounded-xl border bg-background/40 p-4 shadow-sm">
-              <div className="text-sm font-semibold text-muted-foreground">
-                Coming soon
-              </div>
-              <div className="mt-2 text-sm text-muted-foreground">
-                (placeholder)
-              </div>
-            </div>
-
-            <div className="rounded-xl border bg-background/40 p-4 shadow-sm">
-              <div className="text-sm font-semibold text-muted-foreground">
-                Coming soon
-              </div>
-              <div className="mt-2 text-sm text-muted-foreground">
-                (placeholder)
-              </div>
-            </div>
+            <InfoCard
+              title="What you’ll find here"
+              icon={
+                <Compass className="h-7 w-7 shrink-0 text-indigo-600 dark:text-indigo-400" />
+              }
+              className="bg-background/40"
+            >
+              Adventures, photos, wildlife sightings, and puzzles...lots of
+              puzzles.
+            </InfoCard>
           </div>
         </div>
 
