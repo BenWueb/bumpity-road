@@ -596,7 +596,14 @@ export function AccountContent({
 
             {initialTodos.length === 0 ? (
               <div className="px-4 py-6 text-center text-sm text-muted-foreground md:px-6 md:py-8 md:text-base">
-                No tasks yet. Create one from the home page or tasks page!
+                <ListTodo className="mx-auto mb-2 h-6 w-6 opacity-50 md:h-8 md:w-8" />
+                <p>No tasks yet.</p>
+                <Link
+                  href="/todos"
+                  className="mt-3 inline-flex items-center justify-center rounded-lg border bg-background px-3 py-1.5 text-xs font-medium text-foreground shadow-sm transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:text-sm"
+                >
+                  Go to Tasks
+                </Link>
               </div>
             ) : (
               <div className="divide-y">
@@ -722,9 +729,9 @@ export function AccountContent({
                   <p>No blog posts yet.</p>
                   <Link
                     href="/blog"
-                    className="mt-2 inline-block text-xs text-primary hover:underline md:text-sm"
+                    className="mt-3 inline-flex items-center justify-center rounded-lg border bg-background px-3 py-1.5 text-xs font-medium text-foreground shadow-sm transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:text-sm"
                   >
-                    Write your first post →
+                    Write your first post
                   </Link>
                 </div>
               ) : (
@@ -802,9 +809,9 @@ export function AccountContent({
                   <p>No adventures yet.</p>
                   <Link
                     href="/adventures"
-                    className="mt-2 inline-block text-xs text-primary hover:underline md:text-sm"
+                    className="mt-3 inline-flex items-center justify-center rounded-lg border bg-background px-3 py-1.5 text-xs font-medium text-foreground shadow-sm transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:text-sm"
                   >
-                    Create your first adventure →
+                    Create your first adventure
                   </Link>
                 </div>
               ) : (
@@ -872,9 +879,9 @@ export function AccountContent({
                   <p>No photos uploaded yet.</p>
                   <Link
                     href="/gallery"
-                    className="mt-2 inline-block text-xs text-primary hover:underline md:text-sm"
+                    className="mt-3 inline-flex items-center justify-center rounded-lg border bg-background px-3 py-1.5 text-xs font-medium text-foreground shadow-sm transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:text-sm"
                   >
-                    Upload your first photo →
+                    Upload your first photo
                   </Link>
                 </div>
               ) : (

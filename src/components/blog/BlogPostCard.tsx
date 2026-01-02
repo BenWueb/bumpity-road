@@ -47,7 +47,9 @@ export function BlogPostCard({ post, isOwner, onEdit, onDelete }: Props) {
           {wasEdited(post) && (
             <>
               <span>•</span>
-              <span className="italic">edited {formatDate(post.updatedAt)}</span>
+              <span className="italic">
+                edited {formatDate(post.updatedAt)}
+              </span>
             </>
           )}
           {post._count.comments > 0 && (
@@ -67,14 +69,16 @@ export function BlogPostCard({ post, isOwner, onEdit, onDelete }: Props) {
           </h2>
         </Link>
 
-        <p className="line-clamp-4 text-sm text-muted-foreground">{post.content}</p>
+        <p className="line-clamp-4 text-sm text-muted-foreground">
+          {post.content}
+        </p>
 
         <div className="mt-3 flex items-center justify-between">
           <Link
             href={`/blog/${post.slug}`}
-            className="text-sm font-medium text-primary hover:underline"
+            className="inline-flex items-center justify-center rounded-lg border bg-background px-3 py-1.5 text-sm font-medium text-foreground shadow-sm transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            Read more →
+            Read more
           </Link>
 
           {isOwner && (
@@ -100,4 +104,3 @@ export function BlogPostCard({ post, isOwner, onEdit, onDelete }: Props) {
     </article>
   );
 }
-
