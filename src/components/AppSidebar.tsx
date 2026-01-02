@@ -170,7 +170,7 @@ export default function AppSidebar() {
             </button>
           </div>
 
-          <nav className="flex-1 overflow-y-auto px-2 py-3">
+          <nav className="flex-1 overflow-y-auto overflow-x-hidden px-2 py-3">
             <ul className="space-y-1">
               {items.map((item) => {
                 const active = isActivePath(pathname, item.href);
@@ -191,14 +191,14 @@ export default function AppSidebar() {
                         }
                       }}
                       className={[
-                        "group flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
+                        "group flex w-full min-w-0 items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
                         isAdventures
                           ? active
                             ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
                             : "text-emerald-700 hover:bg-emerald-500/10 hover:text-emerald-800 dark:text-emerald-300 dark:hover:text-emerald-200"
                           : active
-                            ? "bg-accent text-foreground"
-                            : "text-muted-foreground hover:bg-accent hover:text-foreground",
+                          ? "bg-accent text-foreground"
+                          : "text-muted-foreground hover:bg-accent hover:text-foreground",
                       ].join(" ")}
                       title={collapsed ? item.label : undefined}
                     >
@@ -206,14 +206,14 @@ export default function AppSidebar() {
                       {/* Mobile: always show. Desktop: hide when collapsed */}
                       <span
                         className={[
-                          "truncate font-medium",
+                          "min-w-0 truncate font-medium",
                           collapsed ? "md:hidden" : "",
                         ].join(" ")}
                       >
                         {item.label}
                       </span>
                       {isAdventures && showLabel && (
-                        <span className="ml-auto rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-300">
+                        <span className="ml-auto shrink-0 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-300">
                           NEW
                         </span>
                       )}

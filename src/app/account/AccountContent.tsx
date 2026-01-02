@@ -19,6 +19,7 @@ import {
   MessageCircle,
   MessageSquarePlus,
   NotebookPen,
+  TentTree,
   Trash2,
   User,
   UserCheck,
@@ -47,6 +48,17 @@ type PostData = {
   commentCount: number;
 };
 
+type AdventureData = {
+  id: string;
+  title: string;
+  address: string;
+  category: string;
+  seasons: string[];
+  season: string | null;
+  headerImage: string;
+  createdAt: string;
+};
+
 type GalleryImageData = {
   id: string;
   publicId: string;
@@ -71,6 +83,7 @@ type Props = {
   user: UserData;
   todos: Todo[];
   posts: PostData[];
+  adventures: AdventureData[];
   galleryImages: GalleryImageData[];
   feedback: FeedbackData[];
   newMembershipBadges?: string[];
@@ -324,6 +337,7 @@ export function AccountContent({
   user,
   todos: initialTodos,
   posts,
+  adventures,
   galleryImages,
   feedback: initialFeedback,
   newMembershipBadges,
@@ -412,7 +426,7 @@ export function AccountContent({
 
   return (
     <div className="p-4 md:p-8">
-      <div className="max-w-4xl space-y-6 md:space-y-8">
+      <div className="mx-auto max-w-4xl space-y-6 md:space-y-8">
         {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
@@ -472,7 +486,7 @@ export function AccountContent({
           <div className="relative overflow-hidden rounded-xl border bg-card shadow-sm">
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-violet-50 via-background to-purple-50 dark:from-violet-950/30 dark:via-background dark:to-purple-950/20" />
             <div className="relative p-4 md:p-6">
-              <div className="flex items-start gap-3 md:gap-4">
+              <div className="flex items-center gap-3  md:gap-4">
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-2 bg-gradient-to-br from-violet-100 to-purple-100 text-lg font-bold text-violet-600 dark:from-violet-900/50 dark:to-purple-900/50 dark:text-violet-300 md:h-16 md:w-16 md:text-2xl">
                   {user.name?.[0]?.toUpperCase() ?? "U"}
                 </div>
@@ -505,7 +519,7 @@ export function AccountContent({
                   Activity Overview
                 </h3>
               </div>
-              <div className="mt-3 grid grid-cols-2 gap-3 md:mt-4 md:gap-4">
+              <div className="mt-3 grid grid-cols-3 gap-3  md:mt-4 md:gap-4">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-violet-600 dark:text-violet-400 md:text-3xl">
                     {posts.length}
@@ -513,6 +527,15 @@ export function AccountContent({
                   <div className="mt-0.5 flex items-center justify-center gap-1 text-[10px] text-muted-foreground md:mt-1 md:text-xs">
                     <NotebookPen className="h-3 w-3" />
                     Blog Posts
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 md:text-3xl">
+                    {adventures.length}
+                  </div>
+                  <div className="mt-0.5 flex items-center justify-center gap-1 text-[10px] text-muted-foreground md:mt-1 md:text-xs">
+                    <TentTree className="h-3 w-3" />
+                    Adventures
                   </div>
                 </div>
                 <div className="text-center">
@@ -750,6 +773,76 @@ export function AccountContent({
                   className="block px-4 py-2.5 text-center text-xs text-primary hover:underline md:px-6 md:py-3 md:text-sm"
                 >
                   View all {posts.length} posts →
+                </Link>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Adventures */}
+        <div className="relative overflow-hidden rounded-xl border bg-card shadow-sm">
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-emerald-50 via-background to-teal-50 dark:from-emerald-950/30 dark:via-background dark:to-teal-950/20" />
+          <div className="relative">
+            <div className="flex items-center justify-between border-b px-4 py-3 md:px-6 md:py-4">
+              <div className="flex items-center gap-2">
+                <TentTree className="h-4 w-4 text-muted-foreground md:h-5 md:w-5" />
+                <h3 className="text-sm font-semibold md:text-base">
+                  Your Adventures
+                </h3>
+              </div>
+              <span className="text-xs text-muted-foreground md:text-sm">
+                {adventures.length} adventure
+                {adventures.length !== 1 ? "s" : ""}
+              </span>
+            </div>
+            <div className="divide-y">
+              {adventures.length === 0 ? (
+                <div className="px-4 py-6 text-center text-sm text-muted-foreground md:px-6 md:py-8 md:text-base">
+                  <TentTree className="mx-auto mb-2 h-6 w-6 opacity-50 md:h-8 md:w-8" />
+                  <p>No adventures yet.</p>
+                  <Link
+                    href="/adventures"
+                    className="mt-2 inline-block text-xs text-primary hover:underline md:text-sm"
+                  >
+                    Create your first adventure →
+                  </Link>
+                </div>
+              ) : (
+                adventures.slice(0, 5).map((a) => (
+                  <Link
+                    key={a.id}
+                    href={`/adventures/${a.id}`}
+                    className="flex items-center gap-3 px-4 py-2.5 transition-colors hover:bg-accent/50 md:gap-4 md:px-6 md:py-3"
+                  >
+                    {/* Thumbnail */}
+                    <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-accent md:h-12 md:w-12">
+                      <img
+                        src={a.headerImage}
+                        alt={a.title}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-xs font-medium md:text-sm">
+                        {a.title}
+                      </div>
+                      <div className="mt-0.5 flex items-center gap-2 text-[10px] text-muted-foreground md:gap-3 md:text-xs">
+                        <span className="truncate">{a.address}</span>
+                        <span className="hidden sm:inline">•</span>
+                        <span className="shrink-0">
+                          {new Date(a.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
+                ))
+              )}
+              {adventures.length > 5 && (
+                <Link
+                  href="/adventures"
+                  className="block px-4 py-2.5 text-center text-xs text-primary hover:underline md:px-6 md:py-3 md:text-sm"
+                >
+                  View all {adventures.length} adventures →
                 </Link>
               )}
             </div>

@@ -58,11 +58,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${poppins.className} antialiased`}>
+      <body className={`${poppins.className} antialiased h-dvh overflow-hidden`}>
         <GoogleAnalytics />
-        <div className="flex min-h-screen w-full">
+        <div className="flex h-dvh w-full overflow-hidden">
           <AppSidebar />
-          <main className="w-full">{children}</main>
+          <main className="min-w-0 flex-1 overflow-y-auto">{children}</main>
         </div>
         <BadgeClaimHandler />
       </body>

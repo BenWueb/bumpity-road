@@ -45,8 +45,8 @@ async function getAccountData() {
     updatedBadges = [...user.badges, ...newMembershipBadges];
   }
 
-  // Fetch todos, posts, and gallery images in parallel
-  const [todos, posts, galleryImages] = await Promise.all([
+  // Fetch todos, posts, adventures, and gallery images in parallel
+  const [todos, posts, adventures, galleryImages] = await Promise.all([
     prisma.todo.findMany({
       where: {
         OR: [{ userId: session.user.id }, { assignedToId: session.user.id }],
@@ -68,6 +68,20 @@ async function getAccountData() {
         createdAt: true,
         images: { take: 1, select: { url: true, publicId: true } },
         _count: { select: { comments: true } },
+      },
+    }),
+    prisma.adventure.findMany({
+      where: { userId: session.user.id },
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        title: true,
+        address: true,
+        category: true,
+        seasons: true,
+        season: true,
+        headerImage: true,
+        createdAt: true,
       },
     }),
     prisma.galleryImage.findMany({
@@ -108,6 +122,17 @@ async function getAccountData() {
     createdAt: p.createdAt.toISOString(),
     thumbnail: p.images[0]?.url ?? null,
     commentCount: p._count.comments,
+  }));
+
+  const formattedAdventures = adventures.map((a) => ({
+    id: a.id,
+    title: a.title,
+    address: a.address,
+    category: a.category,
+    seasons: a.seasons,
+    season: a.season ?? null,
+    headerImage: a.headerImage,
+    createdAt: a.createdAt.toISOString(),
   }));
 
   const formattedGalleryImages = galleryImages.map((img) => ({
@@ -158,6 +183,7 @@ async function getAccountData() {
     },
     todos: formattedTodos,
     posts: formattedPosts,
+    adventures: formattedAdventures,
     galleryImages: formattedGalleryImages,
     feedback: formattedFeedback,
     newMembershipBadges,
@@ -167,7 +193,7 @@ async function getAccountData() {
 function AccountSkeleton() {
   return (
     <div className="p-8">
-      <div className="max-w-4xl space-y-8">
+      <div className="mx-auto max-w-4xl space-y-8">
         <div className="space-y-2">
           <div className="h-8 w-48 animate-pulse rounded-md bg-accent" />
           <div className="h-4 w-32 animate-pulse rounded-md bg-accent" />
@@ -189,6 +215,7 @@ async function AccountData() {
       user={data.user}
       todos={data.todos}
       posts={data.posts}
+      adventures={data.adventures}
       galleryImages={data.galleryImages}
       feedback={data.feedback}
       newMembershipBadges={data.newMembershipBadges}
