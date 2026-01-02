@@ -121,7 +121,7 @@ export default function AppSidebar() {
         type="button"
         onClick={() => setCollapsed(false)}
         className={[
-          "fixed left-2 top-2 z-40 inline-flex h-10 w-10 items-center justify-center rounded-md border bg-background text-foreground shadow-md transition-opacity md:hidden",
+          "fixed bottom-4 right-4 z-40 inline-flex h-12 w-12 items-center justify-center rounded-full border bg-background text-foreground shadow-lg transition-opacity md:hidden",
           collapsed ? "opacity-100" : "pointer-events-none opacity-0",
         ].join(" ")}
         aria-label="Open menu"
@@ -140,10 +140,10 @@ export default function AppSidebar() {
       {/* Sidebar */}
       <aside
         className={[
-          // Mobile: fixed overlay with dynamic viewport height for mobile browsers
-          "fixed left-0 top-0 z-50 h-dvh max-h-dvh border-r bg-background transition-transform duration-200 md:relative md:z-auto md:h-screen md:max-h-screen md:translate-x-0 md:transition-[width]",
-          // Mobile: slide in/out
-          collapsed ? "-translate-x-full md:translate-x-0" : "translate-x-0",
+          // Mobile: fixed overlay on right, Desktop: relative on left
+          "fixed right-0 top-0 z-50 h-dvh max-h-dvh border-l bg-background transition-transform duration-200 md:relative md:left-0 md:right-auto md:z-auto md:h-screen md:max-h-screen md:translate-x-0 md:border-l-0 md:border-r md:transition-[width]",
+          // Mobile: slide in/out from right
+          collapsed ? "translate-x-full md:translate-x-0" : "translate-x-0",
           // Width
           collapsed ? "w-56 md:w-16" : "w-56 md:w-60",
         ].join(" ")}

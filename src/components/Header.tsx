@@ -30,8 +30,8 @@ const Header = async () => {
       <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-black/60" />
 
       {/* Content */}
-      <div className="relative flex h-32 items-center justify-center px-4 sm:h-40 sm:px-6 md:h-56 lg:h-80">
-        <h1 className="text-center text-2xl font-bold tracking-wider text-white drop-shadow-lg sm:text-4xl md:text-5xl lg:text-7xl xl:text-[100px]">
+      <div className="relative flex h-48 items-center justify-center px-4 sm:h-56 sm:px-6 md:h-64 lg:h-80">
+        <h1 className="text-center text-4xl font-bold tracking-wider text-white drop-shadow-lg  md:text-5xl lg:text-7xl xl:text-[100px]">
           Bumpity Road
         </h1>
       </div>
