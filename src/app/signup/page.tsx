@@ -2,17 +2,40 @@
 
 import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Award } from "lucide-react";
 
 type Provider = "google" | "apple" | "facebook" | "twitter";
+
+// The secret question for the OG badge - hardcoded here
+const OG_QUESTION =
+  "What are you supposed to yell when turning off of Cty Rd 5?";
 
 export default function SignUpPage() {
   const [loading, setLoading] = useState<Provider | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [secretAnswer, setSecretAnswer] = useState("");
+  const [showSecretField, setShowSecretField] = useState(false);
+
+  // Load any previously stored answer
+  useEffect(() => {
+    const stored = localStorage.getItem("pendingBadgeAnswer");
+    if (stored) {
+      setSecretAnswer(stored);
+      setShowSecretField(true);
+    }
+  }, []);
 
   async function handleSignIn(provider: Provider) {
     setError(null);
     setLoading(provider);
+
+    // Store the answer in localStorage before redirect (if provided)
+    if (secretAnswer.trim()) {
+      localStorage.setItem("pendingBadgeAnswer", secretAnswer.trim());
+    } else {
+      localStorage.removeItem("pendingBadgeAnswer");
+    }
 
     try {
       await authClient.signIn.social({
@@ -32,10 +55,41 @@ export default function SignUpPage() {
   return (
     <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-8 md:px-6 md:py-10">
       <div className="w-full max-w-sm rounded-xl border bg-card p-4 shadow-sm md:p-6">
-        <h1 className="text-lg font-semibold md:text-xl">Create your account</h1>
+        <h1 className="text-lg font-semibold md:text-xl">
+          Create your account
+        </h1>
         <p className="mt-1 text-xs text-muted-foreground md:text-sm">
           Get started with Bumpity Road
         </p>
+
+        {/* Secret Question Section */}
+        <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950/30">
+          <button
+            type="button"
+            onClick={() => setShowSecretField(!showSecretField)}
+            className="flex w-full items-center gap-2 text-left text-sm font-medium text-amber-800 dark:text-amber-200"
+          >
+            <Award className="h-4 w-4" />
+            <span>Earn the OG Badge (optional)</span>
+            <span className="ml-auto text-xs text-amber-600 dark:text-amber-400">
+              {showSecretField ? "▲" : "▼"}
+            </span>
+          </button>
+          {showSecretField && (
+            <div className="mt-3">
+              <label className="block text-xs text-amber-700 dark:text-amber-300">
+                {OG_QUESTION}
+              </label>
+              <input
+                type="text"
+                value={secretAnswer}
+                onChange={(e) => setSecretAnswer(e.target.value)}
+                placeholder="Your answer..."
+                className="mt-1 w-full rounded-md border border-amber-300 bg-white px-3 py-2 text-sm placeholder:text-amber-400 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 dark:border-amber-700 dark:bg-amber-900/30 dark:placeholder:text-amber-600"
+              />
+            </div>
+          )}
+        </div>
 
         <div className="mt-4 space-y-3 md:mt-6">
           {error && (

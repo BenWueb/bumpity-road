@@ -1,4 +1,5 @@
 import { auth } from "@/utils/auth";
+import { awardGuestbookBadge } from "@/utils/badges";
 import { prisma } from "@/utils/prisma";
 import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
@@ -75,8 +76,22 @@ export async function POST(req: NextRequest) {
     },
   });
 
+  // Check if user is logged in and award guestbook badge
+  let badgeAwarded = false;
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+      asResponse: false,
+    });
+    if (session?.user?.id) {
+      badgeAwarded = await awardGuestbookBadge(session.user.id);
+    }
+  } catch {
+    // Not logged in, that's fine - no badge
+  }
+
   // Return the token so the client can store it
-  return NextResponse.json({ entry, ownerToken });
+  return NextResponse.json({ entry, ownerToken, badgeAwarded });
 }
 
 export async function PATCH(req: NextRequest) {

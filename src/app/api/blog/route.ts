@@ -1,6 +1,7 @@
 import { auth } from "@/utils/auth";
-import { prisma } from "@/utils/prisma";
+import { checkAndAwardBlogBadges } from "@/utils/badges";
 import { deleteCloudinaryImages } from "@/utils/cloudinary";
+import { prisma } from "@/utils/prisma";
 import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
@@ -86,8 +87,11 @@ export async function POST(req: NextRequest) {
     },
   });
 
+  // Check and award blog badges
+  const newBadges = await checkAndAwardBlogBadges(session.user.id);
+
   revalidatePath("/blog");
-  return NextResponse.json({ post });
+  return NextResponse.json({ post, newBadges });
 }
 
 export async function PATCH(req: NextRequest) {

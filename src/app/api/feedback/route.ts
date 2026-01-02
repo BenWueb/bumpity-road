@@ -1,4 +1,5 @@
 import { auth } from "@/utils/auth";
+import { checkAndAwardFeedbackBadges } from "@/utils/badges";
 import { prisma } from "@/utils/prisma";
 import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
@@ -76,7 +77,13 @@ export async function POST(req: NextRequest) {
     },
   });
 
-  return NextResponse.json({ feedback });
+  // Check and award feedback badges if user is logged in
+  let newBadges: string[] = [];
+  if (userId) {
+    newBadges = await checkAndAwardFeedbackBadges(userId);
+  }
+
+  return NextResponse.json({ feedback, newBadges });
 }
 
 export async function PATCH(req: NextRequest) {

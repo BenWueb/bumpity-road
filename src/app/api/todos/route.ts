@@ -1,4 +1,5 @@
 import { auth } from "@/utils/auth";
+import { checkAndAwardTaskBadges } from "@/utils/badges";
 import { prisma } from "@/utils/prisma";
 import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
@@ -149,10 +150,16 @@ export async function PATCH(req: NextRequest) {
     },
   });
 
+  // Check and award task completion badges if task was just completed
+  let newBadges: string[] = [];
+  if (isBeingCompleted) {
+    newBadges = await checkAndAwardTaskBadges(session.user.id);
+  }
+
   // Revalidate cache
   revalidateTodosCache();
 
-  return NextResponse.json({ todo });
+  return NextResponse.json({ todo, newBadges });
 }
 
 export async function DELETE(req: NextRequest) {

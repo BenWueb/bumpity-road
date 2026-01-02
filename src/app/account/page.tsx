@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { auth } from "@/utils/auth";
+import { checkAndAwardMembershipBadges } from "@/utils/badges";
 import { prisma } from "@/utils/prisma";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
@@ -26,12 +27,22 @@ async function getAccountData() {
       email: true,
       image: true,
       isBugAdmin: true,
+      badges: true,
       createdAt: true,
     },
   });
 
   if (!user) {
     redirect("/login");
+  }
+
+  // Check and award membership duration badges
+  const newMembershipBadges = await checkAndAwardMembershipBadges(session.user.id);
+  
+  // If new badges were awarded, refresh user data to include them
+  let updatedBadges = user.badges;
+  if (newMembershipBadges.length > 0) {
+    updatedBadges = [...user.badges, ...newMembershipBadges];
   }
 
   // Fetch todos, posts, and gallery images in parallel
@@ -142,12 +153,14 @@ async function getAccountData() {
   return {
     user: {
       ...user,
+      badges: updatedBadges,
       createdAt: user.createdAt.toISOString(),
     },
     todos: formattedTodos,
     posts: formattedPosts,
     galleryImages: formattedGalleryImages,
     feedback: formattedFeedback,
+    newMembershipBadges,
   };
 }
 
@@ -178,6 +191,7 @@ async function AccountData() {
       posts={data.posts}
       galleryImages={data.galleryImages}
       feedback={data.feedback}
+      newMembershipBadges={data.newMembershipBadges}
     />
   );
 }

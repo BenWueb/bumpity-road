@@ -26,7 +26,7 @@ import {
 import { CldImage } from "next-cloudinary";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type UserData = {
   id: string;
@@ -34,6 +34,7 @@ type UserData = {
   email: string;
   image: string | null;
   isBugAdmin: boolean;
+  badges?: string[] | null;
   createdAt: string;
 };
 
@@ -72,7 +73,247 @@ type Props = {
   posts: PostData[];
   galleryImages: GalleryImageData[];
   feedback: FeedbackData[];
+  newMembershipBadges?: string[];
 };
+
+// Badge display info
+const BADGE_INFO: Record<
+  string,
+  { name: string; description: string; icon: string }
+> = {
+  OG: {
+    name: "OG",
+    description: "One of the originals - you've been here awhile!",
+    icon: "⭐",
+  },
+  TASK_ROOKIE: {
+    name: "Task Rookie",
+    description: "Completed 5 tasks",
+    icon: "🌱",
+  },
+  TASK_WARRIOR: {
+    name: "Task Warrior",
+    description: "Completed 10 tasks",
+    icon: "⚔️",
+  },
+  TASK_MASTER: {
+    name: "Task Master",
+    description: "Completed 20 tasks",
+    icon: "🏆",
+  },
+  TASK_LEGEND: {
+    name: "Task Legend",
+    description: "Completed 100 tasks",
+    icon: "👑",
+  },
+  GUESTBOOK_SIGNER: {
+    name: "Left a Mark",
+    description: "Signed the guestbook",
+    icon: "✍️",
+  },
+  BLOGGER_FIRST: {
+    name: "First Post",
+    description: "Published your first blog post",
+    icon: "📝",
+  },
+  BLOGGER_CONTRIBUTOR: {
+    name: "Contributor",
+    description: "Published 3 blog posts",
+    icon: "📰",
+  },
+  BLOGGER_WRITER: {
+    name: "Writer",
+    description: "Published 5 blog posts",
+    icon: "✒️",
+  },
+  BLOGGER_AUTHOR: {
+    name: "Author",
+    description: "Published 10 blog posts",
+    icon: "📚",
+  },
+  FEEDBACK_FIRST: {
+    name: "Helper",
+    description: "Submitted your first feedback",
+    icon: "💡",
+  },
+  FEEDBACK_CONTRIBUTOR: {
+    name: "Bug Hunter",
+    description: "Submitted 3 feedback reports",
+    icon: "🔍",
+  },
+  FEEDBACK_ADVOCATE: {
+    name: "Advocate",
+    description: "Submitted 5 feedback reports",
+    icon: "📣",
+  },
+  FEEDBACK_CHAMPION: {
+    name: "Champion",
+    description: "Submitted 10 feedback reports",
+    icon: "🦸",
+  },
+  MEMBER_1_YEAR: {
+    name: "1 Year",
+    description: "Member for 1 year",
+    icon: "🎂",
+  },
+  MEMBER_2_YEARS: {
+    name: "2 Years",
+    description: "Member for 2 years",
+    icon: "🎉",
+  },
+  MEMBER_3_YEARS: {
+    name: "3 Years",
+    description: "Member for 3 years",
+    icon: "🌟",
+  },
+  MEMBER_5_YEARS: {
+    name: "5 Years",
+    description: "Member for 5 years",
+    icon: "💎",
+  },
+  MEMBER_10_YEARS: {
+    name: "10 Years",
+    description: "Member for 10 years",
+    icon: "🏛️",
+  },
+};
+
+// Task badges in order from lowest to highest
+const TASK_BADGE_HIERARCHY = [
+  "TASK_ROOKIE",
+  "TASK_WARRIOR",
+  "TASK_MASTER",
+  "TASK_LEGEND",
+];
+
+// Blog badges in order from lowest to highest
+const BLOG_BADGE_HIERARCHY = [
+  "BLOGGER_FIRST",
+  "BLOGGER_CONTRIBUTOR",
+  "BLOGGER_WRITER",
+  "BLOGGER_AUTHOR",
+];
+
+// Feedback badges in order from lowest to highest
+const FEEDBACK_BADGE_HIERARCHY = [
+  "FEEDBACK_FIRST",
+  "FEEDBACK_CONTRIBUTOR",
+  "FEEDBACK_ADVOCATE",
+  "FEEDBACK_CHAMPION",
+];
+
+// Membership badges in order from lowest to highest
+const MEMBERSHIP_BADGE_HIERARCHY = [
+  "MEMBER_1_YEAR",
+  "MEMBER_2_YEARS",
+  "MEMBER_3_YEARS",
+  "MEMBER_5_YEARS",
+  "MEMBER_10_YEARS",
+];
+
+// Non-hierarchical badges (always show if earned or as placeholder)
+const STANDALONE_BADGES = ["OG", "GUESTBOOK_SIGNER"];
+
+// Get all badges to display with earned status
+function getBadgesForDisplay(
+  earnedBadges: string[]
+): { badge: string; earned: boolean }[] {
+  const result: { badge: string; earned: boolean }[] = [];
+  const earnedSet = new Set(earnedBadges);
+
+  // Add standalone badges
+  for (const badge of STANDALONE_BADGES) {
+    result.push({ badge, earned: earnedSet.has(badge) });
+  }
+
+  // Add task badges - show highest earned OR next to earn
+  let highestTaskIndex = -1;
+  for (const badge of TASK_BADGE_HIERARCHY) {
+    if (earnedSet.has(badge)) {
+      highestTaskIndex = TASK_BADGE_HIERARCHY.indexOf(badge);
+    }
+  }
+  // Show highest earned task badge
+  if (highestTaskIndex >= 0) {
+    result.push({
+      badge: TASK_BADGE_HIERARCHY[highestTaskIndex],
+      earned: true,
+    });
+  }
+  // Show next task badge to earn (if any)
+  const nextTaskIndex = highestTaskIndex + 1;
+  if (nextTaskIndex < TASK_BADGE_HIERARCHY.length) {
+    result.push({ badge: TASK_BADGE_HIERARCHY[nextTaskIndex], earned: false });
+  }
+
+  // Add blog badges - show highest earned OR next to earn
+  let highestBlogIndex = -1;
+  for (const badge of BLOG_BADGE_HIERARCHY) {
+    if (earnedSet.has(badge)) {
+      highestBlogIndex = BLOG_BADGE_HIERARCHY.indexOf(badge);
+    }
+  }
+  // Show highest earned blog badge
+  if (highestBlogIndex >= 0) {
+    result.push({
+      badge: BLOG_BADGE_HIERARCHY[highestBlogIndex],
+      earned: true,
+    });
+  }
+  // Show next blog badge to earn (if any)
+  const nextBlogIndex = highestBlogIndex + 1;
+  if (nextBlogIndex < BLOG_BADGE_HIERARCHY.length) {
+    result.push({ badge: BLOG_BADGE_HIERARCHY[nextBlogIndex], earned: false });
+  }
+
+  // Add feedback badges - show highest earned OR next to earn
+  let highestFeedbackIndex = -1;
+  for (const badge of FEEDBACK_BADGE_HIERARCHY) {
+    if (earnedSet.has(badge)) {
+      highestFeedbackIndex = FEEDBACK_BADGE_HIERARCHY.indexOf(badge);
+    }
+  }
+  // Show highest earned feedback badge
+  if (highestFeedbackIndex >= 0) {
+    result.push({
+      badge: FEEDBACK_BADGE_HIERARCHY[highestFeedbackIndex],
+      earned: true,
+    });
+  }
+  // Show next feedback badge to earn (if any)
+  const nextFeedbackIndex = highestFeedbackIndex + 1;
+  if (nextFeedbackIndex < FEEDBACK_BADGE_HIERARCHY.length) {
+    result.push({
+      badge: FEEDBACK_BADGE_HIERARCHY[nextFeedbackIndex],
+      earned: false,
+    });
+  }
+
+  // Add membership badges - show highest earned OR next to earn
+  let highestMembershipIndex = -1;
+  for (const badge of MEMBERSHIP_BADGE_HIERARCHY) {
+    if (earnedSet.has(badge)) {
+      highestMembershipIndex = MEMBERSHIP_BADGE_HIERARCHY.indexOf(badge);
+    }
+  }
+  // Show highest earned membership badge
+  if (highestMembershipIndex >= 0) {
+    result.push({
+      badge: MEMBERSHIP_BADGE_HIERARCHY[highestMembershipIndex],
+      earned: true,
+    });
+  }
+  // Show next membership badge to earn (if any)
+  const nextMembershipIndex = highestMembershipIndex + 1;
+  if (nextMembershipIndex < MEMBERSHIP_BADGE_HIERARCHY.length) {
+    result.push({
+      badge: MEMBERSHIP_BADGE_HIERARCHY[nextMembershipIndex],
+      earned: false,
+    });
+  }
+
+  return result;
+}
 
 export function AccountContent({
   user,
@@ -80,12 +321,24 @@ export function AccountContent({
   posts,
   galleryImages,
   feedback: initialFeedback,
+  newMembershipBadges,
 }: Props) {
   const router = useRouter();
   const [loggingOut, setLoggingOut] = useState(false);
   const [feedback, setFeedback] = useState(initialFeedback);
   const [createdExpanded, setCreatedExpanded] = useState(true);
   const [assignedExpanded, setAssignedExpanded] = useState(true);
+
+  // Emit badge event if new membership badges were awarded
+  useEffect(() => {
+    if (newMembershipBadges && newMembershipBadges.length > 0) {
+      window.dispatchEvent(
+        new CustomEvent("badgesEarned", {
+          detail: { badges: newMembershipBadges },
+        })
+      );
+    }
+  }, [newMembershipBadges]);
 
   // Split todos into created by user and assigned to user
   const tasksCreated = initialTodos.filter((t) => t.userId === user.id);
@@ -172,6 +425,40 @@ export function AccountContent({
             <LogOut className="h-4 w-4" />
             {loggingOut ? "Signing out..." : "Sign out"}
           </button>
+        </div>
+
+        {/* Badges */}
+        <div>
+          <div className="mb-2 text-center md:mb-3">
+            <h2 className="text-sm font-semibold md:text-lg">Badges</h2>
+            <p className="text-[10px] text-muted-foreground md:text-sm">
+              {(user.badges ?? []).length} badge
+              {(user.badges ?? []).length !== 1 ? "s" : ""} earned
+            </p>
+          </div>
+          <div className="flex flex-wrap justify-center gap-1.5 md:gap-3">
+            {getBadgesForDisplay(user.badges ?? []).map(({ badge, earned }) => {
+              const info = BADGE_INFO[badge];
+              return earned ? (
+                <div
+                  key={badge}
+                  className="group relative flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-2 py-1 text-xs font-medium text-white shadow-md transition-transform hover:scale-105 md:gap-2 md:px-4 md:py-2 md:text-sm"
+                  title={info?.description}
+                >
+                  <span className="text-sm md:text-base">
+                    {info?.icon || "🏅"}
+                  </span>
+                  <span>{info?.name || badge}</span>
+                </div>
+              ) : (
+                <div
+                  key={badge}
+                  className="h-6 w-14 rounded-full border-2 border-dashed border-amber-300 bg-amber-50/30 dark:border-amber-700 dark:bg-amber-950/20 md:h-10 md:w-28"
+                  title="Mystery badge - keep exploring!"
+                />
+              );
+            })}
+          </div>
         </div>
 
         {/* User info cards */}

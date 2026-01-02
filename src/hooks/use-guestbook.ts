@@ -66,6 +66,13 @@ export function useGuestbook(options: UseGuestbookOptions = {}) {
       saveOwnedEntry(data.entry.id, data.ownerToken);
       setOwnedIds((prev) => new Set([...prev, data.entry.id]));
 
+      // Emit badge event if badge was awarded
+      if (data.badgeAwarded) {
+        window.dispatchEvent(
+          new CustomEvent("badgesEarned", { detail: { badges: ["GUESTBOOK_SIGNER"] } })
+        );
+      }
+
       return true;
     } catch {
       return false;

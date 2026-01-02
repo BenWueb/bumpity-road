@@ -49,6 +49,15 @@ export default function FeedbackModal({ isOpen, onClose }: Props) {
         throw new Error(data.error || "Failed to submit feedback");
       }
 
+      const data = await res.json();
+
+      // Emit badge event if new badges were earned
+      if (data.newBadges && data.newBadges.length > 0) {
+        window.dispatchEvent(
+          new CustomEvent("badgesEarned", { detail: { badges: data.newBadges } })
+        );
+      }
+
       setSuccess(true);
       setTimeout(() => {
         handleClose();

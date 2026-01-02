@@ -15,6 +15,7 @@ model User {
   image         String?
   isAdmin       Boolean        @default(false)
   isBugAdmin    Boolean        @default(false)
+  badges        String[]       @default([])
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   sessions      Session[]

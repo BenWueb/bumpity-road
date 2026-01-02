@@ -110,6 +110,13 @@ export function useTodos(userId: string | undefined) {
         const data = await res.json();
         // Update with server response to get completedBy info
         setTodos((prev) => prev.map((t) => (t.id === id ? data.todo : t)));
+        
+        // Emit event if new badges were earned
+        if (data.newBadges && data.newBadges.length > 0) {
+          window.dispatchEvent(
+            new CustomEvent("badgesEarned", { detail: { badges: data.newBadges } })
+          );
+        }
       }
     } catch {
       setTodos((prev) =>
@@ -138,6 +145,13 @@ export function useTodos(userId: string | undefined) {
         const data = await res.json();
         // Update with server response to get completedBy info
         setTodos((prev) => prev.map((t) => (t.id === id ? data.todo : t)));
+        
+        // Emit event if new badges were earned
+        if (data.newBadges && data.newBadges.length > 0) {
+          window.dispatchEvent(
+            new CustomEvent("badgesEarned", { detail: { badges: data.newBadges } })
+          );
+        }
       }
     } catch {
       loadTodos();

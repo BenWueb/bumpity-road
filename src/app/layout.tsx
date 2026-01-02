@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import "./globals.css";
 import AppSidebar from "@/components/AppSidebar";
+import BadgeClaimHandler from "@/components/BadgeClaimHandler";
 
 const poppins = Poppins({
   weight: ["400", "700"],
@@ -26,6 +27,7 @@ export default function RootLayout({
           <AppSidebar />
           <main className="w-full">{children}</main>
         </div>
+        <BadgeClaimHandler />
       </body>
     </html>
   );

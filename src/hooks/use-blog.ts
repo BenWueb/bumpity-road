@@ -26,6 +26,14 @@ export function useBlog({ initialPosts }: UseBlogOptions) {
 
       const data = await res.json();
       setPosts((prev) => [data.post, ...prev]);
+
+      // Emit badge event if new badges were earned
+      if (data.newBadges && data.newBadges.length > 0) {
+        window.dispatchEvent(
+          new CustomEvent("badgesEarned", { detail: { badges: data.newBadges } })
+        );
+      }
+
       return data.post;
     } catch (error) {
       console.error("Failed to create post:", error);
