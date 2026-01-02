@@ -100,6 +100,11 @@ export const BADGE_DEFINITIONS: Record<
     description: "Member for 10 years",
     icon: "🏛️",
   },
+  ADVENTURER_FIRST: {
+    name: "Adventurer",
+    description: "Created your first adventure",
+    icon: "🧭",
+  },
 };
 
 // Task completion milestones
@@ -117,6 +122,9 @@ const BLOG_MILESTONES = [
   { count: 5, badge: "BLOGGER_WRITER" },
   { count: 10, badge: "BLOGGER_AUTHOR" },
 ];
+
+// Adventure milestones
+const ADVENTURE_MILESTONES = [{ count: 1, badge: "ADVENTURER_FIRST" }];
 
 // Feedback milestones
 const FEEDBACK_MILESTONES = [
@@ -231,6 +239,49 @@ export async function checkAndAwardBlogBadges(
   }
 
   // Award new badges
+  if (newBadges.length > 0) {
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        badges: {
+          push: newBadges,
+        },
+      },
+    });
+  }
+
+  return newBadges;
+}
+
+/**
+ * Check and award adventure creation badges for a user
+ * Call this after a user creates a new adventure
+ */
+export async function checkAndAwardAdventureBadges(
+  userId: string
+): Promise<string[]> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { badges: true },
+  });
+
+  if (!user) return [];
+
+  const adventureCount = await prisma.adventure.count({
+    where: { userId },
+  });
+
+  const newBadges: string[] = [];
+
+  for (const milestone of ADVENTURE_MILESTONES) {
+    if (
+      adventureCount >= milestone.count &&
+      !user.badges.includes(milestone.badge)
+    ) {
+      newBadges.push(milestone.badge);
+    }
+  }
+
   if (newBadges.length > 0) {
     await prisma.user.update({
       where: { id: userId },

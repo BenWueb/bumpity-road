@@ -176,6 +176,11 @@ const BADGE_INFO: Record<
     description: "Member for 10 years",
     icon: "🏛️",
   },
+  ADVENTURER_FIRST: {
+    name: "Adventurer",
+    description: "Created your first adventure",
+    icon: "🧭",
+  },
 };
 
 // Task badges in order from lowest to highest
@@ -212,7 +217,7 @@ const MEMBERSHIP_BADGE_HIERARCHY = [
 ];
 
 // Non-hierarchical badges (always show if earned or as placeholder)
-const STANDALONE_BADGES = ["OG", "GUESTBOOK_SIGNER"];
+const STANDALONE_BADGES = ["OG", "GUESTBOOK_SIGNER", "ADVENTURER_FIRST"];
 
 // Get all badges to display with earned status
 function getBadgesForDisplay(

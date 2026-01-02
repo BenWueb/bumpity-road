@@ -41,25 +41,29 @@ async function GuestbookContent() {
 
 export default function GuestbookPage() {
   return (
-    <div className="flex h-full flex-col p-4 md:p-6">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="mb-4 md:mb-6">
-        <div className="flex items-center gap-2 md:gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg border bg-background shadow-sm md:h-10 md:w-10">
-            <BookOpen className="h-4 w-4 text-muted-foreground md:h-5 md:w-5" />
-          </div>
-          <div>
-            <h1 className="text-xl font-bold md:text-2xl">Guestbook</h1>
-            <p className="text-xs text-muted-foreground md:text-sm">
-              Leave a message for us!
-            </p>
+      <div className="border-b bg-card/50">
+        <div className="mx-auto max-w-6xl px-4 py-4 md:px-6 md:py-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-lg md:h-12 md:w-12">
+              <BookOpen className="h-5 w-5 md:h-6 md:w-6" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold md:text-2xl">Guestbook</h1>
+              <p className="text-xs text-muted-foreground md:text-sm">
+                Leave a message for us!
+              </p>
+            </div>
           </div>
         </div>
       </div>
 
-      <Suspense fallback={<GuestbookSkeleton />}>
-        <GuestbookContent />
-      </Suspense>
+      <div className="mx-auto max-w-6xl p-4 md:p-6">
+        <Suspense fallback={<GuestbookSkeleton />}>
+          <GuestbookContent />
+        </Suspense>
+      </div>
     </div>
   );
 }

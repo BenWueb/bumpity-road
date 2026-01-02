@@ -16,23 +16,25 @@ export const metadata: Metadata = {
     default: "Bumpity Road",
     template: "%s | Bumpity Road",
   },
-  description: "The Cabin - A place for family memories, adventures, and togetherness.",
+  description: "Paradise at the end of a not so smooth road.",
   keywords: ["cabin", "family", "vacation", "memories", "adventures", "nature"],
   authors: [{ name: "Bumpity Road" }],
   creator: "Bumpity Road",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://bumpity-road.vercel.app"),
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || "https://bumpity-road.vercel.app"
+  ),
   openGraph: {
     type: "website",
     locale: "en_US",
     url: "/",
     siteName: "Bumpity Road",
     title: "Bumpity Road",
-    description: "The Cabin - A place for family memories, adventures, and togetherness.",
+    description: "Paradise at the end of a not so smooth road.",
   },
   twitter: {
     card: "summary_large_image",
     title: "Bumpity Road",
-    description: "The Cabin - A place for family memories, adventures, and togetherness.",
+    description: "Paradise at the end of a not so smooth road.",
     creator: "@bumpityroad",
   },
   other: {

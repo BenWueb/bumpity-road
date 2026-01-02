@@ -27,6 +27,7 @@ model User {
   comments      Comment[]
   galleryImages GalleryImage[]
   feedback      Feedback[]
+  adventures    Adventure[]
 
   @@unique([email])
   @@map("user")
@@ -205,4 +206,25 @@ model SiteSetting {
   updatedAt DateTime @updatedAt
 
   @@map("site_setting")
+}
+
+model Adventure {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String
+  address     String
+  // Legacy single season (kept for existing records / backward-compat)
+  season      String?  // "all" | "spring" | "summer" | "fall" | "winter"
+  // New multi-season selection
+  seasons     String[] @default([]) // e.g. ["spring","summer"] or ["all"]
+  category    String   // "fishing" | "hiking" | "shopping" | "wildlife" | "boating" | "camping" | "swimming" | "other"
+  headerImage String   // Cloudinary URL
+  headerImagePublicId String // Cloudinary public ID for deletion
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@map("adventure")
 }

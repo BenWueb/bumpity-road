@@ -104,6 +104,11 @@ const BADGE_INFO: Record<
     description: "You've been a member for 10 years!",
     icon: "🏛️",
   },
+  ADVENTURER_FIRST: {
+    name: "Adventurer",
+    description: "You created your first adventure!",
+    icon: "🧭",
+  },
 };
 
 export default function BadgeClaimHandler() {
