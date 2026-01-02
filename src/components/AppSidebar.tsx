@@ -140,6 +140,7 @@ export default function AppSidebar() {
         href: "/sop",
         label: "SOP",
         icon: NotebookText,
+        pill: SIDEBAR_PILL_STYLES.SOON,
       },
       {
         href: "/adventures",
@@ -197,7 +198,7 @@ export default function AppSidebar() {
       <aside
         className={[
           // Mobile: fixed overlay on right, Desktop: relative on left
-          "fixed right-0 top-0 z-50 h-dvh max-h-dvh border-l bg-background transition-transform duration-200 md:relative md:left-0 md:right-auto md:z-auto md:h-screen md:max-h-screen md:translate-x-0 md:border-l-0 md:border-r md:transition-[width]",
+          "fixed right-0 top-0 z-50 h-full max-h-full border-l bg-background transition-transform duration-200 md:relative md:left-0 md:right-auto md:z-auto md:h-full md:max-h-full md:translate-x-0 md:border-l-0 md:border-r md:transition-[width]",
           // Mobile: slide in/out from right
           collapsed ? "translate-x-full md:translate-x-0" : "translate-x-0",
           // Width
