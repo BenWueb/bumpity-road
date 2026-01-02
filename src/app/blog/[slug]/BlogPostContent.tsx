@@ -125,18 +125,18 @@ export default function BlogPostContent({ post: initialPost, formattedDate }: Pr
         />
       )}
 
-      <div className="relative p-6 sm:p-8">
+      <div className="relative p-4 sm:p-6 md:p-8">
         {/* Meta & Title - only show if no images */}
         {post.images.length === 0 && (
           <>
-            <div className="mb-4 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+            <div className="mb-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground md:mb-4 md:gap-3 md:text-sm">
               <span className="flex items-center gap-1">
-                <User className="h-4 w-4" />
+                <User className="h-3.5 w-3.5 md:h-4 md:w-4" />
                 {post.user?.name ?? "Unknown"}
               </span>
               <span>•</span>
               <span className="flex items-center gap-1">
-                <Calendar className="h-4 w-4" />
+                <Calendar className="h-3.5 w-3.5 md:h-4 md:w-4" />
                 {formattedDate}
               </span>
               {isEdited && (
@@ -146,7 +146,7 @@ export default function BlogPostContent({ post: initialPost, formattedDate }: Pr
                 </>
               )}
             </div>
-            <h1 className="mb-6 text-3xl font-bold">{post.title}</h1>
+            <h1 className="mb-4 text-xl font-bold md:mb-6 md:text-3xl">{post.title}</h1>
           </>
         )}
 
@@ -154,15 +154,15 @@ export default function BlogPostContent({ post: initialPost, formattedDate }: Pr
         {isOwner && post.images.length === 0 && (
           <button
             onClick={openEditModal}
-            className="absolute right-4 top-4 flex items-center gap-2 rounded-md border bg-background px-3 py-1.5 text-sm font-medium shadow-sm transition-colors hover:bg-accent"
+            className="absolute right-3 top-3 flex items-center gap-1.5 rounded-md border bg-background px-2.5 py-1 text-xs font-medium shadow-sm transition-colors hover:bg-accent md:right-4 md:top-4 md:gap-2 md:px-3 md:py-1.5 md:text-sm"
           >
-            <Pencil className="h-4 w-4" />
+            <Pencil className="h-3.5 w-3.5 md:h-4 md:w-4" />
             Edit
           </button>
         )}
 
         {/* Content */}
-        <div className="prose prose-slate max-w-none dark:prose-invert">
+        <div className="space-y-3 text-sm leading-relaxed text-foreground md:space-y-4 md:text-base md:leading-relaxed">
           {post.content.split("\n").map((paragraph, i) => (
             <p key={i}>{paragraph}</p>
           ))}
@@ -170,7 +170,7 @@ export default function BlogPostContent({ post: initialPost, formattedDate }: Pr
 
         {/* Edited indicator for posts with images */}
         {post.images.length > 0 && isEdited && (
-          <p className="mt-6 text-sm italic text-muted-foreground">
+          <p className="mt-4 text-xs italic text-muted-foreground md:mt-6 md:text-sm">
             Edited {formatLongDate(post.updatedAt)}
           </p>
         )}
@@ -179,15 +179,15 @@ export default function BlogPostContent({ post: initialPost, formattedDate }: Pr
       {/* Edit Modal */}
       {isEditing && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-2 md:p-4"
           onClick={closeEditModal}
         >
           <div
-            className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl border bg-background p-6 shadow-xl"
+            className="max-h-[95vh] w-full max-w-2xl overflow-y-auto rounded-xl border bg-background p-4 shadow-xl md:max-h-[90vh] md:p-6"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold">Edit Post</h2>
+            <div className="mb-3 flex items-center justify-between md:mb-4">
+              <h2 className="text-base font-semibold md:text-lg">Edit Post</h2>
               <button
                 type="button"
                 onClick={closeEditModal}

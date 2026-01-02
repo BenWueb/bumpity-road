@@ -29,15 +29,15 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-6 py-10">
+    <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-8 md:px-6 md:py-10">
       <div className="w-full max-w-sm rounded-xl border bg-card text-card-foreground shadow-sm">
-        <div className="px-6 pt-6">
-          <h1 className="text-xl font-semibold">Welcome back</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
+        <div className="px-4 pt-4 md:px-6 md:pt-6">
+          <h1 className="text-lg font-semibold md:text-xl">Welcome back</h1>
+          <p className="mt-1 text-xs text-muted-foreground md:text-sm">
             Sign in to your account
           </p>
         </div>
-        <div className="px-6 pb-6 pt-6 space-y-3">
+        <div className="space-y-3 px-4 pb-4 pt-4 md:px-6 md:pb-6 md:pt-6">
           {error && (
             <div className="mb-4 text-sm text-destructive">{error}</div>
           )}

@@ -44,7 +44,7 @@ export function GuestbookList({ initialEntries, initialIsAdmin }: Props) {
       <button
         type="button"
         onClick={scrollToForm}
-        className="flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 lg:hidden"
+        className="flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-3 text-sm font-medium text-white shadow-md transition-all hover:from-emerald-600 hover:to-teal-600 lg:hidden"
       >
         <PenLine className="h-4 w-4" />
         Sign the Guestbook

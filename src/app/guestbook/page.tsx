@@ -41,16 +41,16 @@ async function GuestbookContent() {
 
 export default function GuestbookPage() {
   return (
-    <div className="flex h-full flex-col p-6">
+    <div className="flex h-full flex-col p-4 md:p-6">
       {/* Header */}
-      <div className="mb-6">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg border bg-background shadow-sm">
-            <BookOpen className="h-5 w-5 text-muted-foreground" />
+      <div className="mb-4 md:mb-6">
+        <div className="flex items-center gap-2 md:gap-3">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg border bg-background shadow-sm md:h-10 md:w-10">
+            <BookOpen className="h-4 w-4 text-muted-foreground md:h-5 md:w-5" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold">Guestbook</h1>
-            <p className="text-sm text-muted-foreground">
+            <h1 className="text-xl font-bold md:text-2xl">Guestbook</h1>
+            <p className="text-xs text-muted-foreground md:text-sm">
               Leave a message for us!
             </p>
           </div>

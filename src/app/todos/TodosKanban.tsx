@@ -168,9 +168,9 @@ export default function TodosKanban({ initialTodos }: Props) {
   const todosList = todos.length > 0 ? todos : initialTodos ?? [];
 
   return (
-    <div className="flex h-full flex-col p-6">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Tasks</h1>
+    <div className="flex h-full flex-col p-4 md:p-6">
+      <div className="mb-4 flex items-center justify-between md:mb-6">
+        <h1 className="text-xl font-bold md:text-2xl">Tasks</h1>
       </div>
 
       {/* Mobile: Stacked collapsible columns */}

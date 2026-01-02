@@ -70,17 +70,27 @@ export function useTodos(userId: string | undefined) {
   }, [loadTodos]);
 
   const deleteTodo = useCallback(async (id: string): Promise<boolean> => {
-    const prev = todos;
-    setTodos((t) => t.filter((todo) => todo.id !== id));
+    // Capture current state for potential rollback
+    let prevTodos: Todo[] = [];
+    setTodos((current) => {
+      prevTodos = current;
+      return current.filter((todo) => todo.id !== id);
+    });
 
     try {
       const res = await fetch(`/api/todos?id=${id}`, { method: "DELETE" });
-      return res.ok;
+      if (!res.ok) {
+        // Rollback on server error
+        setTodos(prevTodos);
+        return false;
+      }
+      return true;
     } catch {
-      setTodos(prev);
+      // Rollback on network error
+      setTodos(prevTodos);
       return false;
     }
-  }, [todos]);
+  }, []);
 
   const toggleComplete = useCallback(async (id: string, completed: boolean): Promise<void> => {
     const status = completed ? "done" : "todo";

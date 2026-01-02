@@ -4,8 +4,8 @@ import { Suspense } from "react";
 
 function TodosLoading() {
   return (
-    <div className="flex h-full items-center justify-center p-8">
-      <div className="text-muted-foreground">Loading tasks...</div>
+    <div className="flex h-full items-center justify-center p-4 md:p-8">
+      <div className="text-sm text-muted-foreground md:text-base">Loading tasks...</div>
     </div>
   );
 }

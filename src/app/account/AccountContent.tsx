@@ -153,13 +153,13 @@ export function AccountContent({
   }
 
   return (
-    <div className="p-8">
-      <div className="max-w-4xl space-y-8">
+    <div className="p-4 md:p-8">
+      <div className="max-w-4xl space-y-6 md:space-y-8">
         {/* Header */}
-        <div className="flex items-start justify-between">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold">Account</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-xl font-bold md:text-2xl">Account</h1>
+            <p className="text-sm text-muted-foreground md:text-base">
               Manage your profile and view your tasks
             </p>
           </div>
@@ -167,7 +167,7 @@ export function AccountContent({
             type="button"
             onClick={handleLogout}
             disabled={loggingOut}
-            className="flex items-center gap-2 rounded-md border bg-background px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-50"
+            className="flex w-full items-center justify-center gap-2 rounded-md border bg-background px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-50 sm:w-auto"
           >
             <LogOut className="h-4 w-4" />
             {loggingOut ? "Signing out..." : "Sign out"}
@@ -175,26 +175,26 @@ export function AccountContent({
         </div>
 
         {/* User info cards */}
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-4 md:gap-6 md:grid-cols-2">
           {/* Profile card */}
           <div className="relative overflow-hidden rounded-xl border bg-card shadow-sm">
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-violet-50 via-background to-purple-50 dark:from-violet-950/30 dark:via-background dark:to-purple-950/20" />
-            <div className="relative p-6">
-              <div className="flex items-start gap-4">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 bg-gradient-to-br from-violet-100 to-purple-100 text-2xl font-bold text-violet-600 dark:from-violet-900/50 dark:to-purple-900/50 dark:text-violet-300">
+            <div className="relative p-4 md:p-6">
+              <div className="flex items-start gap-3 md:gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-2 bg-gradient-to-br from-violet-100 to-purple-100 text-lg font-bold text-violet-600 dark:from-violet-900/50 dark:to-purple-900/50 dark:text-violet-300 md:h-16 md:w-16 md:text-2xl">
                   {user.name?.[0]?.toUpperCase() ?? "U"}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h2 className="truncate text-xl font-semibold">
+                  <h2 className="truncate text-lg font-semibold md:text-xl">
                     {user.name}
                   </h2>
-                  <div className="mt-2 space-y-1">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Mail className="h-4 w-4" />
+                  <div className="mt-1 space-y-0.5 md:mt-2 md:space-y-1">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground md:text-sm">
+                      <Mail className="h-3.5 w-3.5 shrink-0 md:h-4 md:w-4" />
                       <span className="truncate">{user.email}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Calendar className="h-4 w-4" />
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground md:text-sm">
+                      <Calendar className="h-3.5 w-3.5 shrink-0 md:h-4 md:w-4" />
                       <span>Joined {createdDate}</span>
                     </div>
                   </div>
@@ -206,57 +206,59 @@ export function AccountContent({
           {/* Stats card */}
           <div className="relative overflow-hidden rounded-xl border bg-card shadow-sm">
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-emerald-50 via-background to-teal-50 dark:from-emerald-950/30 dark:via-background dark:to-teal-950/20" />
-            <div className="relative p-6">
+            <div className="relative p-4 md:p-6">
               <div className="flex items-center gap-2">
-                <ListTodo className="h-5 w-5 text-muted-foreground" />
-                <h3 className="font-semibold">Activity Overview</h3>
+                <ListTodo className="h-4 w-4 text-muted-foreground md:h-5 md:w-5" />
+                <h3 className="text-sm font-semibold md:text-base">
+                  Activity Overview
+                </h3>
               </div>
-              <div className="mt-4 grid grid-cols-2 gap-4">
+              <div className="mt-3 grid grid-cols-2 gap-3 md:mt-4 md:gap-4">
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-violet-600 dark:text-violet-400">
+                  <div className="text-2xl font-bold text-violet-600 dark:text-violet-400 md:text-3xl">
                     {posts.length}
                   </div>
-                  <div className="mt-1 flex items-center justify-center gap-1 text-xs text-muted-foreground">
+                  <div className="mt-0.5 flex items-center justify-center gap-1 text-[10px] text-muted-foreground md:mt-1 md:text-xs">
                     <NotebookPen className="h-3 w-3" />
                     Blog Posts
                   </div>
                 </div>
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-rose-600 dark:text-rose-400">
+                  <div className="text-2xl font-bold text-rose-600 dark:text-rose-400 md:text-3xl">
                     {galleryImages.length}
                   </div>
-                  <div className="mt-1 flex items-center justify-center gap-1 text-xs text-muted-foreground">
+                  <div className="mt-0.5 flex items-center justify-center gap-1 text-[10px] text-muted-foreground md:mt-1 md:text-xs">
                     <Camera className="h-3 w-3" />
                     Photos
                   </div>
                 </div>
               </div>
-              <div className="mt-4 border-t pt-4">
-                <div className="grid grid-cols-3 gap-2">
+              <div className="mt-3 border-t pt-3 md:mt-4 md:pt-4">
+                <div className="grid grid-cols-3 gap-1 md:gap-2">
                   <div className="text-center">
-                    <div className="text-xl font-bold text-slate-600 dark:text-slate-400">
+                    <div className="text-lg font-bold text-slate-600 dark:text-slate-400 md:text-xl">
                       {todosByStatus.todo.length}
                     </div>
-                    <div className="mt-0.5 flex items-center justify-center gap-1 text-xs text-muted-foreground">
-                      <Circle className="h-3 w-3" />
+                    <div className="mt-0.5 flex items-center justify-center gap-0.5 text-[10px] text-muted-foreground md:gap-1 md:text-xs">
+                      <Circle className="h-2.5 w-2.5 md:h-3 md:w-3" />
                       To Do
                     </div>
                   </div>
                   <div className="text-center">
-                    <div className="text-xl font-bold text-blue-600 dark:text-blue-400">
+                    <div className="text-lg font-bold text-blue-600 dark:text-blue-400 md:text-xl">
                       {todosByStatus.in_progress.length}
                     </div>
-                    <div className="mt-0.5 flex items-center justify-center gap-1 text-xs text-muted-foreground">
-                      <Clock className="h-3 w-3" />
+                    <div className="mt-0.5 flex items-center justify-center gap-0.5 text-[10px] text-muted-foreground md:gap-1 md:text-xs">
+                      <Clock className="h-2.5 w-2.5 md:h-3 md:w-3" />
                       In Progress
                     </div>
                   </div>
                   <div className="text-center">
-                    <div className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
+                    <div className="text-lg font-bold text-emerald-600 dark:text-emerald-400 md:text-xl">
                       {todosByStatus.done.length}
                     </div>
-                    <div className="mt-0.5 flex items-center justify-center gap-1 text-xs text-muted-foreground">
-                      <CheckCircle2 className="h-3 w-3" />
+                    <div className="mt-0.5 flex items-center justify-center gap-0.5 text-[10px] text-muted-foreground md:gap-1 md:text-xs">
+                      <CheckCircle2 className="h-2.5 w-2.5 md:h-3 md:w-3" />
                       Done
                     </div>
                   </div>
@@ -270,15 +272,15 @@ export function AccountContent({
         <div className="relative overflow-hidden rounded-xl border bg-card shadow-sm">
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-slate-50 via-background to-gray-50 dark:from-slate-950/30 dark:via-background dark:to-gray-950/20" />
           <div className="relative">
-            <div className="flex items-center justify-between border-b px-6 py-4">
-              <h3 className="font-semibold">Your Tasks</h3>
-              <span className="text-sm text-muted-foreground">
+            <div className="flex items-center justify-between border-b px-4 py-3 md:px-6 md:py-4">
+              <h3 className="text-sm font-semibold md:text-base">Your Tasks</h3>
+              <span className="text-xs text-muted-foreground md:text-sm">
                 {initialTodos.length} total
               </span>
             </div>
 
             {initialTodos.length === 0 ? (
-              <div className="px-6 py-8 text-center text-muted-foreground">
+              <div className="px-4 py-6 text-center text-sm text-muted-foreground md:px-6 md:py-8 md:text-base">
                 No tasks yet. Create one from the home page or tasks page!
               </div>
             ) : (
@@ -288,19 +290,19 @@ export function AccountContent({
                   <button
                     type="button"
                     onClick={() => setCreatedExpanded(!createdExpanded)}
-                    className="flex w-full items-center justify-between px-6 py-3 text-left hover:bg-accent/50"
+                    className="flex w-full items-center justify-between px-4 py-2.5 text-left hover:bg-accent/50 md:px-6 md:py-3"
                   >
                     <div className="flex items-center gap-2">
-                      <ListTodo className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm font-medium">
+                      <ListTodo className="h-3.5 w-3.5 text-muted-foreground md:h-4 md:w-4" />
+                      <span className="text-xs font-medium md:text-sm">
                         Tasks You Created
                       </span>
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-[10px] text-muted-foreground md:text-xs">
                         ({tasksCreated.length})
                       </span>
                     </div>
                     <ChevronDown
-                      className={`h-4 w-4 text-muted-foreground transition-transform ${
+                      className={`h-3.5 w-3.5 text-muted-foreground transition-transform md:h-4 md:w-4 ${
                         createdExpanded ? "rotate-180" : ""
                       }`}
                     />
@@ -308,7 +310,7 @@ export function AccountContent({
                   {createdExpanded && (
                     <div className="border-t bg-background/50">
                       {tasksCreated.length === 0 ? (
-                        <div className="px-6 py-4 text-center text-sm text-muted-foreground">
+                        <div className="px-4 py-3 text-center text-xs text-muted-foreground md:px-6 md:py-4 md:text-sm">
                           No tasks created yet
                         </div>
                       ) : (
@@ -321,7 +323,7 @@ export function AccountContent({
                             />
                           ))}
                           {tasksCreated.length > 10 && (
-                            <div className="px-6 py-2 text-center text-xs text-muted-foreground">
+                            <div className="px-4 py-1.5 text-center text-[10px] text-muted-foreground md:px-6 md:py-2 md:text-xs">
                               +{tasksCreated.length - 10} more
                             </div>
                           )}
@@ -336,19 +338,19 @@ export function AccountContent({
                   <button
                     type="button"
                     onClick={() => setAssignedExpanded(!assignedExpanded)}
-                    className="flex w-full items-center justify-between px-6 py-3 text-left hover:bg-accent/50"
+                    className="flex w-full items-center justify-between px-4 py-2.5 text-left hover:bg-accent/50 md:px-6 md:py-3"
                   >
                     <div className="flex items-center gap-2">
-                      <UserCheck className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm font-medium">
+                      <UserCheck className="h-3.5 w-3.5 text-muted-foreground md:h-4 md:w-4" />
+                      <span className="text-xs font-medium md:text-sm">
                         Tasks Assigned to You
                       </span>
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-[10px] text-muted-foreground md:text-xs">
                         ({tasksAssigned.length})
                       </span>
                     </div>
                     <ChevronDown
-                      className={`h-4 w-4 text-muted-foreground transition-transform ${
+                      className={`h-3.5 w-3.5 text-muted-foreground transition-transform md:h-4 md:w-4 ${
                         assignedExpanded ? "rotate-180" : ""
                       }`}
                     />
@@ -356,7 +358,7 @@ export function AccountContent({
                   {assignedExpanded && (
                     <div className="border-t bg-background/50">
                       {tasksAssigned.length === 0 ? (
-                        <div className="px-6 py-4 text-center text-sm text-muted-foreground">
+                        <div className="px-4 py-3 text-center text-xs text-muted-foreground md:px-6 md:py-4 md:text-sm">
                           No tasks assigned to you
                         </div>
                       ) : (
@@ -369,7 +371,7 @@ export function AccountContent({
                             />
                           ))}
                           {tasksAssigned.length > 10 && (
-                            <div className="px-6 py-2 text-center text-xs text-muted-foreground">
+                            <div className="px-4 py-1.5 text-center text-[10px] text-muted-foreground md:px-6 md:py-2 md:text-xs">
                               +{tasksAssigned.length - 10} more
                             </div>
                           )}
@@ -387,23 +389,25 @@ export function AccountContent({
         <div className="relative overflow-hidden rounded-xl border bg-card shadow-sm">
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-violet-50 via-background to-purple-50 dark:from-violet-950/30 dark:via-background dark:to-purple-950/20" />
           <div className="relative">
-            <div className="flex items-center justify-between border-b px-6 py-4">
+            <div className="flex items-center justify-between border-b px-4 py-3 md:px-6 md:py-4">
               <div className="flex items-center gap-2">
-                <NotebookPen className="h-5 w-5 text-muted-foreground" />
-                <h3 className="font-semibold">Your Blog Posts</h3>
+                <NotebookPen className="h-4 w-4 text-muted-foreground md:h-5 md:w-5" />
+                <h3 className="text-sm font-semibold md:text-base">
+                  Your Blog Posts
+                </h3>
               </div>
-              <span className="text-sm text-muted-foreground">
+              <span className="text-xs text-muted-foreground md:text-sm">
                 {posts.length} post{posts.length !== 1 ? "s" : ""}
               </span>
             </div>
             <div className="divide-y">
               {posts.length === 0 ? (
-                <div className="px-6 py-8 text-center text-muted-foreground">
-                  <NotebookPen className="mx-auto mb-2 h-8 w-8 opacity-50" />
+                <div className="px-4 py-6 text-center text-sm text-muted-foreground md:px-6 md:py-8 md:text-base">
+                  <NotebookPen className="mx-auto mb-2 h-6 w-6 opacity-50 md:h-8 md:w-8" />
                   <p>No blog posts yet.</p>
                   <Link
                     href="/blog"
-                    className="mt-2 inline-block text-sm text-primary hover:underline"
+                    className="mt-2 inline-block text-xs text-primary hover:underline md:text-sm"
                   >
                     Write your first post →
                   </Link>
@@ -413,10 +417,10 @@ export function AccountContent({
                   <Link
                     key={post.id}
                     href={`/blog/${post.slug}`}
-                    className="flex items-center gap-4 px-6 py-3 transition-colors hover:bg-accent/50"
+                    className="flex items-center gap-3 px-4 py-2.5 transition-colors hover:bg-accent/50 md:gap-4 md:px-6 md:py-3"
                   >
                     {/* Thumbnail */}
-                    <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-accent">
+                    <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-accent md:h-12 md:w-12">
                       {post.thumbnail ? (
                         <img
                           src={post.thumbnail}
@@ -424,22 +428,22 @@ export function AccountContent({
                           className="h-full w-full object-cover"
                         />
                       ) : (
-                        <div className="flex h-full w-full items-center justify-center text-lg text-muted-foreground/50">
+                        <div className="flex h-full w-full items-center justify-center text-sm text-muted-foreground/50 md:text-lg">
                           📝
                         </div>
                       )}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="truncate text-sm font-medium">
+                      <div className="truncate text-xs font-medium md:text-sm">
                         {post.title}
                       </div>
-                      <div className="mt-0.5 flex items-center gap-3 text-xs text-muted-foreground">
+                      <div className="mt-0.5 flex items-center gap-2 text-[10px] text-muted-foreground md:gap-3 md:text-xs">
                         <span>
                           {new Date(post.createdAt).toLocaleDateString()}
                         </span>
                         {post.commentCount > 0 && (
                           <span className="flex items-center gap-1">
-                            <MessageCircle className="h-3 w-3" />
+                            <MessageCircle className="h-2.5 w-2.5 md:h-3 md:w-3" />
                             {post.commentCount}
                           </span>
                         )}
@@ -451,7 +455,7 @@ export function AccountContent({
               {posts.length > 5 && (
                 <Link
                   href="/blog"
-                  className="block px-6 py-3 text-center text-sm text-primary hover:underline"
+                  className="block px-4 py-2.5 text-center text-xs text-primary hover:underline md:px-6 md:py-3 md:text-sm"
                 >
                   View all {posts.length} posts →
                 </Link>
@@ -464,31 +468,33 @@ export function AccountContent({
         <div className="relative overflow-hidden rounded-xl border bg-card shadow-sm">
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-rose-50 via-background to-pink-50 dark:from-rose-950/30 dark:via-background dark:to-pink-950/20" />
           <div className="relative">
-            <div className="flex items-center justify-between border-b px-6 py-4">
+            <div className="flex items-center justify-between border-b px-4 py-3 md:px-6 md:py-4">
               <div className="flex items-center gap-2">
-                <Camera className="h-5 w-5 text-muted-foreground" />
-                <h3 className="font-semibold">Your Photos</h3>
+                <Camera className="h-4 w-4 text-muted-foreground md:h-5 md:w-5" />
+                <h3 className="text-sm font-semibold md:text-base">
+                  Your Photos
+                </h3>
               </div>
-              <span className="text-sm text-muted-foreground">
+              <span className="text-xs text-muted-foreground md:text-sm">
                 {galleryImages.length} photo
                 {galleryImages.length !== 1 ? "s" : ""}
               </span>
             </div>
-            <div className="p-4">
+            <div className="p-3 md:p-4">
               {galleryImages.length === 0 ? (
-                <div className="py-8 text-center text-muted-foreground">
-                  <Camera className="mx-auto mb-2 h-8 w-8 opacity-50" />
+                <div className="py-6 text-center text-sm text-muted-foreground md:py-8 md:text-base">
+                  <Camera className="mx-auto mb-2 h-6 w-6 opacity-50 md:h-8 md:w-8" />
                   <p>No photos uploaded yet.</p>
                   <Link
                     href="/gallery"
-                    className="mt-2 inline-block text-sm text-primary hover:underline"
+                    className="mt-2 inline-block text-xs text-primary hover:underline md:text-sm"
                   >
                     Upload your first photo →
                   </Link>
                 </div>
               ) : (
                 <>
-                  <div className="grid grid-cols-4 gap-2 sm:grid-cols-6 md:grid-cols-8">
+                  <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-4 md:grid-cols-6 md:gap-2 lg:grid-cols-8">
                     {galleryImages.slice(0, 16).map((img) => (
                       <Link
                         key={img.id}
@@ -509,7 +515,7 @@ export function AccountContent({
                   {galleryImages.length > 16 && (
                     <Link
                       href="/gallery"
-                      className="mt-4 block text-center text-sm text-primary hover:underline"
+                      className="mt-3 block text-center text-xs text-primary hover:underline md:mt-4 md:text-sm"
                     >
                       View all {galleryImages.length} photos →
                     </Link>
@@ -525,45 +531,50 @@ export function AccountContent({
           <div className="relative overflow-hidden rounded-xl border bg-card shadow-sm">
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-amber-50 via-background to-orange-50 dark:from-amber-950/30 dark:via-background dark:to-orange-950/20" />
             <div className="relative">
-              <div className="flex items-center justify-between border-b px-6 py-4">
+              <div className="flex items-center justify-between border-b px-4 py-3 md:px-6 md:py-4">
                 <div className="flex items-center gap-2">
-                  <MessageSquarePlus className="h-5 w-5 text-muted-foreground" />
-                  <h3 className="font-semibold">Feedback & Bug Reports</h3>
+                  <MessageSquarePlus className="h-4 w-4 text-muted-foreground md:h-5 md:w-5" />
+                  <h3 className="text-sm font-semibold md:text-base">
+                    Feedback & Bug Reports
+                  </h3>
                 </div>
-                <span className="text-sm text-muted-foreground">
+                <span className="text-xs text-muted-foreground md:text-sm">
                   {feedback.length} item{feedback.length !== 1 ? "s" : ""}
                 </span>
               </div>
               <div className="divide-y">
                 {feedback.length === 0 ? (
-                  <div className="px-6 py-8 text-center text-muted-foreground">
-                    <MessageSquarePlus className="mx-auto mb-2 h-8 w-8 opacity-50" />
+                  <div className="px-4 py-6 text-center text-sm text-muted-foreground md:px-6 md:py-8 md:text-base">
+                    <MessageSquarePlus className="mx-auto mb-2 h-6 w-6 opacity-50 md:h-8 md:w-8" />
                     <p>No feedback submitted yet.</p>
                   </div>
                 ) : (
                   feedback.map((item) => (
-                    <div key={item.id} className="group px-6 py-4">
-                      <div className="flex items-start gap-3">
+                    <div
+                      key={item.id}
+                      className="group px-4 py-3 md:px-6 md:py-4"
+                    >
+                      <div className="flex items-start gap-2 md:gap-3">
                         <div
-                          className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
+                          className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full md:h-8 md:w-8 ${
                             item.type === "bug"
                               ? "bg-rose-100 text-rose-600 dark:bg-rose-900/40 dark:text-rose-400"
                               : "bg-violet-100 text-violet-600 dark:bg-violet-900/40 dark:text-violet-400"
                           }`}
                         >
                           {item.type === "bug" ? (
-                            <Bug className="h-4 w-4" />
+                            <Bug className="h-3 w-3 md:h-4 md:w-4" />
                           ) : (
-                            <Lightbulb className="h-4 w-4" />
+                            <Lightbulb className="h-3 w-3 md:h-4 md:w-4" />
                           )}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <div className="flex items-start justify-between gap-2">
+                          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                             <div>
-                              <h4 className="text-sm font-medium">
+                              <h4 className="text-xs font-medium md:text-sm">
                                 {item.title}
                               </h4>
-                              <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
+                              <div className="mt-0.5 flex items-center gap-1.5 text-[10px] text-muted-foreground md:gap-2 md:text-xs">
                                 <span>{item.user?.name ?? "Anonymous"}</span>
                                 <span>•</span>
                                 <span>
@@ -582,7 +593,7 @@ export function AccountContent({
                                     e.target.value
                                   )
                                 }
-                                className={`rounded-full border-0 px-2 py-1 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-ring ${
+                                className={`rounded-full border-0 px-2 py-0.5 text-[10px] font-medium focus:outline-none focus:ring-2 focus:ring-ring md:px-2 md:py-1 md:text-xs ${
                                   item.status === "resolved"
                                     ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
                                     : item.status === "in_progress"
@@ -599,14 +610,14 @@ export function AccountContent({
                               </select>
                               <button
                                 onClick={() => handleDeleteFeedback(item.id)}
-                                className="rounded p-1 text-muted-foreground opacity-0 transition-opacity hover:bg-accent hover:text-destructive group-hover:opacity-100"
+                                className="rounded p-1 text-muted-foreground transition-opacity hover:bg-accent hover:text-destructive sm:opacity-0 sm:group-hover:opacity-100"
                                 title="Delete"
                               >
-                                <Trash2 className="h-4 w-4" />
+                                <Trash2 className="h-3.5 w-3.5 md:h-4 md:w-4" />
                               </button>
                             </div>
                           </div>
-                          <p className="mt-2 text-sm text-muted-foreground">
+                          <p className="mt-1.5 text-xs text-muted-foreground md:mt-2 md:text-sm">
                             {item.description}
                           </p>
                         </div>
@@ -630,9 +641,9 @@ function TaskRow({ todo, userId }: { todo: Todo; userId: string }) {
   const isOwner = todo.userId === userId;
 
   return (
-    <div className="flex items-center gap-4 px-6 py-3">
+    <div className="flex items-center gap-2 px-4 py-2 md:gap-4 md:px-6 md:py-3">
       <StatusIcon
-        className={`h-5 w-5 shrink-0 ${
+        className={`h-4 w-4 shrink-0 md:h-5 md:w-5 ${
           todo.status === "done"
             ? "text-emerald-500"
             : todo.status === "in_progress"
@@ -642,25 +653,25 @@ function TaskRow({ todo, userId }: { todo: Todo; userId: string }) {
       />
       <div className="min-w-0 flex-1">
         <div
-          className={`truncate text-sm font-medium ${
+          className={`truncate text-xs font-medium md:text-sm ${
             todo.completed ? "text-muted-foreground line-through" : ""
           }`}
         >
           {todo.title}
         </div>
-        <div className="mt-0.5 flex flex-wrap items-center gap-2">
+        <div className="mt-0.5 flex flex-wrap items-center gap-1 md:gap-2">
           {todo.assignedTo && (
-            <span className="text-xs text-muted-foreground">
+            <span className="text-[10px] text-muted-foreground md:text-xs">
               → {todo.assignedTo.name}
             </span>
           )}
           {!isOwner && (
-            <span className="text-xs text-muted-foreground">
+            <span className="text-[10px] text-muted-foreground md:text-xs">
               from {todo.user.name}
             </span>
           )}
           {todo.completedBy && (
-            <span className="text-xs text-emerald-600 dark:text-emerald-400">
+            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 md:text-xs">
               ✓ by {todo.completedBy.name}
               {todo.completedAt && (
                 <span className="ml-1 text-muted-foreground">
@@ -682,7 +693,7 @@ function TaskRow({ todo, userId }: { todo: Todo; userId: string }) {
         </div>
       </div>
       <div
-        className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${
+        className={`hidden shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium sm:block md:text-xs ${
           todo.status === "done"
             ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
             : todo.status === "in_progress"

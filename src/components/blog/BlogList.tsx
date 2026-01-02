@@ -29,14 +29,14 @@ export function BlogList({ initialPosts }: Props) {
   return (
     <>
       {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg border bg-background shadow-sm">
-            <NotebookPen className="h-5 w-5 text-muted-foreground" />
+      <div className="mb-4 flex items-center justify-between md:mb-6">
+        <div className="flex items-center gap-2 md:gap-3">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg border bg-background shadow-sm md:h-10 md:w-10">
+            <NotebookPen className="h-4 w-4 text-muted-foreground md:h-5 md:w-5" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold">Blog</h1>
-            <p className="text-sm text-muted-foreground">
+            <h1 className="text-xl font-bold md:text-2xl">Blog</h1>
+            <p className="text-xs text-muted-foreground md:text-sm">
               Stories and updates from the Cabin.
             </p>
           </div>
@@ -44,7 +44,7 @@ export function BlogList({ initialPosts }: Props) {
         {session?.user ? (
           <button
             onClick={() => setShowForm(!showForm)}
-            className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            className="hidden items-center gap-2 rounded-md bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:from-emerald-600 hover:to-teal-600 md:flex"
           >
             <Plus className="h-4 w-4" />
             New Post
@@ -52,12 +52,30 @@ export function BlogList({ initialPosts }: Props) {
         ) : (
           <Link
             href="/login"
-            className="flex items-center gap-2 rounded-md border bg-background px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            className="hidden items-center gap-2 rounded-md bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:from-emerald-600 hover:to-teal-600 md:flex"
           >
             Sign in to post
           </Link>
         )}
       </div>
+
+      {/* Mobile action button */}
+      {session?.user ? (
+        <button
+          onClick={() => setShowForm(!showForm)}
+          className="mb-6 flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-3 text-sm font-medium text-white shadow-md transition-all hover:from-emerald-600 hover:to-teal-600 md:hidden"
+        >
+          <Plus className="h-4 w-4" />
+          New Post
+        </button>
+      ) : (
+        <Link
+          href="/login"
+          className="mb-6 flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-3 text-sm font-medium text-white shadow-md transition-all hover:from-emerald-600 hover:to-teal-600 md:hidden"
+        >
+          Sign in to post
+        </Link>
+      )}
 
       {/* New Post Form */}
       {showForm && (

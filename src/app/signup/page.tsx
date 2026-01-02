@@ -30,14 +30,14 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-6 py-10">
-      <div className="w-full max-w-sm rounded-xl border bg-card p-6 shadow-sm">
-        <h1 className="text-xl font-semibold">Create your account</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
+    <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-8 md:px-6 md:py-10">
+      <div className="w-full max-w-sm rounded-xl border bg-card p-4 shadow-sm md:p-6">
+        <h1 className="text-lg font-semibold md:text-xl">Create your account</h1>
+        <p className="mt-1 text-xs text-muted-foreground md:text-sm">
           Get started with Bumpity Road
         </p>
 
-        <div className="mt-6 space-y-3">
+        <div className="mt-4 space-y-3 md:mt-6">
           {error && (
             <div className="mb-4 text-sm text-destructive">{error}</div>
           )}

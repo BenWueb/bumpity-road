@@ -135,14 +135,14 @@ export default async function BlogPostPage({ params }: Props) {
   const { slug } = await params;
 
   return (
-    <div className="p-6">
+    <div className="p-4 md:p-6">
       {/* Back Link */}
       <div className="mx-auto max-w-6xl">
         <Link
           href="/blog"
-          className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          className="mb-4 inline-flex items-center gap-2 text-xs text-muted-foreground transition-colors hover:text-foreground md:mb-6 md:text-sm"
         >
-          <ArrowLeft className="h-4 w-4" />
+          <ArrowLeft className="h-3.5 w-3.5 md:h-4 md:w-4" />
           Back to Blog
         </Link>
       </div>
