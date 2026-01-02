@@ -196,3 +196,12 @@ model Feedback {
   @@index([status])
   @@map("feedback")
 }
+
+model SiteSetting {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  key       String   @unique // e.g., "headerImageUrl", "headerImagePublicId"
+  value     String
+  updatedAt DateTime @updatedAt
+
+  @@map("site_setting")
+}

@@ -14,6 +14,8 @@ import {
   LogIn,
   ChevronLeft,
   ChevronRight,
+  ImageUp,
+  Check,
 } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -82,10 +84,59 @@ export default function GalleryPage() {
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null);
   const [selectedIndex, setSelectedIndex] = useState<number>(-1);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [settingHeader, setSettingHeader] = useState(false);
+  const [headerSet, setHeaderSet] = useState(false);
 
   // Touch swipe tracking
   const touchStartX = useRef<number>(0);
   const touchEndX = useRef<number>(0);
+
+  // Check if user is admin
+  useEffect(() => {
+    async function checkAdmin() {
+      if (!session?.user?.id) {
+        setIsAdmin(false);
+        return;
+      }
+      try {
+        const res = await fetch(`/api/users?id=${session.user.id}`);
+        if (res.ok) {
+          const data = await res.json();
+          setIsAdmin(data.user?.isAdmin ?? false);
+        }
+      } catch {
+        setIsAdmin(false);
+      }
+    }
+    checkAdmin();
+  }, [session?.user?.id]);
+
+  async function setAsHeaderImage(image: GalleryImage) {
+    if (settingHeader) return;
+    setSettingHeader(true);
+    setHeaderSet(false);
+
+    try {
+      const res = await fetch("/api/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          key: "headerImageUrl",
+          value: image.url,
+        }),
+      });
+
+      if (res.ok) {
+        setHeaderSet(true);
+        setTimeout(() => setHeaderSet(false), 2000);
+      }
+    } catch {
+      // Silently fail
+    } finally {
+      setSettingHeader(false);
+    }
+  }
 
   // Navigation functions
   const goToPrevious = useCallback(() => {
@@ -721,16 +772,41 @@ export default function GalleryPage() {
                   </p>
                 </div>
 
-                {session?.user?.id === selectedImage.user.id && (
-                  <button
-                    type="button"
-                    onClick={() => handleDelete(selectedImage.id)}
-                    className="flex w-full items-center justify-center gap-2 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-1.5 text-xs font-medium text-destructive transition-colors hover:bg-destructive/20 sm:ml-4 sm:w-auto md:text-sm"
-                  >
-                    <Trash2 className="h-3.5 w-3.5 md:h-4 md:w-4" />
-                    Delete
-                  </button>
-                )}
+                <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+                  {/* Set as Header - Admin only */}
+                  {isAdmin && (
+                    <button
+                      type="button"
+                      onClick={() => setAsHeaderImage(selectedImage)}
+                      disabled={settingHeader}
+                      className="flex w-full items-center justify-center gap-2 rounded-md border border-primary/30 bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/20 disabled:opacity-50 sm:w-auto md:text-sm"
+                    >
+                      {headerSet ? (
+                        <>
+                          <Check className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                          Header Set!
+                        </>
+                      ) : (
+                        <>
+                          <ImageUp className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                          {settingHeader ? "Setting..." : "Set as Header"}
+                        </>
+                      )}
+                    </button>
+                  )}
+
+                  {/* Delete - Owner only */}
+                  {session?.user?.id === selectedImage.user.id && (
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(selectedImage.id)}
+                      className="flex w-full items-center justify-center gap-2 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-1.5 text-xs font-medium text-destructive transition-colors hover:bg-destructive/20 sm:w-auto md:text-sm"
+                    >
+                      <Trash2 className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                      Delete
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>

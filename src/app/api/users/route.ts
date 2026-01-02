@@ -14,7 +14,29 @@ export async function GET(req: NextRequest) {
   }
 
   const { searchParams } = new URL(req.url);
+  const id = searchParams.get("id");
   const query = searchParams.get("q") ?? "";
+
+  // If fetching a specific user by ID (for admin check etc.)
+  if (id) {
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        image: true,
+        isAdmin: true,
+        isBugAdmin: true,
+      },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ user });
+  }
 
   // Search users by name or email (include current user so you can assign to yourself)
   const users = await prisma.user.findMany({
