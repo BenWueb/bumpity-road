@@ -21,9 +21,10 @@ const Header = async () => {
     <div className="relative overflow-hidden rounded-xl border bg-card shadow-sm">
       {/* Background image with overlay */}
       <div
-        className="absolute inset-0 bg-cover bg-center"
+        className="absolute inset-0 bg-cover"
         style={{
           backgroundImage: `url('${headerImageUrl}')`,
+          backgroundPosition: "center 30%",
         }}
       />
       <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-black/60" />
