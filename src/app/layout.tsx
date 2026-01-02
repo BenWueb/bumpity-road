@@ -4,6 +4,7 @@ import "./globals.css";
 import AppSidebar from "@/components/AppSidebar";
 import BadgeClaimHandler from "@/components/BadgeClaimHandler";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
+import AnnouncementBar from "@/components/AnnouncementBar";
 
 const poppins = Poppins({
   weight: ["400", "700"],
@@ -60,9 +61,12 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${poppins.className} antialiased h-dvh overflow-hidden`}>
         <GoogleAnalytics />
-        <div className="flex h-dvh w-full overflow-hidden">
-          <AppSidebar />
-          <main className="min-w-0 flex-1 overflow-y-auto">{children}</main>
+        <div className="flex h-dvh w-full flex-col overflow-hidden">
+          <AnnouncementBar />
+          <div className="flex min-h-0 flex-1 overflow-hidden">
+            <AppSidebar />
+            <main className="min-w-0 flex-1 overflow-y-auto">{children}</main>
+          </div>
         </div>
         <BadgeClaimHandler />
       </body>

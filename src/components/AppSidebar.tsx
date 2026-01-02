@@ -22,11 +22,50 @@ import {
   X,
 } from "lucide-react";
 
+type NavPill = {
+  label: string;
+  title?: string;
+  pillClassName: string;
+  iconClassName?: string;
+  // Optional: override link styling for special "accent" sections (e.g. Adventures)
+  linkActiveClassName?: string;
+  linkInactiveClassName?: string;
+};
+
+const SIDEBAR_PILL_STYLES = {
+  NEW: {
+    label: "NEW",
+    title: "New",
+    pillClassName:
+      "rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-300",
+    iconClassName: "text-emerald-700 dark:text-emerald-300",
+    linkActiveClassName:
+      "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
+    linkInactiveClassName:
+      "text-emerald-700 hover:bg-emerald-500/10 hover:text-emerald-800 dark:text-emerald-300 dark:hover:text-emerald-200",
+  },
+  SOON: {
+    label: "SOON",
+    title: "Coming soon",
+    pillClassName:
+      "rounded-full bg-sky-500/15 px-2 py-0.5 text-[10px] font-semibold text-sky-700 dark:text-sky-300",
+    iconClassName: "text-sky-700 dark:text-sky-300",
+  },
+  BUILDING: {
+    label: "BUILDING",
+    title: "Building",
+    pillClassName:
+      "rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold text-amber-700 dark:text-amber-300",
+    iconClassName: "text-amber-700 dark:text-amber-300",
+  },
+} as const satisfies Record<string, NavPill>;
+
 type NavItem = {
   href: string;
   target?: string;
   label: string;
-  icon: React.ReactNode;
+  icon: React.ComponentType<{ className?: string }>;
+  pill?: NavPill;
 };
 
 function isActivePath(pathname: string, href: string) {
@@ -59,57 +98,74 @@ export default function AppSidebar() {
     }
   }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Allow global UI elements (e.g. announcement bar) to open the feedback modal.
+  useEffect(() => {
+    function onOpen() {
+      setFeedbackOpen(true);
+    }
+    window.addEventListener("openFeedbackModal", onOpen);
+    return () => window.removeEventListener("openFeedbackModal", onOpen);
+  }, []);
+
   const items: NavItem[] = useMemo(
     () => [
-      { href: "/", label: "Home", icon: <Home className="h-5 w-5" /> },
+      { href: "/", label: "Home", icon: Home },
       {
         href: "/todos",
         label: "Tasks",
-        icon: <CheckSquare className="h-5 w-5" />,
+        icon: CheckSquare,
       },
       {
         href: "/gallery",
         label: "Gallery",
-        icon: <Images className="h-5 w-5" />,
+        icon: Images,
       },
       {
         href: "/guestbook",
         label: "Guestbook",
-        icon: <BookOpen className="h-5 w-5" />,
+        icon: BookOpen,
       },
       {
         href: "/blog",
         label: "Blog",
-        icon: <NotebookPen className="h-5 w-5" />,
+        icon: NotebookPen,
       },
       {
         href: "https://www.joanskitchen.app",
         target: "_blank",
         label: "Recipes",
-        icon: <UtensilsCrossed className="h-5 w-5" />,
+        icon: UtensilsCrossed,
       },
       {
         href: "/sop",
         label: "SOP",
-        icon: <NotebookText className="h-5 w-5" />,
+        icon: NotebookText,
       },
       {
         href: "/adventures",
         label: "Adventures",
-        icon: <TentTree className="h-5 w-5" />,
+        icon: TentTree,
+        pill: SIDEBAR_PILL_STYLES.NEW,
       },
       {
         href: "/wildlife",
         label: "Wildlife",
-        icon: <Panda className="h-5 w-5" />,
+        icon: Panda,
+        pill: SIDEBAR_PILL_STYLES.SOON,
       },
       {
         href: "/loon",
         label: "Loons",
-        icon: <Binoculars className="h-5 w-5" />,
+        icon: Binoculars,
+        pill: SIDEBAR_PILL_STYLES.SOON,
       },
 
-      { href: "/about", label: "About", icon: <Info className="h-5 w-5" /> },
+      {
+        href: "/about",
+        label: "About",
+        icon: Info,
+        pill: SIDEBAR_PILL_STYLES.BUILDING,
+      },
     ],
     []
   );
@@ -174,11 +230,12 @@ export default function AppSidebar() {
             <ul className="space-y-1">
               {items.map((item) => {
                 const active = isActivePath(pathname, item.href);
-                const isAdventures = item.href === "/adventures";
+                const pill = item.pill;
                 // On mobile, always show labels. On desktop, hide when collapsed.
                 const showLabel =
                   !collapsed ||
                   (typeof window !== "undefined" && window.innerWidth < 768);
+                const Icon = item.icon;
                 return (
                   <li key={item.href}>
                     <Link
@@ -192,17 +249,26 @@ export default function AppSidebar() {
                       }}
                       className={[
                         "group flex w-full min-w-0 items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
-                        isAdventures
+                        pill?.linkActiveClassName || pill?.linkInactiveClassName
                           ? active
-                            ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
-                            : "text-emerald-700 hover:bg-emerald-500/10 hover:text-emerald-800 dark:text-emerald-300 dark:hover:text-emerald-200"
+                            ? pill.linkActiveClassName ??
+                              "bg-accent text-foreground"
+                            : pill.linkInactiveClassName ??
+                              "text-muted-foreground hover:bg-accent hover:text-foreground"
                           : active
                           ? "bg-accent text-foreground"
                           : "text-muted-foreground hover:bg-accent hover:text-foreground",
                       ].join(" ")}
                       title={collapsed ? item.label : undefined}
                     >
-                      <span className="shrink-0">{item.icon}</span>
+                      <span className="shrink-0">
+                        <Icon
+                          className={[
+                            "h-5 w-5",
+                            pill?.iconClassName ?? "",
+                          ].join(" ")}
+                        />
+                      </span>
                       {/* Mobile: always show. Desktop: hide when collapsed */}
                       <span
                         className={[
@@ -212,9 +278,12 @@ export default function AppSidebar() {
                       >
                         {item.label}
                       </span>
-                      {isAdventures && showLabel && (
-                        <span className="ml-auto shrink-0 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-300">
-                          NEW
+                      {pill && showLabel && (
+                        <span
+                          className={`ml-auto shrink-0 ${pill.pillClassName}`}
+                          title={pill.title}
+                        >
+                          {pill.label}
                         </span>
                       )}
                     </Link>
