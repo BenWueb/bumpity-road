@@ -178,7 +178,7 @@ export default function AppSidebar() {
         type="button"
         onClick={() => setCollapsed(false)}
         className={[
-          "fixed bottom-4 right-4 z-40 inline-flex h-12 w-12 items-center justify-center rounded-full border bg-background text-foreground shadow-lg transition-opacity md:hidden",
+          "fixed bottom-4 right-4 z-40 inline-flex h-12 w-12 items-center justify-center rounded-full bg-linear-to-br from-emerald-500 to-teal-500 text-white shadow-xl ring-1 ring-black/5 transition-opacity hover:from-emerald-600 hover:to-teal-600 md:hidden dark:ring-white/10",
           collapsed ? "opacity-100" : "pointer-events-none opacity-0",
         ].join(" ")}
         aria-label="Open menu"
