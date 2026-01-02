@@ -8,9 +8,7 @@ import {
   ThermometerSun,
   Wind,
 } from "lucide-react";
-import {
-
-} from "lucide-react";
+import { CARD_GRADIENTS } from "@/lib/ui-gradients";
 
 interface WeatherData {
   main: {
@@ -109,7 +107,7 @@ function formatWindDir(deg?: number) {
 export function WeatherCardSkeleton() {
   return (
     <div className="relative w-full overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm">
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-sky-50 via-background to-indigo-50 dark:from-sky-950/30 dark:via-background dark:to-indigo-950/20" />
+      <div className={`pointer-events-none absolute inset-0 ${CARD_GRADIENTS.sky}`} />
       <div className="relative px-6 pt-6">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
@@ -142,7 +140,9 @@ export default async function WeatherCard() {
     return (
       <div className="w-full  rounded-xl border bg-card text-card-foreground shadow-sm">
         <div className="px-6 pt-6">
-          <div className="text-base font-semibold leading-none">Weather</div>
+          <div className="text-sm font-semibold leading-none md:text-lg">
+            Weather
+          </div>
         </div>
         <div className="px-6 pb-6 text-sm text-muted-foreground">
           Missing <code className="font-mono">OPENWEATHER_API_KEY</code>.
@@ -182,12 +182,12 @@ export default async function WeatherCard() {
 
     return (
       <div className="relative w-full overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm">
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-sky-50 via-background to-indigo-50 dark:from-sky-950/30 dark:via-background dark:to-indigo-950/20" />
+        <div className={`pointer-events-none absolute inset-0 ${CARD_GRADIENTS.sky}`} />
 
         <div className="relative px-4 pt-4 sm:px-6 sm:pt-6">
           <div className="flex items-start justify-between gap-3 sm:gap-4">
             <div className="min-w-0">
-              <div className="truncate text-sm font-semibold leading-none sm:text-base">
+              <div className="truncate text-sm font-semibold leading-none sm:text-base md:text-lg">
                 {placeName}
               </div>
               <div className="mt-1 text-xs text-muted-foreground capitalize sm:text-sm">
@@ -329,7 +329,9 @@ export default async function WeatherCard() {
     return (
       <div className="w-full  rounded-xl border bg-card text-card-foreground shadow-sm">
         <div className="px-6 pt-6">
-          <div className="text-base font-semibold leading-none">Weather</div>
+          <div className="text-sm font-semibold leading-none md:text-lg">
+            Weather
+          </div>
         </div>
         <div className="px-6 pb-6 text-sm text-muted-foreground">
           Failed to load weather. Please try again later.

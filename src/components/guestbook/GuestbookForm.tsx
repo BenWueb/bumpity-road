@@ -2,6 +2,7 @@
 
 import { GuestbookCreateInput } from "@/types/guestbook";
 import { COLOR_OPTIONS, DEFAULT_COLOR, ColorValue } from "@/lib/guestbook-constants";
+import { CARD_GRADIENTS } from "@/lib/ui-gradients";
 import { Send } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -49,9 +50,9 @@ export function GuestbookForm({ onSubmit, id }: Props) {
   return (
     <div id={id} className="lg:sticky lg:top-6 lg:self-start scroll-mt-4">
       <div className="relative overflow-hidden rounded-xl border bg-card shadow-sm">
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-violet-50 via-background to-purple-50 dark:from-violet-950/30 dark:via-background dark:to-purple-950/20" />
+        <div className={`pointer-events-none absolute inset-0 ${CARD_GRADIENTS.violet}`} />
         <div className="relative p-6">
-          <h2 className="mb-4 text-lg font-semibold">Sign the Guestbook</h2>
+          <h2 className="mb-4 text-lg font-semibold md:text-lg">Sign the Guestbook</h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>

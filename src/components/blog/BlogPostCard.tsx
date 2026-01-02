@@ -2,6 +2,7 @@
 
 import { Post } from "@/types/blog";
 import { formatDate, wasEdited } from "@/lib/blog-utils";
+import { CARD_GRADIENTS } from "@/lib/ui-gradients";
 import { CldImage } from "next-cloudinary";
 import Link from "next/link";
 import { Calendar, MessageCircle, Pencil, Trash2 } from "lucide-react";
@@ -16,7 +17,7 @@ type Props = {
 export function BlogPostCard({ post, isOwner, onEdit, onDelete }: Props) {
   return (
     <article className="group relative mb-4 break-inside-avoid overflow-hidden rounded-xl border bg-card shadow-sm transition-shadow hover:shadow-md">
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-slate-50 via-background to-gray-50 dark:from-slate-950/20 dark:via-background dark:to-gray-950/10" />
+      <div className={`pointer-events-none absolute inset-0 ${CARD_GRADIENTS.slate}`} />
 
       {/* Featured Image */}
       {post.images.length > 0 && (
@@ -64,7 +65,7 @@ export function BlogPostCard({ post, isOwner, onEdit, onDelete }: Props) {
         </div>
 
         <Link href={`/blog/${post.slug}`}>
-          <h2 className="mb-2 font-semibold leading-tight transition-colors hover:text-primary">
+          <h2 className="mb-2 text-base font-semibold leading-tight transition-colors hover:text-primary md:text-lg">
             {post.title}
           </h2>
         </Link>

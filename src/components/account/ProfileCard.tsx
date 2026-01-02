@@ -1,6 +1,7 @@
 import { Calendar, Mail } from "lucide-react";
 import { AccountCard } from "./AccountCard";
 import type { AccountUser } from "@/types/account";
+import { CARD_GRADIENTS } from "@/lib/ui-gradients";
 
 type Props = {
   user: AccountUser;
@@ -10,7 +11,7 @@ type Props = {
 export function ProfileCard({ user, createdDate }: Props) {
   return (
     <AccountCard
-      gradientClassName="bg-gradient-to-br from-violet-50 via-background to-purple-50 dark:from-violet-950/30 dark:via-background dark:to-purple-950/20"
+      gradientClassName={CARD_GRADIENTS.violet}
     >
       <div className="relative p-4 md:p-6">
         <div className="flex items-center gap-3  md:gap-4">

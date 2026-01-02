@@ -2,6 +2,7 @@
 
 import { CalendarDays, MapPin } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { CARD_GRADIENTS } from "@/lib/ui-gradients";
 
 type CalendarEvent = {
   id: string;
@@ -41,7 +42,7 @@ function formatWhen(isoOrDate: string | null) {
 export function CalendarSkeleton() {
   return (
     <div className="relative w-full  overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm">
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-sky-50 via-background to-indigo-50 dark:from-sky-950/30 dark:via-background dark:to-indigo-950/20" />
+      <div className={`pointer-events-none absolute inset-0 ${CARD_GRADIENTS.sky}`} />
       <div className="relative px-4 pt-4 sm:px-6 sm:pt-6">
         <div className="flex items-start justify-between gap-3 sm:gap-4">
           <div className="min-w-0">
@@ -93,12 +94,12 @@ const Calendar = () => {
 
     return (
       <div className="relative w-full  overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm">
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-sky-50 via-background to-indigo-50 dark:from-sky-950/30 dark:via-background dark:to-indigo-950/20" />
+        <div className={`pointer-events-none absolute inset-0 ${CARD_GRADIENTS.sky}`} />
 
         <div className="relative px-4 pt-4 sm:px-6 sm:pt-6">
           <div className="flex items-start justify-between gap-3 sm:gap-4">
             <div className="min-w-0">
-              <div className="truncate text-sm font-semibold leading-none sm:text-base">
+              <div className="truncate text-sm font-semibold leading-none sm:text-base md:text-lg">
                 Calendar
               </div>
               <div className="mt-1 text-xs text-muted-foreground sm:text-sm">

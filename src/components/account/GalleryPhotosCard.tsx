@@ -3,6 +3,7 @@ import { Camera } from "lucide-react";
 import { CldImage } from "next-cloudinary";
 import { AccountCard } from "./AccountCard";
 import type { AccountGalleryImage } from "@/types/account";
+import { CARD_GRADIENTS } from "@/lib/ui-gradients";
 
 type Props = {
   galleryImages: AccountGalleryImage[];
@@ -11,13 +12,13 @@ type Props = {
 export function GalleryPhotosCard({ galleryImages }: Props) {
   return (
     <AccountCard
-      gradientClassName="bg-gradient-to-br from-rose-50 via-background to-pink-50 dark:from-rose-950/30 dark:via-background dark:to-pink-950/20"
+      gradientClassName={CARD_GRADIENTS.rose}
     >
       <div className="relative">
         <div className="flex items-center justify-between border-b px-4 py-3 md:px-6 md:py-4">
           <div className="flex items-center gap-2">
             <Camera className="h-4 w-4 text-muted-foreground md:h-5 md:w-5" />
-            <h3 className="text-sm font-semibold md:text-base">Your Photos</h3>
+            <h3 className="text-sm font-semibold md:text-lg">Your Photos</h3>
           </div>
           <span className="text-xs text-muted-foreground md:text-sm">
             {galleryImages.length} photo{galleryImages.length !== 1 ? "s" : ""}
@@ -25,9 +26,12 @@ export function GalleryPhotosCard({ galleryImages }: Props) {
         </div>
         <div className="p-3 md:p-4">
           {galleryImages.length === 0 ? (
-            <div className="py-6 text-center text-sm text-muted-foreground md:py-8 md:text-base">
+            <div className="py-6 text-center text-sm text-muted-foreground md:py-8">
               <Camera className="mx-auto mb-2 h-6 w-6 opacity-50 md:h-8 md:w-8" />
               <p>No photos uploaded yet.</p>
+              <p className="mt-1 text-xs text-muted-foreground md:text-sm">
+                Upload one from a recent adventure (captions optional, but fun).
+              </p>
               <Link
                 href="/gallery"
                 className="mt-3 inline-flex items-center justify-center rounded-lg border bg-background px-3 py-1.5 text-xs font-medium text-foreground shadow-sm transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:text-sm"
@@ -55,14 +59,14 @@ export function GalleryPhotosCard({ galleryImages }: Props) {
                   </Link>
                 ))}
               </div>
-              {galleryImages.length > 16 && (
+              <div className="mt-3 flex justify-center md:mt-4">
                 <Link
                   href="/gallery"
-                  className="mt-3 block text-center text-xs text-primary hover:underline md:mt-4 md:text-sm"
+                  className="inline-flex items-center justify-center rounded-lg border bg-background px-3 py-1.5 text-xs font-medium text-foreground shadow-sm transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:text-sm"
                 >
-                  View all {galleryImages.length} photos →
+                  View all {galleryImages.length} photos
                 </Link>
-              )}
+              </div>
             </>
           )}
         </div>

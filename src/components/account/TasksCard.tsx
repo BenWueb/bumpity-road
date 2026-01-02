@@ -4,6 +4,7 @@ import { KANBAN_COLUMNS } from "@/lib/todo-constants";
 import { RecurringBadge } from "@/components/todos";
 import { AccountCard } from "./AccountCard";
 import type { Todo } from "@/types/todo";
+import { CARD_GRADIENTS } from "@/lib/ui-gradients";
 
 type Props = {
   todos: Todo[];
@@ -28,20 +29,23 @@ export function TasksCard({
 }: Props) {
   return (
     <AccountCard
-      gradientClassName="bg-gradient-to-br from-slate-50 via-background to-gray-50 dark:from-slate-950/30 dark:via-background dark:to-gray-950/20"
+      gradientClassName={CARD_GRADIENTS.slate}
     >
       <div className="relative">
         <div className="flex items-center justify-between border-b px-4 py-3 md:px-6 md:py-4">
-          <h3 className="text-sm font-semibold md:text-base">Your Tasks</h3>
+          <h3 className="text-sm font-semibold md:text-lg">Your Tasks</h3>
           <span className="text-xs text-muted-foreground md:text-sm">
             {todos.length} total
           </span>
         </div>
 
         {todos.length === 0 ? (
-          <div className="px-4 py-6 text-center text-sm text-muted-foreground md:px-6 md:py-8 md:text-base">
+          <div className="px-4 py-6 text-center text-sm text-muted-foreground md:px-6 md:py-8">
             <ListTodo className="mx-auto mb-2 h-6 w-6 opacity-50 md:h-8 md:w-8" />
             <p>No tasks yet.</p>
+            <p className="mt-1 text-xs text-muted-foreground md:text-sm">
+              Add one, assign it (optional), and keep it moving.
+            </p>
             <Link
               href="/todos"
               className="mt-3 inline-flex items-center justify-center rounded-lg border bg-background px-3 py-1.5 text-xs font-medium text-foreground shadow-sm transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:text-sm"
@@ -138,6 +142,15 @@ export function TasksCard({
                 </div>
               )}
             </div>
+
+            <div className="flex justify-center px-4 py-3 md:px-6 md:py-4">
+              <Link
+                href="/todos"
+                className="inline-flex items-center justify-center rounded-lg border bg-background px-3 py-1.5 text-xs font-medium text-foreground shadow-sm transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:text-sm"
+              >
+                View all {todos.length} tasks
+              </Link>
+            </div>
           </div>
         )}
       </div>
@@ -149,6 +162,11 @@ function TaskRow({ todo, userId }: { todo: Todo; userId: string }) {
   const column = KANBAN_COLUMNS.find((c) => c.id === todo.status);
   const StatusIcon = column?.icon ?? Circle;
   const isOwner = todo.userId === userId;
+  const assignmentLabel = todo.assignedTo?.id === userId
+    ? "Assigned to you"
+    : todo.assignedTo
+    ? "Assigned"
+    : "Unassigned";
 
   return (
     <div className="flex items-center gap-2 px-4 py-2 md:gap-4 md:px-6 md:py-3">
@@ -202,16 +220,29 @@ function TaskRow({ todo, userId }: { todo: Todo; userId: string }) {
           )}
         </div>
       </div>
-      <div
-        className={`hidden shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium sm:block md:text-xs ${
-          todo.status === "done"
-            ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
-            : todo.status === "in_progress"
-            ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300"
-            : "bg-slate-100 text-slate-700 dark:bg-slate-900/40 dark:text-slate-300"
-        }`}
-      >
-        {column?.label ?? todo.status}
+      <div className="hidden shrink-0 items-center gap-1 sm:flex">
+        <span
+          className={`rounded-full px-2 py-0.5 text-[10px] font-medium md:text-xs ${
+            todo.assignedTo?.id === userId
+              ? "bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300"
+              : todo.assignedTo
+              ? "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300"
+              : "bg-slate-100 text-slate-700 dark:bg-slate-900/40 dark:text-slate-300"
+          }`}
+        >
+          {assignmentLabel}
+        </span>
+        <span
+          className={`rounded-full px-2 py-0.5 text-[10px] font-medium md:text-xs ${
+            todo.status === "done"
+              ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
+              : todo.status === "in_progress"
+              ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300"
+              : "bg-slate-100 text-slate-700 dark:bg-slate-900/40 dark:text-slate-300"
+          }`}
+        >
+          {column?.label ?? todo.status}
+        </span>
       </div>
     </div>
   );

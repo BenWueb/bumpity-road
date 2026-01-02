@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { AccountCard } from "./AccountCard";
 import type { AccountFeedback } from "@/types/account";
+import { CARD_GRADIENTS } from "@/lib/ui-gradients";
 
 type Props = {
   feedback: AccountFeedback[];
@@ -16,13 +17,13 @@ type Props = {
 export function FeedbackAdminCard({ feedback, onUpdateStatus, onDelete }: Props) {
   return (
     <AccountCard
-      gradientClassName="bg-gradient-to-br from-amber-50 via-background to-orange-50 dark:from-amber-950/30 dark:via-background dark:to-orange-950/20"
+      gradientClassName={CARD_GRADIENTS.amber}
     >
       <div className="relative">
         <div className="flex items-center justify-between border-b px-4 py-3 md:px-6 md:py-4">
           <div className="flex items-center gap-2">
             <MessageSquarePlus className="h-4 w-4 text-muted-foreground md:h-5 md:w-5" />
-            <h3 className="text-sm font-semibold md:text-base">
+            <h3 className="text-sm font-semibold md:text-lg">
               Feedback & Bug Reports
             </h3>
           </div>
@@ -32,7 +33,7 @@ export function FeedbackAdminCard({ feedback, onUpdateStatus, onDelete }: Props)
         </div>
         <div className="divide-y">
           {feedback.length === 0 ? (
-            <div className="px-4 py-6 text-center text-sm text-muted-foreground md:px-6 md:py-8 md:text-base">
+            <div className="px-4 py-6 text-center text-sm text-muted-foreground md:px-6 md:py-8">
               <MessageSquarePlus className="mx-auto mb-2 h-6 w-6 opacity-50 md:h-8 md:w-8" />
               <p>No feedback submitted yet.</p>
             </div>

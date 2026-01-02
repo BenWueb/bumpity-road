@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, Calendar, MapPin, Tag } from "lucide-react";
 import { fetchAdventureById, fetchOtherAdventures } from "@/lib/adventures-server";
+import { CARD_GRADIENTS } from "@/lib/ui-gradients";
 
 export const dynamic = "force-dynamic";
 
@@ -93,7 +94,7 @@ async function AdventureContent({ id }: { id: string }) {
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-4 sm:gap-6 min-[1440px]:flex-row min-[1440px]:gap-8">
       <article className="relative min-w-0 flex-1 overflow-hidden rounded-xl border bg-card shadow-sm">
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-emerald-50 via-background to-teal-50 dark:from-emerald-950/20 dark:via-background dark:to-teal-950/10" />
+        <div className={`pointer-events-none absolute inset-0 ${CARD_GRADIENTS.emerald}`} />
 
         <div className="relative">
           {/* Hero */}
@@ -186,7 +187,7 @@ async function AdventureContent({ id }: { id: string }) {
       {/* Sidebar */}
       <aside className="w-full shrink-0 min-[1440px]:sticky min-[1440px]:top-6 min-[1440px]:w-72 min-[1440px]:self-start">
         <div className="relative overflow-hidden rounded-xl border bg-card p-4 shadow-sm sm:p-5">
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-emerald-50 via-background to-teal-50 dark:from-emerald-950/20 dark:via-background dark:to-teal-950/10" />
+          <div className={`pointer-events-none absolute inset-0 ${CARD_GRADIENTS.emerald}`} />
           <div className="relative">
             <h2 className="mb-4 text-lg font-semibold">More Adventures</h2>
 

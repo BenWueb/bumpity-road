@@ -2,6 +2,7 @@ import Link from "next/link";
 import { MessageCircle, NotebookPen } from "lucide-react";
 import { AccountCard } from "./AccountCard";
 import type { AccountPost } from "@/types/account";
+import { CARD_GRADIENTS } from "@/lib/ui-gradients";
 
 type Props = {
   posts: AccountPost[];
@@ -10,13 +11,13 @@ type Props = {
 export function BlogPostsCard({ posts }: Props) {
   return (
     <AccountCard
-      gradientClassName="bg-gradient-to-br from-violet-50 via-background to-purple-50 dark:from-violet-950/30 dark:via-background dark:to-purple-950/20"
+      gradientClassName={CARD_GRADIENTS.violet}
     >
       <div className="relative">
         <div className="flex items-center justify-between border-b px-4 py-3 md:px-6 md:py-4">
           <div className="flex items-center gap-2">
             <NotebookPen className="h-4 w-4 text-muted-foreground md:h-5 md:w-5" />
-            <h3 className="text-sm font-semibold md:text-base">
+            <h3 className="text-sm font-semibold md:text-lg">
               Your Blog Posts
             </h3>
           </div>
@@ -26,9 +27,12 @@ export function BlogPostsCard({ posts }: Props) {
         </div>
         <div className="divide-y">
           {posts.length === 0 ? (
-            <div className="px-4 py-6 text-center text-sm text-muted-foreground md:px-6 md:py-8 md:text-base">
+            <div className="px-4 py-6 text-center text-sm text-muted-foreground md:px-6 md:py-8">
               <NotebookPen className="mx-auto mb-2 h-6 w-6 opacity-50 md:h-8 md:w-8" />
               <p>No blog posts yet.</p>
+              <p className="mt-1 text-xs text-muted-foreground md:text-sm">
+                Start by writing a quick update or a full story.
+              </p>
               <Link
                 href="/blog"
                 className="mt-3 inline-flex items-center justify-center rounded-lg border bg-background px-3 py-1.5 text-xs font-medium text-foreground shadow-sm transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:text-sm"
@@ -74,13 +78,15 @@ export function BlogPostsCard({ posts }: Props) {
               </Link>
             ))
           )}
-          {posts.length > 5 && (
-            <Link
-              href="/blog"
-              className="block px-4 py-2.5 text-center text-xs text-primary hover:underline md:px-6 md:py-3 md:text-sm"
-            >
-              View all {posts.length} posts →
-            </Link>
+          {posts.length > 0 && (
+            <div className="flex justify-center px-4 py-3 md:px-6 md:py-4">
+              <Link
+                href="/blog"
+                className="inline-flex items-center justify-center rounded-lg border bg-background px-3 py-1.5 text-xs font-medium text-foreground shadow-sm transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:text-sm"
+              >
+                View all {posts.length} posts
+              </Link>
+            </div>
           )}
         </div>
       </div>

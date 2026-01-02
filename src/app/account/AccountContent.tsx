@@ -4,7 +4,14 @@ import { authClient } from "@/lib/auth-client";
 import { KANBAN_COLUMNS } from "@/lib/todo-constants";
 import { Todo } from "@/types/todo";
 import { RecurringBadge } from "@/components/todos";
-import { LogOut, User } from "lucide-react";
+import {
+  Camera,
+  ListTodo,
+  LogOut,
+  NotebookPen,
+  TentTree,
+  User,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -198,8 +205,9 @@ export function AccountContent({
   const router = useRouter();
   const [loggingOut, setLoggingOut] = useState(false);
   const [feedback, setFeedback] = useState(initialFeedback);
-  const [createdExpanded, setCreatedExpanded] = useState(true);
-  const [assignedExpanded, setAssignedExpanded] = useState(true);
+  // Initial display: collapsed regardless of item count (still user-toggleable)
+  const [createdExpanded, setCreatedExpanded] = useState(false);
+  const [assignedExpanded, setAssignedExpanded] = useState(false);
 
   // Emit badge event if new membership badges were awarded
   useEffect(() => {
@@ -325,6 +333,38 @@ export function AccountContent({
               );
             })}
           </div>
+        </div>
+
+        {/* Quick actions */}
+        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+          <Link
+            href="/todos"
+            className="flex items-center justify-center gap-2 rounded-xl border bg-background px-4 py-3 text-sm font-medium transition-colors hover:bg-accent"
+          >
+            <ListTodo className="h-4 w-4 text-muted-foreground" />
+            Go to Tasks
+          </Link>
+          <Link
+            href="/add-blog-post"
+            className="flex items-center justify-center gap-2 rounded-xl border bg-background px-4 py-3 text-sm font-medium transition-colors hover:bg-accent"
+          >
+            <NotebookPen className="h-4 w-4 text-muted-foreground" />
+            New Blog Post
+          </Link>
+          <Link
+            href="/gallery"
+            className="flex items-center justify-center gap-2 rounded-xl border bg-background px-4 py-3 text-sm font-medium transition-colors hover:bg-accent"
+          >
+            <Camera className="h-4 w-4 text-muted-foreground" />
+            Upload Photo
+          </Link>
+          <Link
+            href="/adventures"
+            className="flex items-center justify-center gap-2 rounded-xl border bg-background px-4 py-3 text-sm font-medium transition-colors hover:bg-accent"
+          >
+            <TentTree className="h-4 w-4 text-muted-foreground" />
+            New Adventure
+          </Link>
         </div>
 
         {/* Feedback (Bug Admin only) */}

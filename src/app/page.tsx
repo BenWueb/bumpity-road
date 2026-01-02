@@ -5,6 +5,7 @@ import { TodoCardSkeleton } from "@/components/TodoCard";
 import { TodoCardServer } from "@/components/TodoCardServer";
 import { Suspense } from "react";
 import Link from "next/link";
+import { CARD_GRADIENTS } from "@/lib/ui-gradients";
 import {
   BookOpen,
   Camera,
@@ -25,7 +26,7 @@ export default function Home() {
             href="/gallery"
             className="group relative flex h-12 flex-col items-center justify-center gap-1 overflow-hidden rounded-xl border bg-card p-1.5 shadow-sm transition-all hover:shadow-md sm:h-20 sm:gap-1.5 md:h-20 md:flex-row md:justify-start md:gap-3 md:p-4 lg:h-24 lg:gap-4 lg:p-5 xl:h-28"
           >
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-rose-50 via-background to-pink-50 dark:from-rose-950/20 dark:via-background dark:to-pink-950/10" />
+            <div className={`pointer-events-none absolute inset-0 ${CARD_GRADIENTS.rose}`} />
             <div className="relative flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-rose-100 text-rose-600 transition-transform group-hover:scale-110 dark:bg-rose-900/30 dark:text-rose-400 sm:h-10 sm:w-10 md:h-10 md:w-10 lg:h-11 lg:w-11 xl:h-12 xl:w-12">
               <Camera className="h-3.5 w-3.5 sm:h-5 sm:w-5 lg:h-5 lg:w-5 xl:h-6 xl:w-6" />
             </div>
@@ -43,7 +44,7 @@ export default function Home() {
             href="/adventures"
             className="group relative flex h-12 flex-col items-center justify-center gap-1 overflow-hidden rounded-xl border bg-card p-1.5 shadow-sm transition-all hover:shadow-md sm:h-20 sm:gap-1.5 md:h-20 md:flex-row md:justify-start md:gap-3 md:p-4 lg:h-24 lg:gap-4 lg:p-5 xl:h-28"
           >
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-sky-50 via-background to-blue-50 dark:from-sky-950/20 dark:via-background dark:to-blue-950/10" />
+            <div className={`pointer-events-none absolute inset-0 ${CARD_GRADIENTS.sky}`} />
             <div className="relative flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-sky-100 text-sky-700 transition-transform group-hover:scale-110 dark:bg-sky-900/30 dark:text-sky-300 sm:h-10 sm:w-10 md:h-10 md:w-10 lg:h-11 lg:w-11 xl:h-12 xl:w-12">
               <Compass className="h-3.5 w-3.5 sm:h-5 sm:w-5 lg:h-5 lg:w-5 xl:h-6 xl:w-6" />
             </div>
@@ -61,7 +62,7 @@ export default function Home() {
             href="/guestbook"
             className="group relative flex h-12 flex-col items-center justify-center gap-1 overflow-hidden rounded-xl border bg-card p-1.5 shadow-sm transition-all hover:shadow-md sm:h-20 sm:gap-1.5 md:h-20 md:flex-row md:justify-start md:gap-3 md:p-4 lg:h-24 lg:gap-4 lg:p-5 xl:h-28"
           >
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-amber-50 via-background to-orange-50 dark:from-amber-950/20 dark:via-background dark:to-orange-950/10" />
+            <div className={`pointer-events-none absolute inset-0 ${CARD_GRADIENTS.amber}`} />
             <div className="relative flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-600 transition-transform group-hover:scale-110 dark:bg-amber-900/30 dark:text-amber-400 sm:h-10 sm:w-10 md:h-10 md:w-10 lg:h-11 lg:w-11 xl:h-12 xl:w-12">
               <BookOpen className="h-3.5 w-3.5 sm:h-5 sm:w-5 lg:h-5 lg:w-5 xl:h-6 xl:w-6" />
             </div>
@@ -79,7 +80,7 @@ export default function Home() {
             href="/blog"
             className="group relative hidden h-14 flex-col items-center justify-center gap-1 overflow-hidden rounded-xl border bg-card p-2 shadow-sm transition-all hover:shadow-md sm:h-20 sm:gap-1.5 md:h-20 md:flex-row md:justify-start md:gap-3 md:p-4 lg:h-24 lg:gap-4 lg:p-5 xl:flex xl:h-28"
           >
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-violet-50 via-background to-purple-50 dark:from-violet-950/20 dark:via-background dark:to-purple-950/10" />
+            <div className={`pointer-events-none absolute inset-0 ${CARD_GRADIENTS.violet}`} />
             <div className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-violet-100 text-violet-600 transition-transform group-hover:scale-110 dark:bg-violet-900/30 dark:text-violet-400 sm:h-10 sm:w-10 md:h-10 md:w-10 lg:h-11 lg:w-11 xl:h-12 xl:w-12">
               <NotebookPen className="h-4 w-4 sm:h-5 sm:w-5 lg:h-5 lg:w-5 xl:h-6 xl:w-6" />
             </div>
@@ -98,7 +99,7 @@ export default function Home() {
             target="_blank"
             className="group relative flex h-12 flex-col items-center justify-center gap-1 overflow-hidden rounded-xl border bg-card p-1.5 shadow-sm transition-all hover:shadow-md sm:h-20 sm:gap-1.5 md:h-20 md:flex-row md:justify-start md:gap-3 md:p-4 lg:h-24 lg:gap-4 lg:p-5 xl:h-28"
           >
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-emerald-50 via-background to-teal-50 dark:from-emerald-950/30 dark:via-background dark:to-teal-950/20" />
+            <div className={`pointer-events-none absolute inset-0 ${CARD_GRADIENTS.emerald}`} />
             <div className="relative flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600 transition-transform group-hover:scale-110 dark:bg-emerald-900/30 dark:text-emerald-400 sm:h-10 sm:w-10 md:h-10 md:w-10 lg:h-11 lg:w-11 xl:h-12 xl:w-12">
               <UtensilsCrossed className="h-3.5 w-3.5 sm:h-5 sm:w-5 lg:h-5 lg:w-5 xl:h-6 xl:w-6" />
             </div>

@@ -8,6 +8,7 @@ import {
   TentTree,
 } from "lucide-react";
 import { AccountCard } from "./AccountCard";
+import { CARD_GRADIENTS } from "@/lib/ui-gradients";
 
 type Props = {
   postsCount: number;
@@ -28,12 +29,12 @@ export function ActivityOverviewCard({
 }: Props) {
   return (
     <AccountCard
-      gradientClassName="bg-gradient-to-br from-emerald-50 via-background to-teal-50 dark:from-emerald-950/30 dark:via-background dark:to-teal-950/20"
+      gradientClassName={CARD_GRADIENTS.emerald}
     >
       <div className="relative p-4 md:p-6">
         <div className="flex items-center gap-2">
           <ListTodo className="h-4 w-4 text-muted-foreground md:h-5 md:w-5" />
-          <h3 className="text-sm font-semibold md:text-base">
+          <h3 className="text-sm font-semibold md:text-lg">
             Activity Overview
           </h3>
         </div>

@@ -5,6 +5,7 @@ import Image from "next/image";
 import { ArrowLeft } from "lucide-react";
 import { fetchPostBySlug, fetchOtherPosts } from "@/lib/blog-server";
 import { formatShortDate } from "@/lib/blog-utils";
+import { CARD_GRADIENTS } from "@/lib/ui-gradients";
 import BlogPostContent from "./BlogPostContent";
 
 type Props = {
@@ -66,7 +67,7 @@ async function PostContent({ slug }: { slug: string }) {
     <div className="mx-auto flex max-w-6xl flex-col gap-6 min-[1440px]:flex-row min-[1440px]:gap-8">
       {/* Main Article */}
       <article className="relative min-w-0 flex-1 overflow-hidden rounded-xl border bg-card shadow-sm">
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-slate-50 via-background to-gray-50 dark:from-slate-950/20 dark:via-background dark:to-gray-950/10" />
+        <div className={`pointer-events-none absolute inset-0 ${CARD_GRADIENTS.slate}`} />
 
         <BlogPostContent post={post} formattedDate={formattedDate} />
       </article>
@@ -74,7 +75,7 @@ async function PostContent({ slug }: { slug: string }) {
       {/* Sidebar - Other Posts */}
       <aside className="w-full shrink-0 min-[1440px]:sticky min-[1440px]:top-6 min-[1440px]:w-72 min-[1440px]:self-start">
         <div className="relative overflow-hidden rounded-xl border bg-card p-5 shadow-sm">
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-violet-50 via-background to-purple-50 dark:from-violet-950/20 dark:via-background dark:to-purple-950/10" />
+          <div className={`pointer-events-none absolute inset-0 ${CARD_GRADIENTS.violet}`} />
           <div className="relative">
             <h2 className="mb-4 text-lg font-semibold">More Posts</h2>
 

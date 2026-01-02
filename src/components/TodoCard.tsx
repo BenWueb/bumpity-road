@@ -8,6 +8,7 @@ import { useClickOutside } from "@/hooks/use-click-outside";
 import { CheckSquare, ChevronDown, CircleCheck, Plus } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { CARD_GRADIENTS } from "@/lib/ui-gradients";
 import {
   CompletedTodoItem,
   RecurringBadge,
@@ -18,7 +19,7 @@ import {
 export function TodoCardSkeleton() {
   return (
     <div className="relative w-full  overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm">
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-emerald-50 via-background to-teal-50 dark:from-emerald-950/30 dark:via-background dark:to-teal-950/20" />
+      <div className={`pointer-events-none absolute inset-0 ${CARD_GRADIENTS.emerald}`} />
       <div className="relative px-4 pt-4 sm:px-6 sm:pt-6">
         <div className="flex items-start justify-between gap-3 sm:gap-4">
           <div className="min-w-0">
@@ -121,7 +122,7 @@ export default function TodoCard({ initialTodos }: TodoCardClientProps = {}) {
 
   return (
     <div className="relative w-full  overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm">
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-emerald-50 via-background to-teal-50 dark:from-emerald-950/30 dark:via-background dark:to-teal-950/20" />
+      <div className={`pointer-events-none absolute inset-0 ${CARD_GRADIENTS.emerald}`} />
 
       <Link
         href="/todos"
@@ -129,7 +130,7 @@ export default function TodoCard({ initialTodos }: TodoCardClientProps = {}) {
       >
         <div className="flex items-start justify-between gap-3 sm:gap-4">
           <div className="min-w-0">
-            <div className="truncate text-sm font-semibold leading-none sm:text-base">
+            <div className="truncate text-sm font-semibold leading-none sm:text-base md:text-lg">
               Tasks
             </div>
             <div className="mt-1 text-xs text-muted-foreground sm:text-sm">
@@ -234,6 +235,7 @@ export default function TodoCard({ initialTodos }: TodoCardClientProps = {}) {
                   todo={todo}
                   isOwner={isOwner}
                   isExpanded={isExpanded}
+                  viewerUserId={userId}
                   onToggle={
                     canInteract
                       ? () => toggleComplete(todo.id, true)

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { CldImage, CldUploadButton } from "next-cloudinary";
 import { ImagePlus, X } from "lucide-react";
 import { CreatePostInput, UploadedImage } from "@/types/blog";
+import { CARD_GRADIENTS } from "@/lib/ui-gradients";
 
 type Props = {
   onSubmit: (input: CreatePostInput) => Promise<void>;
@@ -63,7 +64,7 @@ export function BlogPostForm({ onSubmit, onCancel }: Props) {
 
   return (
     <div className="relative mb-6 overflow-hidden rounded-xl border bg-card p-6 shadow-sm">
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-violet-50 via-background to-purple-50 dark:from-violet-950/20 dark:via-background dark:to-purple-950/10" />
+      <div className={`pointer-events-none absolute inset-0 ${CARD_GRADIENTS.violet}`} />
       <div className="relative">
         <h2 className="mb-4 text-lg font-semibold">Create a New Post</h2>
 

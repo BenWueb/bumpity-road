@@ -2,6 +2,7 @@
 
 import { ACTIVITIES, SEASONS } from "@/lib/gallery-constants";
 import type { PendingUpload } from "@/types/gallery";
+import { CARD_GRADIENTS } from "@/lib/ui-gradients";
 import { CldImage } from "next-cloudinary";
 import { X } from "lucide-react";
 
@@ -31,7 +32,7 @@ export function GalleryUploadPanel({
 }: Props) {
   return (
     <div className="relative mb-6 overflow-hidden rounded-xl border bg-card p-4 shadow-sm md:p-6">
-      <div className="pointer-events-none absolute inset-0 bg-linear-to-br from-violet-50 via-background to-purple-50 dark:from-violet-950/20 dark:via-background dark:to-purple-950/10" />
+      <div className={`pointer-events-none absolute inset-0 ${CARD_GRADIENTS.violet}`} />
       <div className="relative">
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
           {/* Preview */}
