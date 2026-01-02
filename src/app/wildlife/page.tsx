@@ -1,18 +1,25 @@
+"use client";
+
 import { Panda } from "lucide-react";
+import { PageHeader } from "@/components/PageHeader";
 
 export default function WildlifePage() {
   return (
-    <div className="flex h-full flex-col items-center justify-center p-4 text-center md:p-6">
-      <div className="flex h-16 w-16 items-center justify-center rounded-2xl border bg-gradient-to-br from-lime-100 to-green-100 text-lime-600 shadow-sm dark:from-lime-900/30 dark:to-green-900/30 dark:text-lime-400 md:h-20 md:w-20">
-        <Panda className="h-8 w-8 md:h-10 md:w-10" />
+    <div className="min-h-screen bg-background">
+      <PageHeader
+        title="Wildlife"
+        subtitle="Coming Soon"
+        icon={<Panda className="h-5 w-5 md:h-6 md:w-6" />}
+        iconWrapperClassName="flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-lime-500 to-green-600 text-white shadow-lg md:h-12 md:w-12"
+      />
+
+      <div className="mx-auto max-w-6xl p-4 md:p-6">
+        <div className="rounded-xl border bg-card p-6 text-center shadow-sm">
+          <p className="mx-auto max-w-md text-sm text-muted-foreground md:text-base">
+            Discover the wildlife around the cabin - from deer and bears to birds and more.
+          </p>
+        </div>
       </div>
-      <h1 className="mt-6 text-2xl font-bold md:text-3xl">Wildlife</h1>
-      <p className="mt-2 text-sm text-muted-foreground md:text-base">
-        Coming Soon
-      </p>
-      <p className="mt-4 max-w-md text-xs text-muted-foreground/70 md:text-sm">
-        Discover the wildlife around the cabin - from deer and bears to birds and more.
-      </p>
     </div>
   );
 }

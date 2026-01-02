@@ -13,6 +13,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { GalleryImage, PendingUpload } from "@/types/gallery";
 import { GalleryUploadPanel, type GalleryUploadFormState } from "@/components/gallery/GalleryUploadPanel";
 import { GalleryLightbox } from "@/components/gallery/GalleryLightbox";
+import { PageHeader } from "@/components/PageHeader";
 
 export default function GalleryPage() {
   const { data: session } = authClient.useSession();
@@ -226,71 +227,61 @@ export default function GalleryPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="border-b bg-card/50">
-        <div className="mx-auto max-w-6xl px-4 py-4 md:px-6 md:py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-rose-500 to-pink-600 text-white shadow-lg md:h-12 md:w-12">
-                <Camera className="h-5 w-5 md:h-6 md:w-6" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold md:text-2xl">Gallery</h1>
-                <p className="text-xs text-muted-foreground md:text-sm">
-                  {images.length} photo{images.length !== 1 ? "s" : ""}
-                </p>
-              </div>
-            </div>
-
-            {isLoggedIn ? (
-              !pendingUpload && (
-                <CldUploadButton
-                  uploadPreset="bumpity-road"
-                  onSuccess={handleUploadSuccess}
-                  options={{ multiple: false, maxFiles: 1 }}
-                  className="hidden items-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:from-emerald-600 hover:to-teal-600 md:flex"
-                >
-                  <ImagePlus className="h-4 w-4" />
-                  Upload Photo
-                </CldUploadButton>
-              )
-            ) : (
-              <Link
-                href="/login"
+      <PageHeader
+        title="Gallery"
+        subtitle={`${images.length} photo${images.length !== 1 ? "s" : ""}`}
+        icon={<Camera className="h-5 w-5 md:h-6 md:w-6" />}
+        iconWrapperClassName="flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-rose-500 to-pink-600 text-white shadow-lg md:h-12 md:w-12"
+        desktopAction={
+          isLoggedIn ? (
+            !pendingUpload ? (
+              <CldUploadButton
+                uploadPreset="bumpity-road"
+                onSuccess={handleUploadSuccess}
+                options={{ multiple: false, maxFiles: 1 }}
                 className="hidden items-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:from-emerald-600 hover:to-teal-600 md:flex"
               >
-                <LogIn className="h-4 w-4" />
-                Sign in to upload
-              </Link>
-            )}
-          </div>
-        </div>
-      </div>
+                <ImagePlus className="h-4 w-4" />
+                Upload Photo
+              </CldUploadButton>
+            ) : null
+          ) : (
+            <Link
+              href="/login"
+              className="hidden items-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:from-emerald-600 hover:to-teal-600 md:flex"
+            >
+              <LogIn className="h-4 w-4" />
+              Sign in to upload
+            </Link>
+          )
+        }
+        mobileAction={
+          isLoggedIn ? (
+            !pendingUpload ? (
+              <CldUploadButton
+                uploadPreset="bumpity-road"
+                onSuccess={handleUploadSuccess}
+                options={{ multiple: false, maxFiles: 1 }}
+                className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-2.5 text-sm font-medium text-white shadow-sm"
+              >
+                <ImagePlus className="h-4 w-4" />
+                Upload Photo
+              </CldUploadButton>
+            ) : null
+          ) : (
+            <Link
+              href="/login"
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-2.5 text-sm font-medium text-white shadow-sm"
+            >
+              <LogIn className="h-4 w-4" />
+              Sign in to upload
+            </Link>
+          )
+        }
+        mobileActionClassName="border-b bg-card/30 px-4 py-3 md:hidden"
+      />
 
       <div className="mx-auto max-w-6xl p-4 md:p-6">
-
-      {/* Mobile action button */}
-      {isLoggedIn ? (
-        !pendingUpload && (
-          <CldUploadButton
-            uploadPreset="bumpity-road"
-            onSuccess={handleUploadSuccess}
-            options={{ multiple: false, maxFiles: 1 }}
-            className="mb-4 flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-2.5 text-sm font-medium text-white shadow-md transition-all hover:from-emerald-600 hover:to-teal-600 md:hidden"
-          >
-            <ImagePlus className="h-4 w-4" />
-            Upload Photo
-          </CldUploadButton>
-        )
-      ) : (
-        <Link
-          href="/login"
-          className="mb-4 flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-2.5 text-sm font-medium text-white shadow-md transition-all hover:from-emerald-600 hover:to-teal-600 md:hidden"
-        >
-          <LogIn className="h-4 w-4" />
-          Sign in to upload
-        </Link>
-      )}
 
       {/* Upload Form Modal */}
       {pendingUpload && (

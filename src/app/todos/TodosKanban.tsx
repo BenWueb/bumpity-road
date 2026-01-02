@@ -8,6 +8,7 @@ import { CheckSquare, Plus } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { KanbanColumn } from "@/components/todos/kanban/KanbanColumn";
 import { TodoModal } from "@/components/todos/kanban/TodoModal";
+import { PageHeader } from "@/components/PageHeader";
 
 type Props = {
   initialTodos?: Todo[];
@@ -160,53 +161,42 @@ export default function TodosKanban({ initialTodos }: Props) {
 
   return (
     <div className="min-h-screen w-full bg-background">
-      {/* Header */}
-      <div className="border-b bg-card/50">
-        <div className="mx-auto max-w-6xl overflow-hidden px-3 py-3 md:px-6 md:py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 md:gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-linear-to-br from-sky-500 to-blue-600 text-white shadow-lg md:h-12 md:w-12 md:rounded-xl">
-                <CheckSquare className="h-4 w-4 md:h-6 md:w-6" />
-              </div>
-              <div>
-                <h1 className="text-lg font-bold md:text-2xl">Tasks</h1>
-                <p className="hidden text-sm text-muted-foreground md:block">
-                  Manage your to-do list
-                </p>
-              </div>
-            </div>
-
-            {isLoggedIn && (
-              <button
-                onClick={() => {
-                  setAddToColumn("todo");
-                  setShowAddModal(true);
-                }}
-                className="hidden items-center gap-2 rounded-lg bg-linear-to-r from-emerald-500 to-teal-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:from-emerald-600 hover:to-teal-600 md:flex"
-              >
-                <Plus className="h-4 w-4" />
-                Add Task
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Mobile action button */}
-      {isLoggedIn && (
-        <div className="border-b bg-card/30 px-3 py-2 md:hidden">
-          <button
-            onClick={() => {
-              setAddToColumn("todo");
-              setShowAddModal(true);
-            }}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-linear-to-r from-emerald-500 to-teal-500 px-3 py-2 text-sm font-medium text-white shadow-sm"
-          >
-            <Plus className="h-4 w-4" />
-            Add Task
-          </button>
-        </div>
-      )}
+      <PageHeader
+        title="Tasks"
+        subtitle={<span className="hidden md:inline">Manage your to-do list</span>}
+        icon={<CheckSquare className="h-4 w-4 md:h-6 md:w-6" />}
+        iconWrapperClassName="flex h-8 w-8 items-center justify-center rounded-lg bg-linear-to-br from-sky-500 to-blue-600 text-white shadow-lg md:h-12 md:w-12 md:rounded-xl"
+        innerClassName="mx-auto max-w-6xl overflow-hidden px-3 py-3 md:px-6 md:py-6"
+        desktopAction={
+          isLoggedIn ? (
+            <button
+              onClick={() => {
+                setAddToColumn("todo");
+                setShowAddModal(true);
+              }}
+              className="hidden items-center gap-2 rounded-lg bg-linear-to-r from-emerald-500 to-teal-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:from-emerald-600 hover:to-teal-600 md:flex"
+            >
+              <Plus className="h-4 w-4" />
+              Add Task
+            </button>
+          ) : null
+        }
+        mobileAction={
+          isLoggedIn ? (
+            <button
+              onClick={() => {
+                setAddToColumn("todo");
+                setShowAddModal(true);
+              }}
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-linear-to-r from-emerald-500 to-teal-500 px-3 py-2 text-sm font-medium text-white shadow-sm"
+            >
+              <Plus className="h-4 w-4" />
+              Add Task
+            </button>
+          ) : null
+        }
+        mobileActionClassName="border-b bg-card/30 px-3 py-2 md:hidden"
+      />
 
       <div className="mx-auto box-border w-full max-w-6xl px-3 py-3 md:px-6 md:py-6">
         {showLoading ? (

@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { BookOpen } from "lucide-react";
 import { getGuestbookData } from "@/lib/guestbook-server";
 import { GuestbookList } from "@/components/guestbook";
+import { PageHeader } from "@/components/PageHeader";
 
 function GuestbookSkeleton() {
   return (
@@ -42,22 +43,12 @@ async function GuestbookContent() {
 export default function GuestbookPage() {
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="border-b bg-card/50">
-        <div className="mx-auto max-w-6xl px-4 py-4 md:px-6 md:py-6">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-lg md:h-12 md:w-12">
-              <BookOpen className="h-5 w-5 md:h-6 md:w-6" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold md:text-2xl">Guestbook</h1>
-              <p className="text-xs text-muted-foreground md:text-sm">
-                Leave a message for us!
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <PageHeader
+        title="Guestbook"
+        subtitle="Leave a message for us!"
+        icon={<BookOpen className="h-5 w-5 md:h-6 md:w-6" />}
+        iconWrapperClassName="flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-violet-500 to-purple-600 text-white shadow-lg md:h-12 md:w-12"
+      />
 
       <div className="mx-auto max-w-6xl p-4 md:p-6">
         <Suspense fallback={<GuestbookSkeleton />}>

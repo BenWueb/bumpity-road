@@ -9,6 +9,7 @@ import Link from "next/link";
 import { BlogPostCard } from "./BlogPostCard";
 import { BlogPostForm } from "./BlogPostForm";
 import { BlogEditModal } from "./BlogEditModal";
+import { PageHeader } from "@/components/PageHeader";
 
 type Props = {
   initialPosts: Post[];
@@ -28,61 +29,48 @@ export function BlogList({ initialPosts }: Props) {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="border-b bg-card/50">
-        <div className="mx-auto max-w-6xl px-4 py-4 md:px-6 md:py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-lg md:h-12 md:w-12">
-                <NotebookPen className="h-5 w-5 md:h-6 md:w-6" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold md:text-2xl">Blog</h1>
-                <p className="text-xs text-muted-foreground md:text-sm">
-                  Stories and updates from the Cabin
-                </p>
-              </div>
-            </div>
-
-            {session?.user ? (
-              <button
-                onClick={() => setShowForm(!showForm)}
-                className="hidden items-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:from-emerald-600 hover:to-teal-600 md:flex"
-              >
-                <Plus className="h-4 w-4" />
-                New Post
-              </button>
-            ) : (
-              <Link
-                href="/login"
-                className="hidden items-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:from-emerald-600 hover:to-teal-600 md:flex"
-              >
-                Sign in to post
-              </Link>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Mobile action button */}
-      <div className="border-b bg-card/30 px-4 py-3 md:hidden">
-        {session?.user ? (
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-2.5 text-sm font-medium text-white shadow-sm"
-          >
-            <Plus className="h-4 w-4" />
-            New Post
-          </button>
-        ) : (
-          <Link
-            href="/login"
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-2.5 text-sm font-medium text-white shadow-sm"
-          >
-            Sign in to post
-          </Link>
-        )}
-      </div>
+      <PageHeader
+        title="Blog"
+        subtitle="Stories and updates from the Cabin"
+        icon={<NotebookPen className="h-5 w-5 md:h-6 md:w-6" />}
+        iconWrapperClassName="flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-amber-500 to-orange-600 text-white shadow-lg md:h-12 md:w-12"
+        desktopAction={
+          session?.user ? (
+            <button
+              onClick={() => setShowForm(!showForm)}
+              className="hidden items-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:from-emerald-600 hover:to-teal-600 md:flex"
+            >
+              <Plus className="h-4 w-4" />
+              New Post
+            </button>
+          ) : (
+            <Link
+              href="/login"
+              className="hidden items-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:from-emerald-600 hover:to-teal-600 md:flex"
+            >
+              Sign in to post
+            </Link>
+          )
+        }
+        mobileAction={
+          session?.user ? (
+            <button
+              onClick={() => setShowForm(!showForm)}
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-2.5 text-sm font-medium text-white shadow-sm"
+            >
+              <Plus className="h-4 w-4" />
+              New Post
+            </button>
+          ) : (
+            <Link
+              href="/login"
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-2.5 text-sm font-medium text-white shadow-sm"
+            >
+              Sign in to post
+            </Link>
+          )
+        }
+      />
 
       <div className="mx-auto max-w-6xl p-4 md:p-6">
 

@@ -125,9 +125,6 @@ export default function AboutContent({ initialAbout, canEdit }: Props) {
             <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/20 to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 lg:p-8">
               <div className="mb-2 flex items-center justify-between gap-3">
-                <h1 className="text-xl font-bold leading-tight text-white drop-shadow sm:text-3xl">
-                  {about.title}
-                </h1>
                 {editButton}
               </div>
               {formattedUpdatedAt && (
