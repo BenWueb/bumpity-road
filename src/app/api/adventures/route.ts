@@ -172,7 +172,7 @@ export async function PATCH(req: NextRequest) {
           ? [season.trim()]
           : null;
 
-    if (Array.isArray(seasons) && normalizedSeasons.length === 0) {
+    if (Array.isArray(seasons) && (normalizedSeasons ?? []).length === 0) {
       return NextResponse.json(
         { error: "At least one season is required" },
         { status: 400 }
