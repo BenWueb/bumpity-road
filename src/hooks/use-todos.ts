@@ -174,9 +174,9 @@ export function useTodos(userId: string | undefined) {
     }
   }, [loadTodos]);
 
-  // Derived state
-  const pendingTodos = todos.filter((t) => !t.completed);
-  const completedTodos = todos.filter((t) => t.completed);
+  // Derived state - use both completed and status for safety
+  const pendingTodos = todos.filter((t) => !t.completed && t.status !== "done");
+  const completedTodos = todos.filter((t) => t.completed || t.status === "done");
 
   const getTodosByStatus = useCallback(
     (status: string) => todos.filter((t) => t.status === status),

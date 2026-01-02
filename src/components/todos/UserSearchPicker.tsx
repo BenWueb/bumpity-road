@@ -34,7 +34,7 @@ export function UserSearchPicker({ value, onChange, placeholder = "Assign to som
   }
 
   return (
-    <div ref={containerRef} className="relative">
+    <div ref={containerRef} className={`relative ${isOpen ? "z-50" : ""}`}>
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
@@ -58,7 +58,7 @@ export function UserSearchPicker({ value, onChange, placeholder = "Assign to som
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 right-0 top-full z-20 mt-1 rounded-lg border bg-background p-2 shadow-lg">
+        <div className="absolute left-0 right-0 top-full z-50 mt-1 rounded-lg border bg-background p-2 shadow-lg">
           <input
             type="text"
             value={query}

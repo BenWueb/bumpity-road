@@ -24,7 +24,7 @@ export function TodoItem({
   children,
 }: Props) {
   return (
-    <div className="group relative rounded-lg border bg-background/60 shadow-sm backdrop-blur">
+    <div className={`group relative rounded-lg border bg-background/60 shadow-sm backdrop-blur ${isExpanded ? "z-40" : ""}`}>
       <div className="flex items-start gap-3 px-3 py-2">
         {onToggle ? (
           <button
