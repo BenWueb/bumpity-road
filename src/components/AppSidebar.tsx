@@ -15,6 +15,10 @@ import {
   MessageSquarePlus,
   NotebookPen,
   UtensilsCrossed,
+  NotebookText,
+  TentTree,
+  Binoculars,
+  Panda,
   X,
 } from "lucide-react";
 
@@ -78,13 +82,34 @@ export default function AppSidebar() {
         label: "Blog",
         icon: <NotebookPen className="h-5 w-5" />,
       },
-      { href: "/about", label: "About", icon: <Info className="h-5 w-5" /> },
       {
         href: "https://www.joanskitchen.app",
         target: "_blank",
         label: "Recipes",
         icon: <UtensilsCrossed className="h-5 w-5" />,
       },
+      {
+        href: "/sop",
+        label: "SOP",
+        icon: <NotebookText className="h-5 w-5" />,
+      },
+      {
+        href: "/adventures",
+        label: "Adventures",
+        icon: <TentTree className="h-5 w-5" />,
+      },
+      {
+        href: "/wildlife",
+        label: "Wildlife",
+        icon: <Panda className="h-5 w-5" />,
+      },
+      {
+        href: "/loon",
+        label: "Loons",
+        icon: <Binoculars className="h-5 w-5" />,
+      },
+
+      { href: "/about", label: "About", icon: <Info className="h-5 w-5" /> },
     ],
     []
   );
@@ -133,7 +158,11 @@ export default function AppSidebar() {
             >
               {/* Show X on mobile when open, Menu otherwise */}
               <span className="md:hidden">
-                {collapsed ? <Menu className="h-5 w-5" /> : <X className="h-5 w-5" />}
+                {collapsed ? (
+                  <Menu className="h-5 w-5" />
+                ) : (
+                  <X className="h-5 w-5" />
+                )}
               </span>
               <span className="hidden md:block">
                 <Menu className="h-5 w-5" />
@@ -146,7 +175,9 @@ export default function AppSidebar() {
               {items.map((item) => {
                 const active = isActivePath(pathname, item.href);
                 // On mobile, always show labels. On desktop, hide when collapsed.
-                const showLabel = !collapsed || typeof window !== "undefined" && window.innerWidth < 768;
+                const showLabel =
+                  !collapsed ||
+                  (typeof window !== "undefined" && window.innerWidth < 768);
                 return (
                   <li key={item.href}>
                     <Link
@@ -168,7 +199,12 @@ export default function AppSidebar() {
                     >
                       <span className="shrink-0">{item.icon}</span>
                       {/* Mobile: always show. Desktop: hide when collapsed */}
-                      <span className={["truncate font-medium", collapsed ? "md:hidden" : ""].join(" ")}>
+                      <span
+                        className={[
+                          "truncate font-medium",
+                          collapsed ? "md:hidden" : "",
+                        ].join(" ")}
+                      >
                         {item.label}
                       </span>
                     </Link>
@@ -187,7 +223,12 @@ export default function AppSidebar() {
               title={collapsed ? "Send Feedback" : undefined}
             >
               <MessageSquarePlus className="h-5 w-5 shrink-0" />
-              <span className={["truncate font-medium", collapsed ? "md:hidden" : ""].join(" ")}>
+              <span
+                className={[
+                  "truncate font-medium",
+                  collapsed ? "md:hidden" : "",
+                ].join(" ")}
+              >
                 Send Feedback
               </span>
             </button>
