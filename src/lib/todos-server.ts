@@ -1,6 +1,6 @@
 import { prisma } from "@/utils/prisma";
 import { unstable_cache } from "next/cache";
-import { Todo } from "@/types/todo";
+import { coerceTodoStatus, Todo } from "@/types/todo";
 
 async function fetchAllTodos(): Promise<Todo[]> {
   const todos = await prisma.todo.findMany({
@@ -19,7 +19,7 @@ async function fetchAllTodos(): Promise<Todo[]> {
     details: t.details,
     completed: t.completed,
     completedAt: t.completedAt?.toISOString() ?? null,
-    status: t.status,
+    status: coerceTodoStatus(t.status),
     recurring: t.recurring,
     dueDate: t.dueDate?.toISOString() ?? null,
     createdAt: t.createdAt.toISOString(),

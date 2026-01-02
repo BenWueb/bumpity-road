@@ -2,9 +2,8 @@
 
 import { GuestbookEntry, GuestbookUpdateInput } from "@/types/guestbook";
 import { COLOR_OPTIONS, ColorValue } from "@/lib/guestbook-constants";
-import { X } from "lucide-react";
-import { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
+import { useState } from "react";
+import { Modal } from "@/components/ui/Modal";
 
 type Props = {
   entry: GuestbookEntry;
@@ -18,12 +17,6 @@ export function GuestbookEditModal({ entry, ownerToken, onSave, onClose }: Props
   const [message, setMessage] = useState(entry.message);
   const [color, setColor] = useState<ColorValue>((entry.color as ColorValue) ?? "amber");
   const [saving, setSaving] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-    return () => setMounted(false);
-  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -46,29 +39,17 @@ export function GuestbookEditModal({ entry, ownerToken, onSave, onClose }: Props
     }
   }
 
-  if (!mounted) return null;
-
-  return createPortal(
-    <div
-      className="fixed inset-0 z-100 flex items-center justify-center bg-black/50 p-4"
-      onClick={onClose}
+  return (
+    <Modal
+      isOpen
+      onClose={onClose}
+      title="Edit Entry"
+      closeOnOverlayClick={!saving}
+      closeOnEscape={!saving}
+      overlayClassName="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4"
+      panelClassName="w-full max-w-md rounded-xl border bg-background p-6 shadow-xl"
     >
-      <div
-        className="w-full max-w-md rounded-xl border bg-background p-6 shadow-xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Edit Entry</h2>
-          <button
-            type="button"
-            onClick={onClose}
-            className="text-muted-foreground hover:text-foreground"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="editName" className="mb-1 block text-sm font-medium">
               Your Name
@@ -140,9 +121,7 @@ export function GuestbookEditModal({ entry, ownerToken, onSave, onClose }: Props
             </button>
           </div>
         </form>
-      </div>
-    </div>,
-    document.body
+    </Modal>
   );
 }
 

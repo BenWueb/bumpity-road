@@ -5,6 +5,7 @@ import { CldUploadWidget } from "next-cloudinary";
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
+import { emitBadgesEarned } from "@/utils/badges-client";
 import {
   Calendar,
   MapPin,
@@ -368,13 +369,7 @@ export default function AdventuresPage() {
         const data = (await res.json().catch(() => null)) as {
           newBadges?: string[];
         } | null;
-        if (data?.newBadges && data.newBadges.length > 0) {
-          window.dispatchEvent(
-            new CustomEvent("badgesEarned", {
-              detail: { badges: data.newBadges },
-            })
-          );
-        }
+        emitBadgesEarned(data?.newBadges);
         resetForm();
         loadAdventures();
       }

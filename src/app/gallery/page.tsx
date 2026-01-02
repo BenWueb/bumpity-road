@@ -2,81 +2,17 @@
 
 import { authClient } from "@/lib/auth-client";
 import { CldUploadButton, CldImage } from "next-cloudinary";
+import { getActivityLabel, getSeasonIcon, SEASONS } from "@/lib/gallery-constants";
 import {
   ImagePlus,
-  Trash2,
-  X,
   Camera,
-  Leaf,
-  Sun,
-  Snowflake,
-  TreeDeciduous,
   LogIn,
-  ChevronLeft,
-  ChevronRight,
-  ImageUp,
-  Check,
 } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
-
-type GalleryImage = {
-  id: string;
-  publicId: string;
-  url: string;
-  width: number | null;
-  height: number | null;
-  caption: string | null;
-  description: string | null;
-  photographerName: string | null;
-  season: string | null;
-  activity: string | null;
-  createdAt: string;
-  user: { id: string; name: string };
-};
-
-type PendingUpload = {
-  publicId: string;
-  url: string;
-  width?: number;
-  height?: number;
-};
-
-const SEASONS = [
-  { value: "spring", label: "Spring", icon: Leaf, color: "text-green-500" },
-  { value: "summer", label: "Summer", icon: Sun, color: "text-yellow-500" },
-  {
-    value: "fall",
-    label: "Fall",
-    icon: TreeDeciduous,
-    color: "text-orange-500",
-  },
-  { value: "winter", label: "Winter", icon: Snowflake, color: "text-blue-400" },
-];
-
-const ACTIVITIES = [
-  { value: "fishing", label: "Fishing" },
-  { value: "hiking", label: "Hiking" },
-  { value: "bird_watching", label: "Bird Watching" },
-  { value: "camping", label: "Camping" },
-  { value: "food & drink", label: "Food & Drinks" },
-
-  { value: "boating", label: "Boating" },
-  { value: "wildlife", label: "Wildlife" },
-  { value: "scenic", label: "Scenic" },
-  { value: "other", label: "Other" },
-];
-
-function getSeasonIcon(season: string | null) {
-  const s = SEASONS.find((x) => x.value === season);
-  if (!s) return null;
-  const Icon = s.icon;
-  return <Icon className={`h-4 w-4 ${s.color}`} />;
-}
-
-function getActivityLabel(activity: string | null) {
-  return ACTIVITIES.find((a) => a.value === activity)?.label ?? activity;
-}
+import { useCallback, useEffect, useState } from "react";
+import type { GalleryImage, PendingUpload } from "@/types/gallery";
+import { GalleryUploadPanel, type GalleryUploadFormState } from "@/components/gallery/GalleryUploadPanel";
+import { GalleryLightbox } from "@/components/gallery/GalleryLightbox";
 
 export default function GalleryPage() {
   const { data: session } = authClient.useSession();
@@ -87,10 +23,6 @@ export default function GalleryPage() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [settingHeader, setSettingHeader] = useState(false);
   const [headerSet, setHeaderSet] = useState(false);
-
-  // Touch swipe tracking
-  const touchStartX = useRef<number>(0);
-  const touchEndX = useRef<number>(0);
 
   // Check if user is admin
   useEffect(() => {
@@ -155,50 +87,7 @@ export default function GalleryPage() {
     }
   }, [selectedIndex, images]);
 
-  // Keyboard navigation
-  useEffect(() => {
-    if (!selectedImage) return;
-
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "ArrowLeft") {
-        e.preventDefault();
-        goToPrevious();
-      } else if (e.key === "ArrowRight") {
-        e.preventDefault();
-        goToNext();
-      } else if (e.key === "Escape") {
-        setSelectedImage(null);
-        setSelectedIndex(-1);
-      }
-    }
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [selectedImage, goToPrevious, goToNext]);
-
-  // Touch swipe handlers
-  function handleTouchStart(e: React.TouchEvent) {
-    touchStartX.current = e.touches[0].clientX;
-  }
-
-  function handleTouchMove(e: React.TouchEvent) {
-    touchEndX.current = e.touches[0].clientX;
-  }
-
-  function handleTouchEnd() {
-    const diff = touchStartX.current - touchEndX.current;
-    const minSwipeDistance = 50;
-
-    if (Math.abs(diff) > minSwipeDistance) {
-      if (diff > 0) {
-        // Swiped left -> go to next
-        goToNext();
-      } else {
-        // Swiped right -> go to previous
-        goToPrevious();
-      }
-    }
-  }
+  // (Keyboard + swipe navigation is encapsulated in <GalleryLightbox />)
 
   function openLightbox(image: GalleryImage, index: number) {
     setSelectedImage(image);
@@ -214,7 +103,7 @@ export default function GalleryPage() {
   const [pendingUpload, setPendingUpload] = useState<PendingUpload | null>(
     null
   );
-  const [uploadForm, setUploadForm] = useState({
+  const [uploadForm, setUploadForm] = useState<GalleryUploadFormState>({
     photographerName: "",
     description: "",
     season: "",
@@ -405,181 +294,14 @@ export default function GalleryPage() {
 
       {/* Upload Form Modal */}
       {pendingUpload && (
-        <div className="mb-6 relative overflow-hidden rounded-xl border bg-card p-4 shadow-sm md:p-6">
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-violet-50 via-background to-purple-50 dark:from-violet-950/20 dark:via-background dark:to-purple-950/10" />
-          <div className="relative">
-            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
-              {/* Preview */}
-              <div className="mx-auto h-24 w-24 shrink-0 overflow-hidden rounded-lg border bg-muted sm:mx-0 sm:h-32 sm:w-32">
-                <CldImage
-                  src={pendingUpload.publicId}
-                  alt="Upload preview"
-                  width={128}
-                  height={128}
-                  crop="fill"
-                  className="h-full w-full object-cover"
-                />
-              </div>
-
-              <div className="flex-1 text-center sm:text-left">
-                <h2 className="mb-1 text-base font-semibold md:text-lg">
-                  Add Photo Details
-                </h2>
-                <p className="text-xs text-muted-foreground md:text-sm">
-                  Add some details about this photo to help others discover it.
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={cancelUpload}
-                className="absolute right-0 top-0 shrink-0 text-muted-foreground hover:text-foreground sm:static"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <form
-              onSubmit={handleSubmitUpload}
-              className="space-y-3 md:space-y-4"
-            >
-              <div className="grid gap-3 sm:grid-cols-2 md:gap-4">
-                {/* Photographer Name */}
-                <div>
-                  <label
-                    htmlFor="photographerName"
-                    className="mb-1 block text-xs font-medium md:text-sm"
-                  >
-                    Your Name
-                  </label>
-                  <input
-                    id="photographerName"
-                    type="text"
-                    value={uploadForm.photographerName}
-                    onChange={(e) =>
-                      setUploadForm((prev) => ({
-                        ...prev,
-                        photographerName: e.target.value,
-                      }))
-                    }
-                    placeholder="Enter your name..."
-                    maxLength={100}
-                    className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                  />
-                </div>
-
-                {/* Activity */}
-                <div>
-                  <label
-                    htmlFor="activity"
-                    className="mb-1 block text-xs font-medium md:text-sm"
-                  >
-                    Activity
-                  </label>
-                  <select
-                    id="activity"
-                    value={uploadForm.activity}
-                    onChange={(e) =>
-                      setUploadForm((prev) => ({
-                        ...prev,
-                        activity: e.target.value,
-                      }))
-                    }
-                    className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                  >
-                    <option value="">Select activity...</option>
-                    {ACTIVITIES.map((a) => (
-                      <option key={a.value} value={a.value}>
-                        {a.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Season */}
-              <div>
-                <label className="mb-1.5 block text-xs font-medium md:mb-2 md:text-sm">
-                  Season
-                </label>
-                <div className="flex flex-wrap gap-1.5 md:gap-2">
-                  {SEASONS.map((s) => {
-                    const Icon = s.icon;
-                    const isSelected = uploadForm.season === s.value;
-                    return (
-                      <button
-                        key={s.value}
-                        type="button"
-                        onClick={() =>
-                          setUploadForm((prev) => ({
-                            ...prev,
-                            season: isSelected ? "" : s.value,
-                          }))
-                        }
-                        className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs transition-colors md:gap-2 md:px-3 md:py-1.5 md:text-sm ${
-                          isSelected
-                            ? "border-primary bg-primary/10 text-primary"
-                            : "hover:bg-accent"
-                        }`}
-                      >
-                        <Icon
-                          className={`h-3.5 w-3.5 md:h-4 md:w-4 ${s.color}`}
-                        />
-                        {s.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Description */}
-              <div>
-                <label
-                  htmlFor="description"
-                  className="mb-1 block text-xs font-medium md:text-sm"
-                >
-                  Description
-                </label>
-                <div className="relative">
-                  <textarea
-                    id="description"
-                    value={uploadForm.description}
-                    onChange={(e) =>
-                      setUploadForm((prev) => ({
-                        ...prev,
-                        description: e.target.value,
-                      }))
-                    }
-                    placeholder="What's happening in this photo..."
-                    rows={2}
-                    maxLength={500}
-                    className="w-full resize-none rounded-md border bg-background px-3 pb-5 pt-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring md:rows-3 md:pb-6"
-                  />
-                  <span className="pointer-events-none absolute bottom-1.5 right-2 text-[10px] text-muted-foreground md:bottom-2 md:text-xs">
-                    {uploadForm.description.length}/500
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-                <button
-                  type="button"
-                  onClick={cancelUpload}
-                  className="w-full rounded-md px-4 py-2 text-sm text-muted-foreground hover:bg-accent sm:w-auto"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 sm:w-auto"
-                >
-                  {submitting ? "Saving..." : "Save Photo"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <GalleryUploadPanel
+          pendingUpload={pendingUpload}
+          uploadForm={uploadForm}
+          setUploadForm={setUploadForm}
+          submitting={submitting}
+          onCancel={cancelUpload}
+          onSubmit={handleSubmitUpload}
+        />
       )}
 
       {/* Gallery grid */}
@@ -662,161 +384,20 @@ export default function GalleryPage() {
 
       {/* Lightbox modal */}
       {selectedImage && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-2 md:p-4"
-          onClick={closeLightbox}
-        >
-          {/* Previous button - hidden on mobile, positioned outside the modal */}
-          {selectedIndex > 0 && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                goToPrevious();
-              }}
-              className="absolute left-4 top-1/2 z-50 hidden -translate-y-1/2 rounded-full bg-black/50 p-3 text-white backdrop-blur transition-colors hover:bg-black/70 md:block"
-              aria-label="Previous image"
-            >
-              <ChevronLeft className="h-6 w-6" />
-            </button>
-          )}
-
-          {/* Next button - hidden on mobile, positioned outside the modal */}
-          {selectedIndex < images.length - 1 && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                goToNext();
-              }}
-              className="absolute right-4 top-1/2 z-50 hidden -translate-y-1/2 rounded-full bg-black/50 p-3 text-white backdrop-blur transition-colors hover:bg-black/70 md:block"
-              aria-label="Next image"
-            >
-              <ChevronRight className="h-6 w-6" />
-            </button>
-          )}
-
-          <div
-            className="relative flex max-h-[95vh] w-full max-w-[95vw] flex-col overflow-hidden rounded-lg bg-background shadow-2xl md:max-h-[90vh] md:w-auto md:max-w-[90vw]"
-            onClick={(e) => e.stopPropagation()}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-          >
-            {/* Close button */}
-            <button
-              type="button"
-              onClick={closeLightbox}
-              className="absolute right-2 top-2 z-10 rounded-full bg-black/50 p-1.5 text-white backdrop-blur transition-colors hover:bg-black/70 md:right-3 md:top-3 md:p-2"
-            >
-              <X className="h-4 w-4 md:h-5 md:w-5" />
-            </button>
-
-            {/* Image counter */}
-            <div className="absolute left-2 top-2 z-10 rounded-full bg-black/50 px-2.5 py-1 text-xs font-medium text-white backdrop-blur md:left-3 md:top-3 md:px-3 md:text-sm">
-              {selectedIndex + 1} / {images.length}
-            </div>
-
-            <div className="relative flex-1 overflow-hidden">
-              <CldImage
-                src={selectedImage.publicId}
-                alt={
-                  selectedImage.description ||
-                  selectedImage.caption ||
-                  "Gallery image"
-                }
-                width={selectedImage.width || 1200}
-                height={selectedImage.height || 800}
-                className="max-h-[55vh] w-full object-contain md:max-h-[70vh] md:w-auto"
-              />
-            </div>
-
-            <div className="shrink-0 border-t bg-background p-3 md:p-4">
-              {/* Tags */}
-              <div className="mb-2 flex flex-wrap items-center gap-1.5 md:gap-2">
-                {selectedImage.season && (
-                  <span className="flex items-center gap-0.5 rounded-full border px-2 py-0.5 text-[10px] font-medium md:gap-1 md:px-2.5 md:py-1 md:text-xs">
-                    {getSeasonIcon(selectedImage.season)}
-                    {
-                      SEASONS.find((s) => s.value === selectedImage.season)
-                        ?.label
-                    }
-                  </span>
-                )}
-                {selectedImage.activity && (
-                  <span className="rounded-full border bg-accent px-2 py-0.5 text-[10px] font-medium md:px-2.5 md:py-1 md:text-xs">
-                    {getActivityLabel(selectedImage.activity)}
-                  </span>
-                )}
-              </div>
-
-              {/* Description */}
-              {selectedImage.description && (
-                <p className="mb-2 line-clamp-3 text-xs md:line-clamp-none md:text-sm">
-                  {selectedImage.description}
-                </p>
-              )}
-
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs text-muted-foreground md:text-sm">
-                    {selectedImage.photographerName ? (
-                      <>
-                        Photo by{" "}
-                        <span className="font-medium text-foreground">
-                          {selectedImage.photographerName}
-                        </span>
-                      </>
-                    ) : (
-                      <>
-                        Uploaded by{" "}
-                        <span className="font-medium text-foreground">
-                          {selectedImage.user.name}
-                        </span>
-                      </>
-                    )}
-                  </p>
-                </div>
-
-                <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
-                  {/* Set as Header - Admin only */}
-                  {isAdmin && (
-                    <button
-                      type="button"
-                      onClick={() => setAsHeaderImage(selectedImage)}
-                      disabled={settingHeader}
-                      className="flex w-full items-center justify-center gap-2 rounded-md border border-primary/30 bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/20 disabled:opacity-50 sm:w-auto md:text-sm"
-                    >
-                      {headerSet ? (
-                        <>
-                          <Check className="h-3.5 w-3.5 md:h-4 md:w-4" />
-                          Header Set!
-                        </>
-                      ) : (
-                        <>
-                          <ImageUp className="h-3.5 w-3.5 md:h-4 md:w-4" />
-                          {settingHeader ? "Setting..." : "Set as Header"}
-                        </>
-                      )}
-                    </button>
-                  )}
-
-                  {/* Delete - Owner only */}
-                  {session?.user?.id === selectedImage.user.id && (
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(selectedImage.id)}
-                      className="flex w-full items-center justify-center gap-2 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-1.5 text-xs font-medium text-destructive transition-colors hover:bg-destructive/20 sm:w-auto md:text-sm"
-                    >
-                      <Trash2 className="h-3.5 w-3.5 md:h-4 md:w-4" />
-                      Delete
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <GalleryLightbox
+          images={images}
+          selectedImage={selectedImage}
+          selectedIndex={selectedIndex}
+          onClose={closeLightbox}
+          onPrevious={goToPrevious}
+          onNext={goToNext}
+          isAdmin={isAdmin}
+          isOwner={session?.user?.id === selectedImage.user.id}
+          settingHeader={settingHeader}
+          headerSet={headerSet}
+          onSetAsHeader={() => setAsHeaderImage(selectedImage)}
+          onDelete={() => handleDelete(selectedImage.id)}
+        />
       )}
       </div>
     </div>

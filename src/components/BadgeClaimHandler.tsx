@@ -3,113 +3,7 @@
 import { authClient } from "@/lib/auth-client";
 import { useEffect, useState } from "react";
 import { Award, X } from "lucide-react";
-
-// Badge display info
-const BADGE_INFO: Record<
-  string,
-  { name: string; description: string; icon: string }
-> = {
-  OG: {
-    name: "OG",
-    description: "You must have been here awhile!",
-    icon: "⭐",
-  },
-  TASK_ROOKIE: {
-    name: "Task Rookie",
-    description: "You completed 5 tasks!",
-    icon: "🌱",
-  },
-  TASK_WARRIOR: {
-    name: "Task Warrior",
-    description: "You completed 10 tasks!",
-    icon: "⚔️",
-  },
-  TASK_MASTER: {
-    name: "Task Master",
-    description: "You completed 20 tasks!",
-    icon: "🏆",
-  },
-  TASK_LEGEND: {
-    name: "Task Legend",
-    description: "You completed 100 tasks! Legendary!",
-    icon: "👑",
-  },
-  GUESTBOOK_SIGNER: {
-    name: "Guest",
-    description: "You signed the guestbook!",
-    icon: "✍️",
-  },
-  BLOGGER_FIRST: {
-    name: "First Post",
-    description: "You published your first blog post!",
-    icon: "📝",
-  },
-  BLOGGER_CONTRIBUTOR: {
-    name: "Contributor",
-    description: "You published 3 blog posts!",
-    icon: "📰",
-  },
-  BLOGGER_WRITER: {
-    name: "Writer",
-    description: "You published 5 blog posts!",
-    icon: "✒️",
-  },
-  BLOGGER_AUTHOR: {
-    name: "Author",
-    description: "You published 10 blog posts!",
-    icon: "📚",
-  },
-  FEEDBACK_FIRST: {
-    name: "Helper",
-    description: "You submitted your first feedback!",
-    icon: "💡",
-  },
-  FEEDBACK_CONTRIBUTOR: {
-    name: "Bug Hunter",
-    description: "You submitted 3 feedback reports!",
-    icon: "🔍",
-  },
-  FEEDBACK_ADVOCATE: {
-    name: "Advocate",
-    description: "You submitted 5 feedback reports!",
-    icon: "📣",
-  },
-  FEEDBACK_CHAMPION: {
-    name: "Champion",
-    description: "You submitted 10 feedback reports!",
-    icon: "🦸",
-  },
-  MEMBER_1_YEAR: {
-    name: "1 Year",
-    description: "You've been a member for 1 year!",
-    icon: "🎂",
-  },
-  MEMBER_2_YEARS: {
-    name: "2 Years",
-    description: "You've been a member for 2 years!",
-    icon: "🎉",
-  },
-  MEMBER_3_YEARS: {
-    name: "3 Years",
-    description: "You've been a member for 3 years!",
-    icon: "🌟",
-  },
-  MEMBER_5_YEARS: {
-    name: "5 Years",
-    description: "You've been a member for 5 years!",
-    icon: "💎",
-  },
-  MEMBER_10_YEARS: {
-    name: "10 Years",
-    description: "You've been a member for 10 years!",
-    icon: "🏛️",
-  },
-  ADVENTURER_FIRST: {
-    name: "Adventurer",
-    description: "You created your first adventure!",
-    icon: "🧭",
-  },
-};
+import { getBadgeInfo } from "@/lib/badge-definitions";
 
 export default function BadgeClaimHandler() {
   const { data: session } = authClient.useSession();
@@ -183,7 +77,7 @@ export default function BadgeClaimHandler() {
   if (!showSuccess && !error) return null;
 
   const currentBadge = badgesEarned[0];
-  const badgeInfo = currentBadge ? BADGE_INFO[currentBadge] : null;
+  const badgeInfo = currentBadge ? getBadgeInfo(currentBadge) : null;
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4">

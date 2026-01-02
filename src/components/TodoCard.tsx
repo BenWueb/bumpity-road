@@ -7,7 +7,7 @@ import { useTodos } from "@/hooks/use-todos";
 import { useClickOutside } from "@/hooks/use-click-outside";
 import { CheckSquare, ChevronDown, CircleCheck, Plus } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   CompletedTodoItem,
   RecurringBadge,
@@ -58,12 +58,11 @@ export default function TodoCard({ initialTodos }: TodoCardClientProps = {}) {
     completedTodos,
   } = useTodos(userId);
 
-  // Initialize with server data if provided
-  useState(() => {
-    if (initialTodos && initialTodos.length > 0) {
-      setTodos(initialTodos);
-    }
-  });
+  // Hydrate with server data (avoid side-effects inside useState initializer)
+  useEffect(() => {
+    if (!initialTodos?.length) return;
+    setTodos((prev) => (prev.length === 0 ? initialTodos : prev));
+  }, [initialTodos, setTodos]);
 
   // New todo form state
   const [showInput, setShowInput] = useState(false);

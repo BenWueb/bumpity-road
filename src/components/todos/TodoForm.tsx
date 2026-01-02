@@ -1,7 +1,7 @@
 "use client";
 
 import { KANBAN_COLUMNS, RECURRING_OPTIONS } from "@/lib/todo-constants";
-import { Todo, UserInfo } from "@/types/todo";
+import { coerceTodoStatus, Todo, TodoStatus, UserInfo } from "@/types/todo";
 import { useState } from "react";
 import { UserSearchPicker } from "./UserSearchPicker";
 
@@ -11,7 +11,7 @@ type Props = {
     title: string;
     details: string | null;
     recurring: string | null;
-    status: string;
+    status: TodoStatus;
     assignedToId: string | null;
   }) => Promise<void>;
   onCancel: () => void;
@@ -33,7 +33,7 @@ export function TodoForm({
   const [title, setTitle] = useState(initialData?.title ?? "");
   const [details, setDetails] = useState(initialData?.details ?? "");
   const [recurring, setRecurring] = useState<string | null>(initialData?.recurring ?? null);
-  const [status, setStatus] = useState(initialData?.status ?? "todo");
+  const [status, setStatus] = useState<TodoStatus>(initialData?.status ?? "todo");
   const [assignee, setAssignee] = useState<UserInfo | null>(initialData?.assignedTo ?? null);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -71,7 +71,7 @@ export function TodoForm({
         {showStatusField && (
           <select
             value={status}
-            onChange={(e) => setStatus(e.target.value)}
+            onChange={(e) => setStatus(coerceTodoStatus(e.target.value))}
             className="rounded-md border bg-background px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           >
             {KANBAN_COLUMNS.map((col) => (

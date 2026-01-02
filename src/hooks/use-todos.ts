@@ -1,6 +1,13 @@
 "use client";
 
-import { Todo, TodoCreateInput, TodoUpdateInput, UserInfo } from "@/types/todo";
+import {
+  Todo,
+  TodoCreateInput,
+  TodoStatus,
+  TodoUpdateInput,
+  UserInfo,
+} from "@/types/todo";
+import { emitBadgesEarned } from "@/utils/badges-client";
 import { useCallback, useEffect, useState } from "react";
 
 export function useTodos(userId: string | undefined) {
@@ -93,7 +100,7 @@ export function useTodos(userId: string | undefined) {
   }, []);
 
   const toggleComplete = useCallback(async (id: string, completed: boolean): Promise<void> => {
-    const status = completed ? "done" : "todo";
+    const status: TodoStatus = completed ? "done" : "todo";
 
     // Optimistic update (without completedBy - will be set from server response)
     setTodos((prev) =>
@@ -110,13 +117,8 @@ export function useTodos(userId: string | undefined) {
         const data = await res.json();
         // Update with server response to get completedBy info
         setTodos((prev) => prev.map((t) => (t.id === id ? data.todo : t)));
-        
-        // Emit event if new badges were earned
-        if (data.newBadges && data.newBadges.length > 0) {
-          window.dispatchEvent(
-            new CustomEvent("badgesEarned", { detail: { badges: data.newBadges } })
-          );
-        }
+
+        emitBadgesEarned(data.newBadges);
       }
     } catch {
       setTodos((prev) =>
@@ -129,7 +131,7 @@ export function useTodos(userId: string | undefined) {
     }
   }, []);
 
-  const updateStatus = useCallback(async (id: string, status: string): Promise<void> => {
+  const updateStatus = useCallback(async (id: string, status: TodoStatus): Promise<void> => {
     // Optimistic update
     setTodos((prev) =>
       prev.map((t) => (t.id === id ? { ...t, status, completed: status === "done" } : t))
@@ -145,13 +147,8 @@ export function useTodos(userId: string | undefined) {
         const data = await res.json();
         // Update with server response to get completedBy info
         setTodos((prev) => prev.map((t) => (t.id === id ? data.todo : t)));
-        
-        // Emit event if new badges were earned
-        if (data.newBadges && data.newBadges.length > 0) {
-          window.dispatchEvent(
-            new CustomEvent("badgesEarned", { detail: { badges: data.newBadges } })
-          );
-        }
+
+        emitBadgesEarned(data.newBadges);
       }
     } catch {
       loadTodos();
@@ -179,7 +176,7 @@ export function useTodos(userId: string | undefined) {
   const completedTodos = todos.filter((t) => t.completed || t.status === "done");
 
   const getTodosByStatus = useCallback(
-    (status: string) => todos.filter((t) => t.status === status),
+    (status: TodoStatus) => todos.filter((t) => t.status === status),
     [todos]
   );
 

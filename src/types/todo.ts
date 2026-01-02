@@ -5,13 +5,22 @@ export type UserInfo = {
   image?: string;
 };
 
+export const TODO_STATUSES = ["todo", "in_progress", "done"] as const;
+export type TodoStatus = (typeof TODO_STATUSES)[number];
+
+export function coerceTodoStatus(value: unknown): TodoStatus {
+  return (TODO_STATUSES as readonly string[]).includes(value as string)
+    ? (value as TodoStatus)
+    : "todo";
+}
+
 export type Todo = {
   id: string;
   title: string;
   details: string | null;
   completed: boolean;
   completedAt: string | null;
-  status: string;
+  status: TodoStatus;
   recurring: string | null;
   dueDate: string | null;
   createdAt: string;
@@ -25,7 +34,7 @@ export type TodoCreateInput = {
   title: string;
   details?: string | null;
   recurring?: string | null;
-  status?: string;
+  status?: TodoStatus;
   assignedToId?: string | null;
 };
 
@@ -34,7 +43,7 @@ export type TodoUpdateInput = {
   title?: string;
   details?: string | null;
   recurring?: string | null;
-  status?: string;
+  status?: TodoStatus;
   completed?: boolean;
   assignedToId?: string | null;
 };

@@ -8,6 +8,7 @@ import {
   saveOwnedEntry,
 } from "@/lib/guestbook-ownership";
 import { useCallback, useEffect, useState } from "react";
+import { emitBadgesEarned } from "@/utils/badges-client";
 
 type UseGuestbookOptions = {
   initialEntries?: GuestbookEntry[];
@@ -67,11 +68,7 @@ export function useGuestbook(options: UseGuestbookOptions = {}) {
       setOwnedIds((prev) => new Set([...prev, data.entry.id]));
 
       // Emit badge event if badge was awarded
-      if (data.badgeAwarded) {
-        window.dispatchEvent(
-          new CustomEvent("badgesEarned", { detail: { badges: ["GUESTBOOK_SIGNER"] } })
-        );
-      }
+      if (data.badgeAwarded) emitBadgesEarned(["GUESTBOOK_SIGNER"]);
 
       return true;
     } catch {

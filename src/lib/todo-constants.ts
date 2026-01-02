@@ -1,4 +1,5 @@
 import { Circle, CircleCheck, Clock } from "lucide-react";
+import type { TodoStatus } from "@/types/todo";
 
 export const RECURRING_OPTIONS = [
   { value: null, label: "No repeat" },
@@ -30,7 +31,13 @@ export const KANBAN_COLUMNS = [
     color: "border-t-emerald-400",
     cardGradient: "bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-900/40 dark:to-emerald-800/20",
   },
-] as const;
+] as const satisfies readonly {
+  id: TodoStatus;
+  label: string;
+  icon: typeof Circle;
+  color: string;
+  cardGradient: string;
+}[];
 
 export type KanbanColumnId = (typeof KANBAN_COLUMNS)[number]["id"];
 

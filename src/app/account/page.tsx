@@ -5,6 +5,7 @@ import { prisma } from "@/utils/prisma";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { AccountContent } from "./AccountContent";
+import { coerceTodoStatus } from "@/types/todo";
 
 // Force dynamic rendering to ensure fresh data per user
 export const dynamic = "force-dynamic";
@@ -105,7 +106,7 @@ async function getAccountData() {
     details: t.details,
     completed: t.completed,
     completedAt: t.completedAt?.toISOString() ?? null,
-    status: t.status,
+    status: coerceTodoStatus(t.status),
     recurring: t.recurring,
     dueDate: t.dueDate?.toISOString() ?? null,
     createdAt: t.createdAt.toISOString(),

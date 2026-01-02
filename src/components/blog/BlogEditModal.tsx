@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { createPortal } from "react-dom";
+import { useState } from "react";
 import { CldImage, CldUploadButton } from "next-cloudinary";
 import { ImagePlus, Trash2, X } from "lucide-react";
 import { Post, PostImage, UpdatePostInput, UploadedImage } from "@/types/blog";
+import { Modal } from "@/components/ui/Modal";
 
 type Props = {
   post: Post;
@@ -19,12 +19,6 @@ export function BlogEditModal({ post, onSave, onClose }: Props) {
   const [imagesToRemove, setImagesToRemove] = useState<string[]>([]);
   const [newImages, setNewImages] = useState<UploadedImage[]>([]);
   const [saving, setSaving] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-    return () => setMounted(false);
-  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -71,29 +65,17 @@ export function BlogEditModal({ post, onSave, onClose }: Props) {
     }
   };
 
-  if (!mounted) return null;
-
-  return createPortal(
-    <div
-      className="fixed inset-0 z-100 flex items-center justify-center bg-black/50 p-4"
-      onClick={onClose}
+  return (
+    <Modal
+      isOpen
+      onClose={onClose}
+      title="Edit Post"
+      closeOnOverlayClick={!saving}
+      closeOnEscape={!saving}
+      overlayClassName="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4"
+      panelClassName="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border bg-background p-6 shadow-xl"
     >
-      <div
-        className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border bg-background p-6 shadow-xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Edit Post</h2>
-          <button
-            type="button"
-            onClick={onClose}
-            className="text-muted-foreground hover:text-foreground"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="editTitle" className="mb-1 block text-sm font-medium">
               Title
@@ -207,9 +189,7 @@ export function BlogEditModal({ post, onSave, onClose }: Props) {
             </button>
           </div>
         </form>
-      </div>
-    </div>,
-    document.body
+    </Modal>
   );
 }
 

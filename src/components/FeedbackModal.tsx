@@ -1,8 +1,9 @@
 "use client";
 
 import { Bug, Lightbulb, Send, X } from "lucide-react";
-import { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
+import { useState } from "react";
+import { emitBadgesEarned } from "@/utils/badges-client";
+import { Modal } from "@/components/ui/Modal";
 
 type Props = {
   isOpen: boolean;
@@ -16,15 +17,8 @@ export default function FeedbackModal({ isOpen, onClose }: Props) {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [mounted, setMounted] = useState(false);
 
-  // Track mount state for portal (SSR safety)
-  useEffect(() => {
-    setMounted(true);
-    return () => setMounted(false);
-  }, []);
-
-  if (!isOpen || !mounted) return null;
+  if (!isOpen) return null;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -52,11 +46,7 @@ export default function FeedbackModal({ isOpen, onClose }: Props) {
       const data = await res.json();
 
       // Emit badge event if new badges were earned
-      if (data.newBadges && data.newBadges.length > 0) {
-        window.dispatchEvent(
-          new CustomEvent("badgesEarned", { detail: { badges: data.newBadges } })
-        );
-      }
+      emitBadgesEarned(data.newBadges);
 
       setSuccess(true);
       setTimeout(() => {
@@ -78,39 +68,40 @@ export default function FeedbackModal({ isOpen, onClose }: Props) {
     onClose();
   }
 
-  return createPortal(
-    <div
-      className="fixed inset-0 z-100 flex items-center justify-center bg-black/50 p-2 md:p-4"
-      onClick={handleClose}
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      closeOnOverlayClick={!submitting}
+      closeOnEscape={!submitting}
+      showCloseButton={false}
+      overlayClassName="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-2 md:p-4"
+      panelClassName="max-h-[95vh] w-full max-w-md overflow-y-auto rounded-xl border bg-background p-4 shadow-xl md:max-h-[90vh] md:p-6"
     >
-      <div
-        className="max-h-[95vh] w-full max-w-md overflow-y-auto rounded-xl border bg-background p-4 shadow-xl md:max-h-[90vh] md:p-6"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {success ? (
-          <div className="py-6 text-center md:py-8">
-            <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400 md:mb-4 md:h-12 md:w-12">
-              <Send className="h-5 w-5 md:h-6 md:w-6" />
-            </div>
-            <h2 className="text-base font-semibold md:text-lg">Thank you!</h2>
-            <p className="mt-1 text-xs text-muted-foreground md:text-sm">
-              Your feedback has been submitted successfully.
-            </p>
+      {success ? (
+        <div className="py-6 text-center md:py-8">
+          <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400 md:mb-4 md:h-12 md:w-12">
+            <Send className="h-5 w-5 md:h-6 md:w-6" />
           </div>
-        ) : (
-          <>
-            <div className="mb-3 flex items-center justify-between md:mb-4">
-              <h2 className="text-base font-semibold md:text-lg">Send Feedback</h2>
-              <button
-                type="button"
-                onClick={handleClose}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
+          <h2 className="text-base font-semibold md:text-lg">Thank you!</h2>
+          <p className="mt-1 text-xs text-muted-foreground md:text-sm">
+            Your feedback has been submitted successfully.
+          </p>
+        </div>
+      ) : (
+        <>
+          <div className="mb-3 flex items-center justify-between md:mb-4">
+            <h2 className="text-base font-semibold md:text-lg">Send Feedback</h2>
+            <button
+              type="button"
+              onClick={handleClose}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
 
-            <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
               {/* Type selector */}
               <div className="flex gap-2">
                 <button
@@ -210,10 +201,8 @@ export default function FeedbackModal({ isOpen, onClose }: Props) {
                 </button>
               </div>
             </form>
-          </>
-        )}
-      </div>
-    </div>,
-    document.body
+        </>
+      )}
+    </Modal>
   );
 }

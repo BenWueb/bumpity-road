@@ -4,6 +4,7 @@ import { prisma } from "@/utils/prisma";
 import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
+import { coerceTodoStatus } from "@/types/todo";
 
 // Helper to revalidate todos cache for affected users
 function revalidateTodosCache() {
@@ -26,10 +27,14 @@ export async function GET() {
 
   // Normalize data to ensure completed matches status
   // This handles any legacy data inconsistencies
-  const normalizedTodos = todos.map((todo) => ({
-    ...todo,
-    completed: todo.status === "done" ? true : todo.completed,
-  }));
+  const normalizedTodos = todos.map((todo) => {
+    const status = coerceTodoStatus(todo.status);
+    return {
+      ...todo,
+      status,
+      completed: status === "done" ? true : todo.completed,
+    };
+  });
 
   return NextResponse.json({ todos: normalizedTodos });
 }
@@ -58,6 +63,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Title required" }, { status: 400 });
   }
 
+  const nextStatus = coerceTodoStatus(status);
+
   const todo = await prisma.todo.create({
     data: {
       title: title.trim(),
@@ -65,7 +72,7 @@ export async function POST(req: NextRequest) {
       userId: session.user.id,
       recurring: recurring || null,
       dueDate: dueDate ? new Date(dueDate) : null,
-      status: status || "todo",
+      status: nextStatus,
       ...(assignedToId ? { assignedToId } : {}),
     },
     include: {
@@ -125,18 +132,20 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
+  const nextStatus = status !== undefined ? coerceTodoStatus(status) : undefined;
+
   // Determine if task is being completed
   const isBeingCompleted =
     (typeof completed === "boolean" && completed && !existing.completed) ||
-    (typeof status === "string" &&
-      status === "done" &&
+    (typeof nextStatus === "string" &&
+      nextStatus === "done" &&
       existing.status !== "done");
 
   // Determine if task is being uncompleted
   const isBeingUncompleted =
     (typeof completed === "boolean" && !completed && existing.completed) ||
-    (typeof status === "string" &&
-      status !== "done" &&
+    (typeof nextStatus === "string" &&
+      nextStatus !== "done" &&
       existing.status === "done");
 
   // Only owner can reassign, change title/details/recurring; assignee can toggle completed/status
@@ -144,8 +153,8 @@ export async function PATCH(req: NextRequest) {
     where: { id },
     data: {
       ...(typeof completed === "boolean" ? { completed } : {}),
-      ...(typeof status === "string"
-        ? { status, completed: status === "done" }
+      ...(typeof nextStatus === "string"
+        ? { status: nextStatus, completed: nextStatus === "done" }
         : {}),
       ...(isOwner && typeof title === "string" ? { title: title.trim() } : {}),
       ...(isOwner && details !== undefined
