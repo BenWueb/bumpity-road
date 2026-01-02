@@ -156,7 +156,7 @@ async function AdventureContent({ id }: { id: string }) {
                 src={`https://www.google.com/maps?q=${encodeURIComponent(
                   adventure.address
                 )}&output=embed`}
-                className="h-56 w-full sm:h-72"
+                className="h-56 w-full pointer-events-none sm:pointer-events-auto sm:h-72"
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
               />

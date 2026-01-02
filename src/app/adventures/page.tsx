@@ -743,7 +743,7 @@ export default function AdventuresPage() {
                           src={getGoogleMapEmbedSrc({
                             address: adventure.address,
                           })}
-                          className="h-40 w-full"
+                          className="h-40 w-full pointer-events-none sm:pointer-events-auto"
                           loading="lazy"
                           referrerPolicy="no-referrer-when-downgrade"
                         />
@@ -942,7 +942,7 @@ export default function AdventuresPage() {
                         address: address.trim(),
                         placeId: selectedPlaceId || undefined,
                       })}
-                      className="h-44 w-full"
+                      className="h-44 w-full pointer-events-none sm:pointer-events-auto"
                       loading="lazy"
                       referrerPolicy="no-referrer-when-downgrade"
                     />
