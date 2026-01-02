@@ -3,6 +3,7 @@ import { Poppins } from "next/font/google";
 import "./globals.css";
 import AppSidebar from "@/components/AppSidebar";
 import BadgeClaimHandler from "@/components/BadgeClaimHandler";
+import GoogleAnalytics from "@/components/GoogleAnalytics";
 
 const poppins = Poppins({
   weight: ["400", "700"],
@@ -23,6 +24,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
+    url: "/",
     siteName: "Bumpity Road",
     title: "Bumpity Road",
     description: "The Cabin - A place for family memories, adventures, and togetherness.",
@@ -31,6 +33,12 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Bumpity Road",
     description: "The Cabin - A place for family memories, adventures, and togetherness.",
+    creator: "@bumpityroad",
+  },
+  other: {
+    // iMessage and other messaging apps use these
+    "apple-mobile-web-app-title": "Bumpity Road",
+    "application-name": "Bumpity Road",
   },
   robots: {
     index: true,
@@ -49,6 +57,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${poppins.className} antialiased`}>
+        <GoogleAnalytics />
         <div className="flex min-h-screen w-full">
           <AppSidebar />
           <main className="w-full">{children}</main>
