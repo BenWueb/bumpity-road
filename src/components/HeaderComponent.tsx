@@ -1,0 +1,45 @@
+import { prisma } from "@/utils/prisma";
+
+const DEFAULT_HEADER_IMAGE =
+  "https://images.pexels.com/photos/618833/pexels-photo-618833.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1";
+
+async function getHeaderImage(): Promise<string> {
+  try {
+    const setting = await prisma.siteSetting.findUnique({
+      where: { key: "headerImageUrl" },
+    });
+    return setting?.value || DEFAULT_HEADER_IMAGE;
+  } catch {
+    return DEFAULT_HEADER_IMAGE;
+  }
+}
+
+const HeaderComponent = async () => {
+  const headerImageUrl = await getHeaderImage();
+
+  return (
+    <div className="relative overflow-hidden rounded-xl border bg-card shadow-sm">
+      {/* Background image with overlay */}
+      <div
+        className="absolute inset-0 bg-cover"
+        style={{
+          backgroundImage: `url('${headerImageUrl}')`,
+          backgroundPosition: "center 30%",
+        }}
+      />
+      <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-black/60 to-black/40" />
+
+      {/* Content */}
+      <div className="relative flex flex-col h-48 items-center justify-center px-4 sm:h-56 sm:px-6 md:h-64 lg:h-80">
+        <h1 className="text-center text-4xl font-bold tracking-wider text-white drop-shadow-lg  md:text-5xl lg:text-7xl xl:text-[100px]">
+          Bumpity Road
+        </h1>
+        <h2 className="mt-12 text-white text-center text-sm font-bold tracking-wider text-sla drop-shadow-lg  md:text-lg lg:text-2xl ">
+          A place for all things Cabin
+        </h2>
+      </div>
+    </div>
+  );
+};
+
+export default HeaderComponent;
