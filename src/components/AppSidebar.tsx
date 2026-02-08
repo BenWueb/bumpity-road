@@ -1,10 +1,11 @@
 "use client";
 
 import AccountBar from "@/components/AccountBar";
+import { authClient } from "@/lib/auth-client";
 import FeedbackModal from "@/components/FeedbackModal";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   BookOpen,
   CheckSquare,
@@ -19,6 +20,7 @@ import {
   TentTree,
   Binoculars,
   Panda,
+  Wrench,
   X,
 } from "lucide-react";
 
@@ -66,6 +68,7 @@ type NavItem = {
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   pill?: NavPill;
+  adminOnly?: boolean;
 };
 
 function isActivePath(pathname: string, href: string) {
@@ -77,6 +80,29 @@ export default function AppSidebar() {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(true); // Start collapsed on mobile
   const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const { data: session } = authClient.useSession();
+
+  // Check if user is admin
+  const checkAdmin = useCallback(async () => {
+    if (!session?.user?.id) {
+      setIsAdmin(false);
+      return;
+    }
+    try {
+      const res = await fetch(`/api/users?id=${session.user.id}`);
+      if (res.ok) {
+        const data = await res.json();
+        setIsAdmin(data.user?.isAdmin ?? false);
+      }
+    } catch {
+      setIsAdmin(false);
+    }
+  }, [session?.user?.id]);
+
+  useEffect(() => {
+    checkAdmin();
+  }, [checkAdmin]);
 
   // Load saved state (only applies to desktop behavior)
   useEffect(() => {
@@ -114,6 +140,12 @@ export default function AppSidebar() {
         href: "/todos",
         label: "Tasks",
         icon: CheckSquare,
+      },
+      {
+        href: "/expenses",
+        label: "Expenses",
+        icon: Wrench,
+        adminOnly: true,
       },
       {
         href: "/gallery",
@@ -171,6 +203,12 @@ export default function AppSidebar() {
     []
   );
 
+  // Filter out admin-only items for non-admin users
+  const visibleItems = useMemo(
+    () => items.filter((item) => !item.adminOnly || isAdmin),
+    [items, isAdmin]
+  );
+
   return (
     <>
       {/* Mobile: Fixed menu button when sidebar is collapsed */}
@@ -178,7 +216,7 @@ export default function AppSidebar() {
         type="button"
         onClick={() => setCollapsed(false)}
         className={[
-          "fixed bottom-4 right-4 z-40 inline-flex h-12 w-12 items-center justify-center rounded-full bg-linear-to-br from-emerald-500 to-teal-500 text-white shadow-xl ring-1 ring-black/5 transition-opacity hover:from-emerald-600 hover:to-teal-600 md:hidden dark:ring-white/10",
+          "fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] right-[calc(1rem+env(safe-area-inset-right))] z-40 inline-flex h-12 w-12 items-center justify-center rounded-full bg-linear-to-br from-emerald-500 to-teal-500 text-white shadow-xl ring-1 ring-black/5 transition-opacity hover:from-emerald-600 hover:to-teal-600 md:hidden dark:ring-white/10",
           collapsed ? "opacity-100" : "pointer-events-none opacity-0",
         ].join(" ")}
         aria-label="Open menu"
@@ -229,7 +267,7 @@ export default function AppSidebar() {
 
           <nav className="flex-1 overflow-y-auto overflow-x-hidden px-2 py-3">
             <ul className="space-y-1">
-              {items.map((item) => {
+              {visibleItems.map((item) => {
                 const active = isActivePath(pathname, item.href);
                 const pill = item.pill;
                 // On mobile, always show labels. On desktop, hide when collapsed.

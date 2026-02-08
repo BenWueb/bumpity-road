@@ -59,9 +59,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${poppins.className} antialiased h-dvh overflow-hidden`}>
+      <body
+        className={`${poppins.className} antialiased min-h-screen h-screen h-dvh overflow-hidden`}
+      >
         <GoogleAnalytics />
-        <div className="flex h-dvh w-full flex-col overflow-hidden">
+        <div className="flex min-h-screen h-screen h-dvh w-full flex-col overflow-hidden">
           <AnnouncementBar />
           <div className="flex min-h-0 flex-1 overflow-hidden">
             <AppSidebar />

@@ -29,6 +29,9 @@ model User {
   galleryImages GalleryImage[]
   feedback      Feedback[]
   adventures    Adventure[]
+  expenses         Expense[]
+  expenseComments  ExpenseComment[]
+  expenseVotes     ExpenseVote[]
 
   @@unique([email])
   @@map("user")
@@ -228,4 +231,56 @@ model Adventure {
 
   @@index([userId])
   @@map("adventure")
+}
+
+model Expense {
+  id          String           @id @default(auto()) @map("_id") @db.ObjectId
+  title       String           // What was the expense (e.g., "New Kitchen Cabinets")
+  description String?          // Details about the expense
+  cost        Float            // Amount spent (or estimated for planned)
+  date        DateTime?        // When the expense was completed (null for planned)
+  category    String           // "kitchen" | "bathroom" | "exterior" | "interior" | "utilities" | "landscaping" | "other"
+  isPlanned   Boolean          @default(false) // true = wishlist item, false = incurred expense
+  userId      String
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comments    ExpenseComment[]
+  votes       ExpenseVote[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@index([userId])
+  @@index([category])
+  @@index([date])
+  @@index([isPlanned])
+  @@map("upgrade")
+}
+
+model ExpenseComment {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  content   String
+  expenseId String   @db.ObjectId
+  expense   Expense  @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([expenseId])
+  @@index([userId])
+  @@map("expense_comment")
+}
+
+model ExpenseVote {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  value     Int      // 1 = upvote, -1 = downvote
+  expenseId String   @db.ObjectId
+  expense   Expense  @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([expenseId, userId]) // One vote per user per expense
+  @@index([expenseId])
+  @@index([userId])
+  @@map("expense_vote")
 }

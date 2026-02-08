@@ -1,4 +1,4 @@
-import Header from "@/components/Header";
+import HeaderComponent from "@/components/HeaderComponent";
 import Calendar, { CalendarSkeleton } from "@/components/Calendar";
 import WeatherCard, { WeatherCardSkeleton } from "@/components/WeatherCard";
 import { TodoCardSkeleton } from "@/components/TodoCard";
@@ -18,7 +18,7 @@ export default function Home() {
   return (
     <div className="p-4 sm:p-6 md:p-8">
       <div className="flex flex-col gap-4 sm:gap-6">
-        <Header />
+        <HeaderComponent />
 
         {/* Quick Action Cards */}
         <div className="grid grid-cols-4 gap-1.5 sm:grid-cols-3 sm:gap-3 md:grid-cols-4 md:gap-3 lg:gap-4 xl:grid-cols-5">
