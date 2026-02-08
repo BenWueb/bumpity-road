@@ -24,6 +24,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { CARD_GRADIENTS } from "@/lib/ui-gradients";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import ExpenseForm from "./ExpenseForm";
 
 interface ExpenseCardProps {
@@ -50,6 +51,8 @@ export default function ExpenseCard({
   const [localComments, setLocalComments] = useState<ExpenseComment[]>(
     expense.comments
   );
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -65,10 +68,7 @@ export default function ExpenseCard({
   };
 
   const handleDelete = async () => {
-    if (!confirm(`Are you sure you want to delete "${expense.title}"?`)) {
-      return;
-    }
-
+    setIsDeleting(true);
     try {
       const response = await fetch(`/api/expenses?id=${expense.id}`, {
         method: "DELETE",
@@ -82,6 +82,9 @@ export default function ExpenseCard({
     } catch (error) {
       console.error("Error deleting expense:", error);
       alert("Failed to delete expense");
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
     }
   };
 
@@ -444,7 +447,7 @@ export default function ExpenseCard({
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                handleDelete();
+                setShowDeleteConfirm(true);
               }}
               className="rounded-md px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
             >
@@ -453,6 +456,17 @@ export default function ExpenseCard({
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleDelete}
+        title="Delete expense"
+        message={`Are you sure you want to delete "${expense.title}"? This action cannot be undone.`}
+        confirmLabel="Delete"
+        variant="danger"
+        isLoading={isDeleting}
+      />
     </div>
   );
 }

@@ -25,6 +25,7 @@ import {
   ChevronUp,
   type LucideIcon,
 } from "lucide-react";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import ExpenseForm from "./ExpenseForm";
 
 interface ExpenseDetailsViewProps {
@@ -102,9 +103,8 @@ export default function ExpenseDetailsView({
     isWishlist ? "desc" : "asc"
   );
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
 
-  const totalColumns = isWishlist ? 9 : 7;
+  const totalColumns = isWishlist ? 8 : 6;
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -148,8 +148,6 @@ export default function ExpenseDetailsView({
   }, [expenses, sortField, sortDir]);
 
   const handleDelete = async (expense: Expense) => {
-    if (!confirm(`Are you sure you want to delete "${expense.title}"?`)) return;
-
     try {
       const res = await fetch(`/api/expenses?id=${expense.id}`, {
         method: "DELETE",
@@ -165,15 +163,6 @@ export default function ExpenseDetailsView({
   const handleExpenseUpdated = (updated: Expense) => {
     onExpenseUpdated(updated);
     setEditingId(null);
-  };
-
-  const toggleRow = (id: string) => {
-    setSelectedRows((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
   };
 
   const SortHeader = ({
@@ -228,8 +217,6 @@ export default function ExpenseDetailsView({
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b bg-muted/50">
-              {/* Checkbox - hidden on mobile */}
-              <th className="hidden w-8 px-3 py-2 md:table-cell" />
               <SortHeader field="title" label="Name" className="min-w-[120px] md:min-w-[200px]" />
               {/* Category - hidden on mobile */}
               <SortHeader field="category" label="Category" className="hidden md:table-cell" />
@@ -249,7 +236,7 @@ export default function ExpenseDetailsView({
                   <SortHeader field="comments" label="Comments" className="hidden md:table-cell" />
                 </>
               )}
-              {/* Actions - hidden on mobile, tap row instead */}
+              {/* Actions - hidden on mobile */}
               <th className="hidden w-20 px-3 py-2 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground md:table-cell">
                 Actions
               </th>
@@ -258,17 +245,14 @@ export default function ExpenseDetailsView({
           <tbody className="divide-y">
             {sorted.map((expense) => {
               const CategoryIcon = getCategoryIcon(expense.category);
-              const isSelected = selectedRows.has(expense.id);
 
               return (
-                <WishlistRowWrapper
+                <ExpenseRow
                   key={expense.id}
                   expense={expense}
                   currentUserId={currentUserId}
                   isWishlist={isWishlist}
-                  isSelected={isSelected}
                   colSpan={totalColumns}
-                  onToggleRow={() => toggleRow(expense.id)}
                   onEdit={() => setEditingId(expense.id)}
                   onDelete={() => handleDelete(expense)}
                   onExpenseUpdated={onExpenseUpdated}
@@ -279,8 +263,6 @@ export default function ExpenseDetailsView({
           </tbody>
           <tfoot>
             <tr className="border-t bg-muted/30">
-              {/* Checkbox spacer - hidden on mobile */}
-              <td className="hidden md:table-cell" />
               <td className="px-3 py-2 text-xs font-medium text-muted-foreground">
                 {sorted.length} expense{sorted.length !== 1 ? "s" : ""}
               </td>
@@ -312,14 +294,12 @@ export default function ExpenseDetailsView({
   );
 }
 
-// --- Wrapper to handle per-row state for wishlist actions + expansion ---
-function WishlistRowWrapper({
+// --- Row component with per-row state for wishlist voting/comments ---
+function ExpenseRow({
   expense,
   currentUserId,
   isWishlist,
-  isSelected,
   colSpan,
-  onToggleRow,
   onEdit,
   onDelete,
   onExpenseUpdated,
@@ -328,15 +308,14 @@ function WishlistRowWrapper({
   expense: Expense;
   currentUserId?: string;
   isWishlist: boolean;
-  isSelected: boolean;
   colSpan: number;
-  onToggleRow: () => void;
   onEdit: () => void;
   onDelete: () => void;
   onExpenseUpdated: (expense: Expense) => void;
   CategoryIcon: LucideIcon;
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [mobileExpanded, setMobileExpanded] = useState(false);
   const [localVoteScore, setLocalVoteScore] = useState(expense.voteScore);
   const [localUserVote, setLocalUserVote] = useState(expense.userVote);
   const [localComments, setLocalComments] = useState<ExpenseComment[]>(
@@ -345,6 +324,18 @@ function WishlistRowWrapper({
   const [commentText, setCommentText] = useState("");
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [isVoting, setIsVoting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDeleteWithConfirm = async () => {
+    setIsDeleting(true);
+    try {
+      await onDelete();
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
+    }
+  };
 
   const handleVote = async (value: 1 | -1) => {
     if (!currentUserId || isVoting) return;
@@ -419,45 +410,18 @@ function WishlistRowWrapper({
   return (
     <>
       <tr
-        className={`group transition-colors ${
-          isSelected ? "bg-primary/5" : "hover:bg-muted/30"
+        className={`group cursor-pointer transition-colors md:cursor-default ${
+          mobileExpanded ? "bg-muted/20 md:bg-transparent" : "hover:bg-muted/30"
         }`}
-        onClick={onToggleRow}
+        onClick={() => setMobileExpanded((v) => !v)}
       >
-        {/* Checkbox - hidden on mobile */}
-        <td className="hidden px-3 py-2 md:table-cell">
-          <div
-            className={`h-4 w-4 rounded border transition-colors ${
-              isSelected
-                ? "border-primary bg-primary"
-                : "border-muted-foreground/30"
-            }`}
-          >
-            {isSelected && (
-              <svg
-                viewBox="0 0 16 16"
-                fill="none"
-                className="h-4 w-4 text-primary-foreground"
-              >
-                <path
-                  d="M4 8l3 3 5-6"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            )}
-          </div>
-        </td>
-
         {/* Name */}
         <td className="px-3 py-2">
           <div className="flex items-center gap-2">
             {expense.isPlanned && (
               <Lightbulb className="h-3.5 w-3.5 shrink-0 text-amber-500" />
             )}
-            <span className="font-medium text-foreground truncate max-w-[150px] sm:max-w-none">
+            <span className="max-w-[150px] truncate font-medium text-foreground sm:max-w-none">
               {expense.title}
             </span>
           </div>
@@ -508,10 +472,7 @@ function WishlistRowWrapper({
           <td className="hidden px-3 py-2 md:table-cell">
             <div className="flex items-center gap-0.5">
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleVote(1);
-                }}
+                onClick={() => handleVote(1)}
                 disabled={isVoting || !currentUserId}
                 className={`rounded p-1 transition-colors ${
                   localUserVote === 1
@@ -526,10 +487,7 @@ function WishlistRowWrapper({
                 {localVoteScore}
               </span>
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleVote(-1);
-                }}
+                onClick={() => handleVote(-1)}
                 disabled={isVoting || !currentUserId}
                 className={`rounded p-1 transition-colors ${
                   localUserVote === -1
@@ -548,10 +506,7 @@ function WishlistRowWrapper({
         {isWishlist && (
           <td className="hidden px-3 py-2 md:table-cell">
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsExpanded(!isExpanded);
-              }}
+              onClick={() => setIsExpanded(!isExpanded)}
               className="inline-flex items-center gap-1.5 rounded-md px-1.5 py-0.5 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
               title={isExpanded ? "Hide comments" : "Show comments"}
             >
@@ -570,20 +525,14 @@ function WishlistRowWrapper({
         <td className="hidden px-3 py-2 text-right md:table-cell">
           <div className="flex items-center justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100">
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onEdit();
-              }}
+              onClick={onEdit}
               className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
               title="Edit"
             >
               <Edit2 className="h-3.5 w-3.5" />
             </button>
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete();
-              }}
+              onClick={() => setShowDeleteConfirm(true)}
               className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
               title="Delete"
             >
@@ -593,24 +542,22 @@ function WishlistRowWrapper({
         </td>
       </tr>
 
-      {/* Mobile action row — visible only on small screens when row is selected */}
-      {isSelected && (
-        <tr className="border-b bg-muted/20 md:hidden">
-          <td colSpan={3} className="px-3 py-2">
+      {/* Mobile actions row — shown on tap */}
+      {mobileExpanded && (
+        <tr className="bg-muted/10 md:hidden">
+          <td colSpan={colSpan} className="px-3 py-2">
             <div className="flex items-center gap-2">
               {isWishlist && (
                 <>
                   <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleVote(1);
-                    }}
+                    onClick={() => handleVote(1)}
                     disabled={isVoting || !currentUserId}
                     className={`rounded p-1.5 transition-colors ${
                       localUserVote === 1
                         ? "text-emerald-600 dark:text-emerald-400"
                         : "text-muted-foreground"
                     }`}
+                    title="Upvote"
                   >
                     <ThumbsUp className="h-4 w-4" />
                   </button>
@@ -618,26 +565,22 @@ function WishlistRowWrapper({
                     {localVoteScore}
                   </span>
                   <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleVote(-1);
-                    }}
+                    onClick={() => handleVote(-1)}
                     disabled={isVoting || !currentUserId}
                     className={`rounded p-1.5 transition-colors ${
                       localUserVote === -1
                         ? "text-rose-600 dark:text-rose-400"
                         : "text-muted-foreground"
                     }`}
+                    title="Downvote"
                   >
                     <ThumbsDown className="h-4 w-4" />
                   </button>
                   <div className="mx-1 h-4 w-px bg-border" />
                   <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setIsExpanded(!isExpanded);
-                    }}
+                    onClick={() => setIsExpanded(!isExpanded)}
                     className="inline-flex items-center gap-1 rounded p-1.5 text-muted-foreground"
+                    title={isExpanded ? "Hide comments" : "Show comments"}
                   >
                     <MessageCircle className="h-4 w-4" />
                     <span className="text-xs tabular-nums">
@@ -648,20 +591,14 @@ function WishlistRowWrapper({
                 </>
               )}
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onEdit();
-                }}
+                onClick={onEdit}
                 className="rounded p-1.5 text-muted-foreground transition-colors hover:text-foreground"
                 title="Edit"
               >
                 <Edit2 className="h-4 w-4" />
               </button>
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDelete();
-                }}
+                onClick={() => setShowDeleteConfirm(true)}
                 className="rounded p-1.5 text-muted-foreground transition-colors hover:text-destructive"
                 title="Delete"
               >
@@ -707,10 +644,7 @@ function WishlistRowWrapper({
                       </div>
                       {currentUserId === comment.userId && (
                         <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteComment(comment.id);
-                          }}
+                          onClick={() => handleDeleteComment(comment.id)}
                           className="shrink-0 rounded p-0.5 text-muted-foreground opacity-0 transition-opacity hover:text-destructive group-hover/comment:opacity-100"
                           title="Delete comment"
                         >
@@ -729,7 +663,6 @@ function WishlistRowWrapper({
                     type="text"
                     value={commentText}
                     onChange={(e) => setCommentText(e.target.value)}
-                    onClick={(e) => e.stopPropagation()}
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
                         e.preventDefault();
@@ -740,10 +673,7 @@ function WishlistRowWrapper({
                     className="flex-1 rounded-md border bg-background px-2.5 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-ring"
                   />
                   <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleAddComment();
-                    }}
+                    onClick={handleAddComment}
                     disabled={!commentText.trim() || isSubmittingComment}
                     className="shrink-0 rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-50"
                     title="Post comment"
@@ -756,6 +686,17 @@ function WishlistRowWrapper({
           </td>
         </tr>
       )}
+
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleDeleteWithConfirm}
+        title="Delete expense"
+        message={`Are you sure you want to delete "${expense.title}"? This action cannot be undone.`}
+        confirmLabel="Delete"
+        variant="danger"
+        isLoading={isDeleting}
+      />
     </>
   );
 }
