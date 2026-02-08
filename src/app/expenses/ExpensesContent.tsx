@@ -262,6 +262,7 @@ export default function ExpensesContent({
             ? `Total spent: $${incurredTotal.toLocaleString()}`
             : `Wishlist estimate: ~$${plannedTotal.toLocaleString()}`
         }
+        innerClassName="mx-auto max-w-6xl px-4 py-4 md:px-6 md:py-6"
         desktopAction={
           <div className="hidden items-center gap-2 md:flex">
             <button
@@ -291,8 +292,8 @@ export default function ExpensesContent({
         }
       />
 
-      <div className="flex-1 overflow-auto p-4 md:p-6">
-        <div className="mx-auto max-w-7xl">
+      <div className="flex-1 overflow-auto">
+        <div className="mx-auto max-w-6xl p-4 md:p-6">
           {showForm && (
             <div className="mb-6">
               <ExpenseForm
