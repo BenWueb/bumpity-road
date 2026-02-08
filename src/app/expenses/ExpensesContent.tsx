@@ -13,9 +13,14 @@ import {
   DollarSign,
   ChevronDown,
   ChevronUp,
+  LayoutGrid,
+  List,
 } from "lucide-react";
 import ExpenseCard from "@/components/expenses/ExpenseCard";
+import ExpenseDetailsView from "@/components/expenses/ExpenseDetailsView";
 import ExpenseForm from "@/components/expenses/ExpenseForm";
+
+type ViewMode = "cards" | "details";
 
 interface ExpensesContentProps {
   initialExpenses: Expense[];
@@ -33,6 +38,7 @@ export default function ExpensesContent({
   );
   const [selectedCategory, setSelectedCategory] =
     useState<ExpenseCategory | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>("cards");
   const [showFilters, setShowFilters] = useState(false);
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
@@ -200,46 +206,85 @@ export default function ExpensesContent({
             </div>
           )}
 
-          {/* Tab switcher */}
-          <div className="mb-6 flex items-center gap-1 rounded-lg bg-muted p-1">
-            <button
-              onClick={() => {
-                setActiveTab("incurred");
-                clearAllFilters();
-              }}
-              className={`flex flex-1 items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-                activeTab === "incurred"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <Receipt className="h-4 w-4" />
-              Incurred
-              {incurredExpenses.length > 0 && (
-                <span className="rounded-full bg-secondary px-1.5 py-0.5 text-[10px] font-semibold">
-                  {incurredExpenses.length}
-                </span>
-              )}
-            </button>
-            <button
-              onClick={() => {
-                setActiveTab("wishlist");
-                clearAllFilters();
-              }}
-              className={`flex flex-1 items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-                activeTab === "wishlist"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <Lightbulb className="h-4 w-4" />
-              Wishlist
-              {plannedExpenses.length > 0 && (
-                <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
-                  {plannedExpenses.length}
-                </span>
-              )}
-            </button>
+          {/* Tab switcher and View toggle side by side */}
+          <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+            {/* Tab switcher */}
+            <div className="flex flex-1 items-center gap-1 rounded-lg bg-muted p-1">
+              <button
+                onClick={() => {
+                  setActiveTab("incurred");
+                  clearAllFilters();
+                }}
+                className={`flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors sm:px-4 ${
+                  activeTab === "incurred"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Receipt className="h-4 w-4" />
+                <span>Incurred</span>
+                {incurredExpenses.length > 0 && (
+                  <span className="rounded-full bg-secondary px-1.5 py-0.5 text-[10px] font-semibold">
+                    {incurredExpenses.length}
+                  </span>
+                )}
+              </button>
+              <button
+                onClick={() => {
+                  setActiveTab("wishlist");
+                  clearAllFilters();
+                }}
+                className={`flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors sm:px-4 ${
+                  activeTab === "wishlist"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Lightbulb className="h-4 w-4" />
+                <span>Wishlist</span>
+                {plannedExpenses.length > 0 && (
+                  <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
+                    {plannedExpenses.length}
+                  </span>
+                )}
+              </button>
+            </div>
+
+            {/* View toggle */}
+            <div className="flex flex-1 items-center gap-1 rounded-lg bg-muted p-1">
+              <button
+                onClick={() => setViewMode("cards")}
+                className={`flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors sm:px-4 ${
+                  viewMode === "cards"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+                title="Card view"
+              >
+                <LayoutGrid className="h-4 w-4" />
+                <span>Cards</span>
+              </button>
+              <button
+                onClick={() => setViewMode("details")}
+                className={`flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors sm:px-4 ${
+                  viewMode === "details"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+                title="Details view"
+              >
+                <List className="h-4 w-4" />
+                <span>Details</span>
+              </button>
+            </div>
+
+
+            {/* Filter count summary (when filters collapsed) */}
+            {hasActiveFilters && !showFilters && (
+              <span className="text-xs text-muted-foreground">
+                {sortedExpenses.length} of {activeExpenses.length} shown
+              </span>
+            )}
           </div>
 
           {/* Filters */}
@@ -287,13 +332,13 @@ export default function ExpensesContent({
               <div className="space-y-4 border-t px-4 py-4">
                 {/* Category filter */}
                 <div className="space-y-2">
-                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                     Category
                   </label>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-1.5 sm:gap-2">
                     <button
                       onClick={() => setSelectedCategory(null)}
-                      className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                      className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors sm:px-3 sm:py-1.5 ${
                         selectedCategory === null
                           ? "bg-primary text-primary-foreground"
                           : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
@@ -311,7 +356,7 @@ export default function ExpensesContent({
                               : category.value
                           )
                         }
-                        className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                        className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors sm:px-3 sm:py-1.5 ${
                           selectedCategory === category.value
                             ? "bg-primary text-primary-foreground"
                             : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
@@ -327,24 +372,24 @@ export default function ExpensesContent({
                 <div className="grid gap-4 sm:grid-cols-2">
                   {/* Date range */}
                   <div className="space-y-2">
-                    <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    <label className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">
                       <Calendar className="h-3.5 w-3.5" />
                       Date range
                     </label>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                       <input
                         type="date"
                         value={dateFrom}
                         onChange={(e) => setDateFrom(e.target.value)}
-                        className="w-full rounded-md border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                        className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                         placeholder="From"
                       />
-                      <span className="text-xs text-muted-foreground shrink-0">to</span>
+                      <span className="hidden text-xs text-muted-foreground sm:inline">to</span>
                       <input
                         type="date"
                         value={dateTo}
                         onChange={(e) => setDateTo(e.target.value)}
-                        className="w-full rounded-md border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                        className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                         placeholder="To"
                       />
                     </div>
@@ -352,12 +397,12 @@ export default function ExpensesContent({
 
                   {/* Amount range */}
                   <div className="space-y-2">
-                    <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    <label className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">
                       <DollarSign className="h-3.5 w-3.5" />
                       Amount range
                     </label>
-                    <div className="flex items-center gap-2">
-                      <div className="relative flex-1">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                      <div className="relative w-full">
                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
                           $
                         </span>
@@ -367,12 +412,12 @@ export default function ExpensesContent({
                           step="0.01"
                           value={amountMin}
                           onChange={(e) => setAmountMin(e.target.value)}
-                          className="w-full rounded-md border bg-background py-1.5 pl-7 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                          className="w-full rounded-md border bg-background py-2 pl-7 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                           placeholder="Min"
                         />
                       </div>
-                      <span className="text-xs text-muted-foreground shrink-0">to</span>
-                      <div className="relative flex-1">
+                      <span className="hidden text-xs text-muted-foreground sm:inline">to</span>
+                      <div className="relative w-full">
                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
                           $
                         </span>
@@ -382,7 +427,7 @@ export default function ExpensesContent({
                           step="0.01"
                           value={amountMax}
                           onChange={(e) => setAmountMax(e.target.value)}
-                          className="w-full rounded-md border bg-background py-1.5 pl-7 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                          className="w-full rounded-md border bg-background py-2 pl-7 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                           placeholder="Max"
                         />
                       </div>
@@ -413,8 +458,17 @@ export default function ExpensesContent({
                 </button>
               )}
             </div>
+          ) : viewMode === "details" ? (
+            /* Details view — flat table */
+            <ExpenseDetailsView
+              expenses={sortedExpenses}
+              currentUserId={currentUserId}
+              isWishlist={activeTab === "wishlist"}
+              onExpenseUpdated={handleExpenseUpdated}
+              onExpenseDeleted={handleExpenseDeleted}
+            />
           ) : activeTab === "incurred" ? (
-            /* Incurred: grouped by year/month */
+            /* Incurred: grouped by year/month cards */
             <div className="space-y-8">
               {sortedYears.map((year) => {
                 const months = getSortedMonths(year);
