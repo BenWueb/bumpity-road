@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Expense, ExpenseCategory, EXPENSE_CATEGORIES } from "@/types/expense";
 import { PageHeader } from "@/components/PageHeader";
 import {
@@ -15,10 +15,12 @@ import {
   ChevronUp,
   LayoutGrid,
   List,
+  Download,
 } from "lucide-react";
 import ExpenseCard from "@/components/expenses/ExpenseCard";
 import ExpenseDetailsView from "@/components/expenses/ExpenseDetailsView";
 import ExpenseForm from "@/components/expenses/ExpenseForm";
+import * as XLSX from "xlsx";
 
 type ViewMode = "cards" | "details";
 
@@ -174,6 +176,50 @@ export default function ExpensesContent({
     setExpenses((prev) => prev.filter((e) => e.id !== expenseId));
   };
 
+  const getCategoryLabel = (value: string) =>
+    EXPENSE_CATEGORIES.find((c) => c.value === value)?.label ?? value;
+
+  const handleExportExcel = useCallback(() => {
+    const rows = sortedExpenses.map((e) => ({
+      Title: e.title,
+      Category: getCategoryLabel(e.category),
+      Date: e.date
+        ? new Date(e.date).toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+          })
+        : "",
+      Cost: e.cost,
+      Description: e.description ?? "",
+      Type: e.isPlanned ? "Wishlist" : "Incurred",
+      "Added By": e.user?.name ?? "",
+      ...(e.isPlanned
+        ? { "Vote Score": e.voteScore, Comments: e.comments.length }
+        : {}),
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+
+    // Auto-size columns
+    const colWidths = Object.keys(rows[0] || {}).map((key) => ({
+      wch: Math.max(
+        key.length,
+        ...rows.map((r) => String((r as Record<string, unknown>)[key] ?? "").length)
+      ) + 2,
+    }));
+    worksheet["!cols"] = colWidths;
+
+    const workbook = XLSX.utils.book_new();
+    const sheetName =
+      activeTab === "wishlist" ? "Wishlist" : "Incurred Expenses";
+    XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+    XLSX.writeFile(
+      workbook,
+      `expenses-${activeTab}-${new Date().toISOString().slice(0, 10)}.xlsx`
+    );
+  }, [sortedExpenses, activeTab]);
+
   return (
     <div className="flex h-full flex-col">
       <PageHeader
@@ -286,6 +332,17 @@ export default function ExpensesContent({
               </button>
             </div>
 
+
+            {/* Export button (desktop only) */}
+              <button
+                onClick={handleExportExcel}
+                disabled={sortedExpenses.length === 0}
+                className="hidden items-center gap-2 rounded-md bg-linear-to-br from-emerald-500 to-teal-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:from-emerald-600 hover:to-teal-700 disabled:cursor-not-allowed disabled:opacity-50 sm:flex sm:px-4 dark:from-emerald-600 dark:to-teal-700 dark:hover:from-emerald-700 dark:hover:to-teal-800"
+                title="Export to Excel"
+              >
+                <Download className="h-4 w-4" />
+                <span>Export</span>
+              </button>
 
             {/* Filter count summary (when filters collapsed) */}
             {hasActiveFilters && !showFilters && (
