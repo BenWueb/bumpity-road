@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { expenseInclude, transformExpense } from "@/lib/expenses-server";
+import { deleteCloudinaryImage } from "@/utils/cloudinary";
 
 function revalidateExpensesCache() {
   revalidatePath("/");
@@ -53,13 +54,26 @@ export async function POST(req: NextRequest) {
   if ("error" in adminCheck) return adminCheck.error;
 
   const body = await req.json();
-  const { title, description, cost, date, category, isPlanned } = body as {
+  const {
+    title,
+    description,
+    cost,
+    date,
+    category,
+    subcategory,
+    isPlanned,
+    receiptImageUrl,
+    receiptImagePublicId,
+  } = body as {
     title?: string;
     description?: string;
     cost?: number;
     date?: string;
     category?: string;
+    subcategory?: string | null;
     isPlanned?: boolean;
+    receiptImageUrl?: string | null;
+    receiptImagePublicId?: string | null;
   };
 
   if (!title?.trim()) {
@@ -75,7 +89,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Date required for incurred expenses" }, { status: 400 });
   }
 
-  const validCategories = ["kitchen", "bathroom", "exterior", "interior", "utilities", "landscaping", "other"];
+  const validCategories = ["maintenance", "utilities", "landscaping", "supplies", "tax_fees", "insurance", "improvements", "emergency", "other"];
   if (!category || !validCategories.includes(category)) {
     return NextResponse.json({ error: "Valid category required" }, { status: 400 });
   }
@@ -87,7 +101,10 @@ export async function POST(req: NextRequest) {
       cost,
       date: date ? new Date(date) : null,
       category,
+      subcategory: subcategory || null,
       isPlanned: isPlanned || false,
+      receiptImageUrl: receiptImageUrl || null,
+      receiptImagePublicId: receiptImagePublicId || null,
       userId: adminCheck.userId,
     },
     include: expenseInclude,
@@ -106,14 +123,30 @@ export async function PATCH(req: NextRequest) {
   if ("error" in adminCheck) return adminCheck.error;
 
   const body = await req.json();
-  const { id, title, description, cost, date, category, isPlanned } = body as {
+  const {
+    id,
+    title,
+    description,
+    cost,
+    date,
+    category,
+    subcategory,
+    isPlanned,
+    receiptImageUrl,
+    receiptImagePublicId,
+    removeReceipt,
+  } = body as {
     id?: string;
     title?: string;
     description?: string | null;
     cost?: number;
     date?: string | null;
     category?: string;
+    subcategory?: string | null;
     isPlanned?: boolean;
+    receiptImageUrl?: string | null;
+    receiptImagePublicId?: string | null;
+    removeReceipt?: boolean;
   };
 
   if (!id) {
@@ -133,9 +166,33 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Valid cost required" }, { status: 400 });
   }
 
-  const validCategories = ["kitchen", "bathroom", "exterior", "interior", "utilities", "landscaping", "other"];
+  const validCategories = ["maintenance", "utilities", "landscaping", "supplies", "tax_fees", "insurance", "improvements", "emergency", "other"];
   if (category !== undefined && !validCategories.includes(category)) {
     return NextResponse.json({ error: "Valid category required" }, { status: 400 });
+  }
+
+  // Handle receipt image deletion if requested
+  if (removeReceipt && existing.receiptImagePublicId) {
+    try {
+      await deleteCloudinaryImage(existing.receiptImagePublicId);
+    } catch (error) {
+      // Log error but continue with expense update
+      console.error("Error deleting receipt image from Cloudinary:", error);
+    }
+  }
+
+  // If receipt is being updated, delete old receipt from Cloudinary
+  if (
+    receiptImagePublicId !== undefined &&
+    receiptImagePublicId !== existing.receiptImagePublicId &&
+    existing.receiptImagePublicId
+  ) {
+    try {
+      await deleteCloudinaryImage(existing.receiptImagePublicId);
+    } catch (error) {
+      // Log error but continue with expense update
+      console.error("Error deleting old receipt image from Cloudinary:", error);
+    }
   }
 
   const expense = await prisma.expense.update({
@@ -146,7 +203,13 @@ export async function PATCH(req: NextRequest) {
       ...(cost !== undefined ? { cost } : {}),
       ...(date !== undefined ? { date: date ? new Date(date) : null } : {}),
       ...(category !== undefined ? { category } : {}),
+      ...(subcategory !== undefined ? { subcategory: subcategory || null } : {}),
       ...(isPlanned !== undefined ? { isPlanned } : {}),
+      ...(receiptImageUrl !== undefined ? { receiptImageUrl: receiptImageUrl || null } : {}),
+      ...(receiptImagePublicId !== undefined
+        ? { receiptImagePublicId: receiptImagePublicId || null }
+        : {}),
+      ...(removeReceipt ? { receiptImageUrl: null, receiptImagePublicId: null } : {}),
     },
     include: expenseInclude,
   });
@@ -173,6 +236,16 @@ export async function DELETE(req: NextRequest) {
   const existing = await prisma.expense.findUnique({ where: { id } });
   if (!existing) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
+  // Delete receipt image from Cloudinary if it exists
+  if (existing.receiptImagePublicId) {
+    try {
+      await deleteCloudinaryImage(existing.receiptImagePublicId);
+    } catch (error) {
+      // Log error but continue with expense deletion
+      console.error("Error deleting receipt image from Cloudinary:", error);
+    }
   }
 
   await prisma.expense.delete({ where: { id } });

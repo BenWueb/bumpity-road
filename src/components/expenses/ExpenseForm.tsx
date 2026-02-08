@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { Expense, EXPENSE_CATEGORIES } from "@/types/expense";
-import { Lightbulb, Receipt } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Expense, EXPENSE_CATEGORIES, EXPENSE_SUBCATEGORIES } from "@/types/expense";
+import { Lightbulb, Receipt, X, Image as ImageIcon } from "lucide-react";
+import { CldUploadButton, CldImage } from "next-cloudinary";
 
 interface ExpenseFormProps {
   expense?: Expense;
@@ -24,6 +25,12 @@ export default function ExpenseForm({
   const [isPlanned, setIsPlanned] = useState(
     expense?.isPlanned ?? defaultPlanned
   );
+  const [receiptImageUrl, setReceiptImageUrl] = useState<string | null>(
+    expense?.receiptImageUrl ?? null
+  );
+  const [receiptImagePublicId, setReceiptImagePublicId] = useState<
+    string | null
+  >(expense?.receiptImagePublicId ?? null);
   const [formData, setFormData] = useState({
     title: expense?.title || "",
     description: expense?.description || "",
@@ -34,7 +41,13 @@ export default function ExpenseForm({
       ? ""
       : today,
     category: expense?.category || "",
+    subcategory: expense?.subcategory || "",
   });
+
+  const availableSubcategories = useMemo(() => {
+    if (!formData.category) return [];
+    return EXPENSE_SUBCATEGORIES[formData.category as keyof typeof EXPENSE_SUBCATEGORIES] || [];
+  }, [formData.category]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,8 +85,21 @@ export default function ExpenseForm({
             cost,
             date: formData.date || null,
             isPlanned,
+            subcategory: formData.subcategory || null,
+            receiptImageUrl: receiptImageUrl || null,
+            receiptImagePublicId: receiptImagePublicId || null,
+            // If removing receipt, send null
+            removeReceipt: !receiptImageUrl && expense.receiptImagePublicId ? true : undefined,
           }
-        : { ...formData, cost, date: formData.date || null, isPlanned };
+        : {
+            ...formData,
+            cost,
+            date: formData.date || null,
+            isPlanned,
+            subcategory: formData.subcategory || null,
+            receiptImageUrl: receiptImageUrl || null,
+            receiptImagePublicId: receiptImagePublicId || null,
+          };
 
       const response = await fetch(url, {
         method,
@@ -130,6 +156,9 @@ export default function ExpenseForm({
             onClick={() => {
               setIsPlanned(true);
               setFormData((prev) => ({ ...prev, date: "" }));
+              // Clear receipt when switching to wishlist
+              setReceiptImageUrl(null);
+              setReceiptImagePublicId(null);
             }}
             className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors ${
               isPlanned
@@ -211,7 +240,11 @@ export default function ExpenseForm({
               id="category"
               value={formData.category}
               onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-                setFormData((prev) => ({ ...prev, category: e.target.value }))
+                setFormData((prev) => ({ 
+                  ...prev, 
+                  category: e.target.value,
+                  subcategory: "", // Reset subcategory when category changes
+                }))
               }
               className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               required
@@ -225,6 +258,30 @@ export default function ExpenseForm({
             </select>
           </div>
         </div>
+
+        {/* Subcategory */}
+        {formData.category && availableSubcategories.length > 0 && (
+          <div className="space-y-2">
+            <label htmlFor="subcategory" className="text-sm font-medium">
+              Subcategory
+            </label>
+            <select
+              id="subcategory"
+              value={formData.subcategory}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                setFormData((prev) => ({ ...prev, subcategory: e.target.value }))
+              }
+              className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+              <option value="">Select subcategory (optional)</option>
+              {availableSubcategories.map((subcategory) => (
+                <option key={subcategory.value} value={subcategory.value}>
+                  {subcategory.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         <div className="space-y-2">
           <label htmlFor="description" className="text-sm font-medium">
@@ -248,6 +305,53 @@ export default function ExpenseForm({
             className="w-full resize-none rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </div>
+
+        {/* Receipt upload (only for incurred expenses) */}
+        {!isPlanned && (
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Receipt Photo</label>
+            {receiptImageUrl ? (
+              <div className="relative">
+                <div className="relative h-48 w-full overflow-hidden rounded-md border">
+                  <CldImage
+                    src={receiptImagePublicId || ""}
+                    alt="Receipt"
+                    width={800}
+                    height={600}
+                    className="h-full w-full object-contain"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setReceiptImageUrl(null);
+                    setReceiptImagePublicId(null);
+                  }}
+                  className="absolute right-2 top-2 rounded-full bg-destructive p-1.5 text-destructive-foreground shadow-sm hover:bg-destructive/90"
+                  title="Remove receipt"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            ) : (
+              <CldUploadButton
+                uploadPreset="bumpity-road"
+                onSuccess={(result) => {
+                  const info = result.info as {
+                    secure_url: string;
+                    public_id: string;
+                  };
+                  setReceiptImageUrl(info.secure_url);
+                  setReceiptImagePublicId(info.public_id);
+                }}
+                className="flex w-full items-center justify-center gap-2 rounded-md border border-dashed bg-background px-4 py-8 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+              >
+                <ImageIcon className="h-5 w-5" />
+                <span>Upload Receipt Photo</span>
+              </CldUploadButton>
+            )}
+          </div>
+        )}
 
         <div className="flex justify-end gap-3">
           <button

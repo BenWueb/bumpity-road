@@ -6,13 +6,6 @@ import {
   Edit2,
   Trash2,
   User,
-  UtensilsCrossed,
-  Droplet,
-  Home,
-  Sofa,
-  Wrench,
-  TreePine,
-  MoreHorizontal,
   ChevronDown,
   ChevronUp,
   ThumbsUp,
@@ -21,11 +14,14 @@ import {
   Send,
   X,
   Lightbulb,
-  type LucideIcon,
 } from "lucide-react";
-import { CARD_GRADIENTS } from "@/lib/ui-gradients";
+import { getCategoryGradient, formatExpenseDate, getCategoryLabel, getSubcategoryLabel, getCategoryIcon } from "@/lib/expense-utils";
+import { ExpenseCategoryBadge } from "./ExpenseCategoryBadge";
+import { useExpenseVoting } from "@/hooks/useExpenseVoting";
+import { useExpenseComments } from "@/hooks/useExpenseComments";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import ExpenseForm from "./ExpenseForm";
+import { CldImage } from "next-cloudinary";
 
 interface ExpenseCardProps {
   expense: Expense;
@@ -43,16 +39,28 @@ export default function ExpenseCard({
   const [isEditing, setIsEditing] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [showComments, setShowComments] = useState(false);
-  const [commentText, setCommentText] = useState("");
-  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
-  const [isVoting, setIsVoting] = useState(false);
-  const [localVoteScore, setLocalVoteScore] = useState(expense.voteScore);
-  const [localUserVote, setLocalUserVote] = useState(expense.userVote);
-  const [localComments, setLocalComments] = useState<ExpenseComment[]>(
-    expense.comments
-  );
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const { localVoteScore, localUserVote, isVoting, handleVote } = useExpenseVoting({
+    expenseId: expense.id,
+    initialVoteScore: expense.voteScore,
+    initialUserVote: expense.userVote,
+    currentUserId,
+  });
+
+  const {
+    localComments,
+    commentText,
+    setCommentText,
+    isSubmittingComment,
+    handleAddComment,
+    handleDeleteComment,
+  } = useExpenseComments({
+    expenseId: expense.id,
+    initialComments: expense.comments,
+    currentUserId,
+  });
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -88,86 +96,6 @@ export default function ExpenseCard({
     }
   };
 
-  const handleVote = async (value: 1 | -1) => {
-    if (!currentUserId || isVoting) return;
-    setIsVoting(true);
-
-    // Optimistic update
-    const prevScore = localVoteScore;
-    const prevVote = localUserVote;
-
-    if (localUserVote === value) {
-      // Toggle off
-      setLocalVoteScore(localVoteScore - value);
-      setLocalUserVote(null);
-    } else if (localUserVote !== null) {
-      // Flip
-      setLocalVoteScore(localVoteScore - localUserVote + value);
-      setLocalUserVote(value);
-    } else {
-      // New vote
-      setLocalVoteScore(localVoteScore + value);
-      setLocalUserVote(value);
-    }
-
-    try {
-      const res = await fetch("/api/expenses/votes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ expenseId: expense.id, value }),
-      });
-
-      if (!res.ok) throw new Error("Vote failed");
-
-      const data = await res.json();
-      setLocalVoteScore(data.voteScore);
-      setLocalUserVote(data.userVote);
-    } catch {
-      // Revert on error
-      setLocalVoteScore(prevScore);
-      setLocalUserVote(prevVote);
-    } finally {
-      setIsVoting(false);
-    }
-  };
-
-  const handleAddComment = async () => {
-    if (!commentText.trim() || isSubmittingComment) return;
-    setIsSubmittingComment(true);
-
-    try {
-      const res = await fetch("/api/expenses/comments", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ expenseId: expense.id, content: commentText }),
-      });
-
-      if (!res.ok) throw new Error("Failed to add comment");
-
-      const { comment } = await res.json();
-      setLocalComments((prev) => [...prev, comment]);
-      setCommentText("");
-    } catch (error) {
-      console.error("Error adding comment:", error);
-      alert("Failed to add comment");
-    } finally {
-      setIsSubmittingComment(false);
-    }
-  };
-
-  const handleDeleteComment = async (commentId: string) => {
-    try {
-      const res = await fetch(`/api/expenses/comments?id=${commentId}`, {
-        method: "DELETE",
-      });
-
-      if (!res.ok) throw new Error("Failed to delete comment");
-
-      setLocalComments((prev) => prev.filter((c) => c.id !== commentId));
-    } catch (error) {
-      console.error("Error deleting comment:", error);
-    }
-  };
 
   if (isEditing) {
     return (
@@ -179,68 +107,21 @@ export default function ExpenseCard({
     );
   }
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
-
-  const getCategoryLabel = (category: string) => {
-    const categoryMap: Record<string, string> = {
-      kitchen: "Kitchen",
-      bathroom: "Bathroom",
-      exterior: "Exterior",
-      interior: "Interior",
-      utilities: "Utilities",
-      landscaping: "Landscaping",
-      other: "Other",
-    };
-    return categoryMap[category] || category;
-  };
-
-  const getCategoryIcon = (category: string): LucideIcon => {
-    const iconMap: Record<string, LucideIcon> = {
-      kitchen: UtensilsCrossed,
-      bathroom: Droplet,
-      exterior: Home,
-      interior: Sofa,
-      utilities: Wrench,
-      landscaping: TreePine,
-      other: MoreHorizontal,
-    };
-    return iconMap[category] || MoreHorizontal;
-  };
-
-  const getCategoryGradient = (category: string) => {
-    const gradientMap: Record<string, string> = {
-      kitchen: CARD_GRADIENTS.amber,
-      bathroom: CARD_GRADIENTS.sky,
-      exterior: CARD_GRADIENTS.slate,
-      interior: CARD_GRADIENTS.violet,
-      utilities: CARD_GRADIENTS.emerald,
-      landscaping: CARD_GRADIENTS.rose,
-      other: CARD_GRADIENTS.slate,
-    };
-    return gradientMap[category] || CARD_GRADIENTS.slate;
-  };
-
   const CategoryIcon = getCategoryIcon(expense.category);
 
   return (
     <div
-      className={`w-full rounded-lg border shadow-sm ${getCategoryGradient(
+      className={`w-full rounded-lg border shadow-sm flex flex-col ${getCategoryGradient(
         expense.category
       )}`}
     >
       {/* Collapsed view - always visible */}
       <div
-        className="cursor-pointer p-4 transition-colors hover:bg-muted/50"
+        className="cursor-pointer p-3 transition-colors hover:bg-muted/50 flex-1 flex flex-col"
         onClick={() => setIsExpanded(!isExpanded)}
       >
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex min-w-0 flex-1 items-center gap-3">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex min-w-0 flex-1 items-center gap-2">
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -254,42 +135,43 @@ export default function ExpenseCard({
                 <ChevronDown className="h-4 w-4" />
               )}
             </button>
-            <div className="min-w-0 flex-1 space-y-2">
-              <div className="flex items-center gap-2">
+            <div className="min-w-0 flex-1 space-y-1">
+              <div className="flex items-center gap-1.5">
                 {expense.isPlanned && (
-                  <Lightbulb className="h-4 w-4 shrink-0 text-amber-500" />
+                  <Lightbulb className="h-3.5 w-3.5 shrink-0 text-amber-500" />
                 )}
-                <h4 className="truncate font-medium text-foreground">
+                <h4 className="truncate text-sm font-medium text-foreground">
                   {expense.title}
                 </h4>
               </div>
-              <span className="flex w-fit items-center gap-1.5 rounded-full bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground">
-                <CategoryIcon className="h-3 w-3" />
-                {getCategoryLabel(expense.category)}
-              </span>
+              <ExpenseCategoryBadge
+                category={expense.category}
+                variant="default"
+                className="w-fit text-[10px]"
+              />
             </div>
           </div>
-          <div className="flex shrink-0 flex-col items-end gap-1">
-            <span className="whitespace-nowrap text-sm font-semibold text-foreground">
+          <div className="flex shrink-0 flex-col items-end gap-0.5">
+            <span className="whitespace-nowrap text-xs font-semibold text-foreground">
               {expense.isPlanned && "~"}${expense.cost.toLocaleString()}
             </span>
             {expense.date && (
-              <span className="whitespace-nowrap text-xs text-muted-foreground">
-                {formatDate(expense.date)}
+              <span className="whitespace-nowrap text-[10px] text-muted-foreground">
+                {formatExpenseDate(expense.date)}
               </span>
             )}
           </div>
         </div>
 
-        {/* Vote score & comment count (always visible for planned) */}
+        {/* Vote score & comment count (always visible for planned, hidden on mobile) */}
         {expense.isPlanned && (
-          <div className="mt-2 flex items-center gap-4 pl-9 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1">
-              <ThumbsUp className="h-3 w-3" />
+          <div className="mt-1.5 hidden items-center gap-3 pl-7 text-[10px] text-muted-foreground md:flex">
+            <span className="flex items-center gap-0.5">
+              <ThumbsUp className="h-2.5 w-2.5" />
               {localVoteScore}
             </span>
-            <span className="flex items-center gap-1">
-              <MessageCircle className="h-3 w-3" />
+            <span className="flex items-center gap-0.5">
+              <MessageCircle className="h-2.5 w-2.5" />
               {localComments.length}
             </span>
           </div>
@@ -299,10 +181,30 @@ export default function ExpenseCard({
       {/* Expanded view */}
       {isExpanded && (
         <div className="space-y-3 border-t p-4">
+          {/* Category and Subcategory */}
+          <ExpenseCategoryBadge
+            category={expense.category}
+            subcategory={expense.subcategory}
+            variant="default"
+          />
+
           {expense.description && (
             <p className="text-sm text-muted-foreground">
               {expense.description}
             </p>
+          )}
+
+          {/* Receipt image (only for incurred expenses) */}
+          {!expense.isPlanned && expense.receiptImageUrl && expense.receiptImagePublicId && (
+            <div className="relative rounded-md border bg-muted/30 p-2">
+              <CldImage
+                src={expense.receiptImagePublicId}
+                alt="Receipt"
+                width={800}
+                height={600}
+                className="h-auto w-full rounded-md object-contain"
+              />
+            </div>
           )}
 
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -379,7 +281,7 @@ export default function ExpenseCard({
                             {comment.user.name}
                           </span>
                           <span className="text-[10px] text-muted-foreground">
-                            {formatDate(comment.createdAt)}
+                            {formatExpenseDate(comment.createdAt)}
                           </span>
                         </div>
                         <p className="mt-0.5 text-xs text-muted-foreground">

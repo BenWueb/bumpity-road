@@ -234,19 +234,22 @@ model Adventure {
 }
 
 model Expense {
-  id          String           @id @default(auto()) @map("_id") @db.ObjectId
-  title       String           // What was the expense (e.g., "New Kitchen Cabinets")
-  description String?          // Details about the expense
-  cost        Float            // Amount spent (or estimated for planned)
-  date        DateTime?        // When the expense was completed (null for planned)
-  category    String           // "kitchen" | "bathroom" | "exterior" | "interior" | "utilities" | "landscaping" | "other"
-  isPlanned   Boolean          @default(false) // true = wishlist item, false = incurred expense
-  userId      String
-  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  comments    ExpenseComment[]
-  votes       ExpenseVote[]
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
+  id                   String           @id @default(auto()) @map("_id") @db.ObjectId
+  title                String           // What was the expense (e.g., "New Kitchen Cabinets")
+  description          String?          // Details about the expense
+  cost                 Float            // Amount spent (or estimated for planned)
+  date                 DateTime?        // When the expense was completed (null for planned)
+  category             String           // "maintenance" | "utilities" | "landscaping" | "supplies" | "tax_fees" | "insurance" | "improvements" | "emergency" | "other"
+  subcategory          String?          // Subcategory specific to the category (e.g., "plumbing" for maintenance)
+  isPlanned            Boolean          @default(false) // true = wishlist item, false = incurred expense
+  receiptImageUrl      String?          // Cloudinary URL for receipt image (only for incurred expenses)
+  receiptImagePublicId String?          // Cloudinary public ID for receipt deletion
+  userId               String
+  user                 User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comments             ExpenseComment[]
+  votes                ExpenseVote[]
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
 
   @@index([userId])
   @@index([category])

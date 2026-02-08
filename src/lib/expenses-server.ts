@@ -35,7 +35,10 @@ function transformExpense(
     cost: e.cost,
     date: e.date?.toISOString() ?? null,
     category: e.category as Expense["category"],
+    subcategory: e.subcategory as Expense["subcategory"],
     isPlanned: e.isPlanned,
+    receiptImageUrl: e.receiptImageUrl,
+    receiptImagePublicId: e.receiptImagePublicId,
     userId: e.userId,
     user: e.user,
     comments: e.comments.map((c) => ({

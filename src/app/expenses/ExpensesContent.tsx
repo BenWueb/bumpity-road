@@ -2,6 +2,8 @@
 
 import { useState, useMemo, useCallback } from "react";
 import { Expense, ExpenseCategory, EXPENSE_CATEGORIES } from "@/types/expense";
+import { getCategoryLabelFromList, getCategoryColor } from "@/lib/expense-utils";
+import { ToggleGroup } from "@/components/ui/ToggleGroup";
 import { PageHeader } from "@/components/PageHeader";
 import {
   Wrench,
@@ -20,6 +22,7 @@ import {
 import ExpenseCard from "@/components/expenses/ExpenseCard";
 import ExpenseDetailsView from "@/components/expenses/ExpenseDetailsView";
 import ExpenseForm from "@/components/expenses/ExpenseForm";
+import { CARD_GRADIENTS } from "@/lib/ui-gradients";
 import * as XLSX from "xlsx";
 
 type ViewMode = "cards" | "details";
@@ -176,13 +179,42 @@ export default function ExpensesContent({
     setExpenses((prev) => prev.filter((e) => e.id !== expenseId));
   };
 
-  const getCategoryLabel = (value: string) =>
-    EXPENSE_CATEGORIES.find((c) => c.value === value)?.label ?? value;
+
+  // Calculate expenses by category for the bar chart (only for incurred expenses)
+  const expensesByCategory = useMemo(() => {
+    if (activeTab !== "incurred") return {};
+    
+    const grouped: Record<string, { total: number; count: number }> = {};
+    
+    filteredExpenses.forEach((expense) => {
+      const category = expense.category;
+      if (!grouped[category]) {
+        grouped[category] = { total: 0, count: 0 };
+      }
+      grouped[category].total += expense.cost;
+      grouped[category].count += 1;
+    });
+    
+    return grouped;
+  }, [filteredExpenses, activeTab]);
+
+  const maxCategoryTotal = useMemo(() => {
+    const totals = Object.values(expensesByCategory).map((g) => g.total);
+    return Math.max(...totals, 0);
+  }, [expensesByCategory]);
+
+  const sortedCategories = useMemo(() => {
+    return EXPENSE_CATEGORIES.map((cat) => ({
+      ...cat,
+      total: expensesByCategory[cat.value]?.total || 0,
+      count: expensesByCategory[cat.value]?.count || 0,
+    })).sort((a, b) => b.total - a.total);
+  }, [expensesByCategory]);
 
   const handleExportExcel = useCallback(() => {
     const rows = sortedExpenses.map((e) => ({
       Title: e.title,
-      Category: getCategoryLabel(e.category),
+      Category: getCategoryLabelFromList(e.category),
       Date: e.date
         ? new Date(e.date).toLocaleDateString("en-US", {
             year: "numeric",
@@ -231,12 +263,23 @@ export default function ExpensesContent({
             : `Wishlist estimate: ~$${plannedTotal.toLocaleString()}`
         }
         desktopAction={
-          <button
-            onClick={() => setShowForm(true)}
-            className="hidden items-center gap-2 rounded-md bg-primary px-3 py-2 text-sm text-primary-foreground hover:bg-primary/90 md:flex"
-          >
-            Add Expense
-          </button>
+          <div className="hidden items-center gap-2 md:flex">
+            <button
+              onClick={handleExportExcel}
+              disabled={sortedExpenses.length === 0}
+              className="flex items-center gap-2 rounded-md bg-linear-to-br from-emerald-500 to-teal-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:from-emerald-600 hover:to-teal-700 disabled:cursor-not-allowed disabled:opacity-50 dark:from-emerald-600 dark:to-teal-700 dark:hover:from-emerald-700 dark:hover:to-teal-800"
+              title="Export to Excel"
+            >
+              <Download className="h-4 w-4" />
+              <span>Export</span>
+            </button>
+            <button
+              onClick={() => setShowForm(true)}
+              className="flex items-center gap-2 rounded-md bg-primary px-3 py-2 text-sm text-primary-foreground hover:bg-primary/90"
+            >
+              Add Expense
+            </button>
+          </div>
         }
         mobileAction={
           <button
@@ -263,86 +306,55 @@ export default function ExpensesContent({
           {/* Tab switcher and View toggle side by side */}
           <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center">
             {/* Tab switcher */}
-            <div className="flex flex-1 items-center gap-1 rounded-lg bg-muted p-1">
-              <button
-                onClick={() => {
-                  setActiveTab("incurred");
-                  clearAllFilters();
-                }}
-                className={`flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors sm:px-4 ${
-                  activeTab === "incurred"
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <Receipt className="h-4 w-4" />
-                <span>Incurred</span>
-                {incurredExpenses.length > 0 && (
-                  <span className="rounded-full bg-secondary px-1.5 py-0.5 text-[10px] font-semibold">
-                    {incurredExpenses.length}
-                  </span>
-                )}
-              </button>
-              <button
-                onClick={() => {
-                  setActiveTab("wishlist");
-                  clearAllFilters();
-                }}
-                className={`flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors sm:px-4 ${
-                  activeTab === "wishlist"
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <Lightbulb className="h-4 w-4" />
-                <span>Wishlist</span>
-                {plannedExpenses.length > 0 && (
-                  <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
-                    {plannedExpenses.length}
-                  </span>
-                )}
-              </button>
-            </div>
+            <ToggleGroup
+              options={[
+                {
+                  value: "incurred",
+                  label: "Incurred",
+                  icon: <Receipt className="h-4 w-4" />,
+                  badge:
+                    incurredExpenses.length > 0 ? (
+                      <span className="rounded-full bg-secondary px-1.5 py-0.5 text-[10px] font-semibold">
+                        {incurredExpenses.length}
+                      </span>
+                    ) : undefined,
+                },
+                {
+                  value: "wishlist",
+                  label: "Wishlist",
+                  icon: <Lightbulb className="h-4 w-4" />,
+                  badge:
+                    plannedExpenses.length > 0 ? (
+                      <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
+                        {plannedExpenses.length}
+                      </span>
+                    ) : undefined,
+                },
+              ]}
+              value={activeTab}
+              onChange={(value) => {
+                setActiveTab(value as "incurred" | "wishlist");
+                clearAllFilters();
+              }}
+            />
 
             {/* View toggle */}
-            <div className="flex flex-1 items-center gap-1 rounded-lg bg-muted p-1">
-              <button
-                onClick={() => setViewMode("cards")}
-                className={`flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors sm:px-4 ${
-                  viewMode === "cards"
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-                title="Card view"
-              >
-                <LayoutGrid className="h-4 w-4" />
-                <span>Cards</span>
-              </button>
-              <button
-                onClick={() => setViewMode("details")}
-                className={`flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors sm:px-4 ${
-                  viewMode === "details"
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-                title="Details view"
-              >
-                <List className="h-4 w-4" />
-                <span>Details</span>
-              </button>
-            </div>
-
-
-            {/* Export button (desktop only) */}
-              <button
-                onClick={handleExportExcel}
-                disabled={sortedExpenses.length === 0}
-                className="hidden items-center gap-2 rounded-md bg-linear-to-br from-emerald-500 to-teal-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:from-emerald-600 hover:to-teal-700 disabled:cursor-not-allowed disabled:opacity-50 sm:flex sm:px-4 dark:from-emerald-600 dark:to-teal-700 dark:hover:from-emerald-700 dark:hover:to-teal-800"
-                title="Export to Excel"
-              >
-                <Download className="h-4 w-4" />
-                <span>Export</span>
-              </button>
+            <ToggleGroup
+              options={[
+                {
+                  value: "cards",
+                  label: "Cards",
+                  icon: <LayoutGrid className="h-4 w-4" />,
+                },
+                {
+                  value: "details",
+                  label: "Details",
+                  icon: <List className="h-4 w-4" />,
+                },
+              ]}
+              value={viewMode}
+              onChange={(value) => setViewMode(value as ViewMode)}
+            />
 
             {/* Filter count summary (when filters collapsed) */}
             {hasActiveFilters && !showFilters && (
@@ -503,6 +515,53 @@ export default function ExpensesContent({
             )}
           </div>
 
+          {/* Bar Chart - Expenses by Category (only for incurred expenses, hidden on mobile) */}
+          {activeTab === "incurred" && (
+            <div className="mb-6 hidden rounded-lg border bg-card p-4 pt-8 shadow-sm md:block">
+             
+              <div className="flex items-end justify-between gap-1 sm:gap-2">
+                {sortedCategories.map((category) => {
+                  const percentage = maxCategoryTotal > 0 
+                    ? (category.total / maxCategoryTotal) * 100 
+                    : 0;
+                  
+                  return (
+                    <div key={category.value} className="flex flex-1 flex-col items-center gap-2">
+                      <div className="relative flex h-48 w-full max-w-[60px] flex-col justify-end">
+                        {category.total > 0 ? (
+                          <>
+                            <div
+                              className={`w-full rounded-t bg-linear-to-t ${getCategoryColor(category.value)} transition-all duration-500`}
+                              style={{ height: `${percentage}%` }}
+                            />
+                            <div className="absolute -top-5 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs font-semibold tabular-nums text-foreground">
+                              ${category.total.toLocaleString(undefined, {
+                                minimumFractionDigits: 0,
+                                maximumFractionDigits: 0,
+                              })}
+                            </div>
+                          </>
+                        ) : (
+                          <div className="w-full rounded-t border border-dashed border-muted-foreground/30 bg-transparent transition-all duration-500" style={{ height: "2px" }} />
+                        )}
+                      </div>
+                      <div className="flex min-h-12 flex-col items-center justify-start gap-0.5 text-center">
+                        <span className={`line-clamp-2 text-xs font-medium leading-tight ${category.total > 0 ? "text-foreground" : "text-muted-foreground"}`}>
+                          {category.label}
+                        </span>
+                        {category.count > 0 && (
+                          <span className="text-[10px] text-muted-foreground">
+                            {category.count} {category.count === 1 ? "expense" : "expenses"}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {sortedExpenses.length === 0 ? (
             <div className="rounded-lg border border-dashed border-muted-foreground/25 p-12 text-center">
               <p className="text-sm text-muted-foreground">
@@ -560,7 +619,7 @@ export default function ExpensesContent({
                       </div>
                     </div>
 
-                    <div className="space-y-6 pl-4 md:pl-6">
+                    <div className="space-y-6">
                       {months.map((month) => {
                         const monthExpenses =
                           expensesByYearAndMonth[year]?.[month] || [];
@@ -580,7 +639,7 @@ export default function ExpensesContent({
                               </span>
                             </div>
 
-                            <div className="grid grid-cols-1 items-start gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                            <div className="grid grid-cols-1 items-start gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                               {monthExpenses.map((expense) => (
                                 <ExpenseCard
                                   key={expense.id}
@@ -601,7 +660,7 @@ export default function ExpensesContent({
             </div>
           ) : (
             /* Wishlist: flat grid sorted by votes */
-            <div className="grid grid-cols-1 items-start gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="grid grid-cols-1 items-start gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {sortedExpenses.map((expense) => (
                 <ExpenseCard
                   key={expense.id}
