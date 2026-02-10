@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
-import { Expense, ExpenseCategory, EXPENSE_CATEGORIES } from "@/types/expense";
-import { getCategoryLabelFromList, getCategoryColor } from "@/lib/expense-utils";
+import { Expense, ExpenseCategory, EXPENSE_CATEGORIES, EXPENSE_SUBCATEGORIES } from "@/types/expense";
+import { getCategoryLabelFromList, getCategoryColor, getCategoryHexColor } from "@/lib/expense-utils";
 import { ToggleGroup } from "@/components/ui/ToggleGroup";
 import { PageHeader } from "@/components/PageHeader";
 import {
@@ -18,11 +18,12 @@ import {
   LayoutGrid,
   List,
   Download,
+  ArrowLeft,
 } from "lucide-react";
 import ExpenseCard from "@/components/expenses/ExpenseCard";
 import ExpenseDetailsView from "@/components/expenses/ExpenseDetailsView";
 import ExpenseForm from "@/components/expenses/ExpenseForm";
-import { CARD_GRADIENTS } from "@/lib/ui-gradients";
+
 import * as XLSX from "xlsx";
 
 type ViewMode = "cards" | "details";
@@ -49,6 +50,7 @@ export default function ExpensesContent({
   const [dateTo, setDateTo] = useState("");
   const [amountMin, setAmountMin] = useState("");
   const [amountMax, setAmountMax] = useState("");
+  const [barChartCategory, setBarChartCategory] = useState<ExpenseCategory | null>(null);
 
   const hasActiveFilters =
     !!selectedCategory || !!dateFrom || !!dateTo || !!amountMin || !!amountMax;
@@ -59,6 +61,7 @@ export default function ExpensesContent({
     setDateTo("");
     setAmountMin("");
     setAmountMax("");
+    setBarChartCategory(null);
   };
 
   // Split into incurred and planned
@@ -211,6 +214,90 @@ export default function ExpensesContent({
     })).sort((a, b) => b.total - a.total);
   }, [expensesByCategory]);
 
+  // Subcategory breakdown when a category is drilled into
+  const expensesBySubcategory = useMemo(() => {
+    if (!barChartCategory || activeTab !== "incurred") return [];
+
+    const grouped: Record<string, { total: number; count: number }> = {};
+
+    filteredExpenses
+      .filter((e) => e.category === barChartCategory)
+      .forEach((expense) => {
+        const sub = expense.subcategory || "uncategorized";
+        if (!grouped[sub]) grouped[sub] = { total: 0, count: 0 };
+        grouped[sub].total += expense.cost;
+        grouped[sub].count += 1;
+      });
+
+    // Get all known subcategories for this category and merge
+    const knownSubs = EXPENSE_SUBCATEGORIES[barChartCategory] || [];
+    const allSubs = knownSubs.map((s) => ({
+      value: s.value,
+      label: s.label,
+      total: grouped[s.value]?.total || 0,
+      count: grouped[s.value]?.count || 0,
+    }));
+
+    // Add any uncategorized entries not in the known list
+    if (grouped["uncategorized"]) {
+      allSubs.push({
+        value: "uncategorized" as never,
+        label: "Uncategorized",
+        total: grouped["uncategorized"].total,
+        count: grouped["uncategorized"].count,
+      });
+    }
+
+    return allSubs.sort((a, b) => b.total - a.total);
+  }, [barChartCategory, filteredExpenses, activeTab]);
+
+  const maxSubcategoryTotal = useMemo(() => {
+    const totals = expensesBySubcategory.map((s) => s.total);
+    return Math.max(...totals, 0);
+  }, [expensesBySubcategory]);
+
+  // Donut chart data: segments with start/end angles and colors
+  const donutData = useMemo(() => {
+    if (activeTab !== "incurred") return { segments: [], total: 0 };
+
+    const items = barChartCategory
+      ? expensesBySubcategory.filter((s) => s.total > 0)
+      : sortedCategories.filter((c) => c.total > 0);
+
+    const total = items.reduce((sum, item) => sum + item.total, 0);
+    if (total === 0) return { segments: [], total: 0 };
+
+    let cumulativeAngle = 0;
+    const segments = items.map((item, index) => {
+      const fraction = item.total / total;
+      const startAngle = cumulativeAngle;
+      const endAngle = cumulativeAngle + fraction * 360;
+      cumulativeAngle = endAngle;
+
+      const color = barChartCategory
+        ? getCategoryHexColor(barChartCategory)
+        : getCategoryHexColor(item.value);
+
+      // Lighten subcategory colors by adjusting opacity
+      const opacity = barChartCategory
+        ? 1 - (index * 0.12)
+        : 1;
+
+      return {
+        value: item.value,
+        label: item.label,
+        total: item.total,
+        fraction,
+        startAngle,
+        endAngle,
+        color,
+        opacity: Math.max(opacity, 0.3),
+      };
+    });
+
+    return { segments, total };
+  }, [activeTab, barChartCategory, sortedCategories, expensesBySubcategory]);
+
   const handleExportExcel = useCallback(() => {
     const rows = sortedExpenses.map((e) => ({
       Title: e.title,
@@ -292,7 +379,7 @@ export default function ExpensesContent({
         }
       />
 
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-x-hidden overflow-y-scroll">
         <div className="mx-auto max-w-6xl p-4 md:p-6">
           {showForm && (
             <div className="mb-6">
@@ -357,12 +444,6 @@ export default function ExpensesContent({
               onChange={(value) => setViewMode(value as ViewMode)}
             />
 
-            {/* Filter count summary (when filters collapsed) */}
-            {hasActiveFilters && !showFilters && (
-              <span className="text-xs text-muted-foreground">
-                {sortedExpenses.length} of {activeExpenses.length} shown
-              </span>
-            )}
           </div>
 
           {/* Filters */}
@@ -516,49 +597,214 @@ export default function ExpensesContent({
             )}
           </div>
 
-          {/* Bar Chart - Expenses by Category (only for incurred expenses, hidden on mobile) */}
+          {/* Charts - Bar + Donut (only for incurred expenses, hidden on mobile) */}
           {activeTab === "incurred" && (
-            <div className="mb-6 hidden rounded-lg border bg-card p-4 pt-8 shadow-sm md:block">
-             
-              <div className="flex items-end justify-between gap-1 sm:gap-2">
-                {sortedCategories.map((category) => {
-                  const percentage = maxCategoryTotal > 0 
-                    ? (category.total / maxCategoryTotal) * 100 
-                    : 0;
-                  
-                  return (
-                    <div key={category.value} className="flex flex-1 flex-col items-center gap-2">
-                      <div className="relative flex h-48 w-full max-w-[60px] flex-col justify-end">
-                        {category.total > 0 ? (
-                          <>
-                            <div
-                              className={`w-full rounded-t bg-linear-to-t ${getCategoryColor(category.value)} transition-all duration-500`}
-                              style={{ height: `${percentage}%` }}
-                            />
-                            <div className="absolute -top-5 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs font-semibold tabular-nums text-foreground">
-                              ${category.total.toLocaleString(undefined, {
-                                minimumFractionDigits: 0,
-                                maximumFractionDigits: 0,
-                              })}
-                            </div>
-                          </>
-                        ) : (
-                          <div className="w-full rounded-t border border-dashed border-muted-foreground/30 bg-transparent transition-all duration-500" style={{ height: "2px" }} />
-                        )}
-                      </div>
-                      <div className="flex min-h-12 flex-col items-center justify-start gap-0.5 text-center">
-                        <span className={`line-clamp-2 text-xs font-medium leading-tight ${category.total > 0 ? "text-foreground" : "text-muted-foreground"}`}>
-                          {category.label}
-                        </span>
-                        {category.count > 0 && (
-                          <span className="text-[10px] text-muted-foreground">
-                            {category.count} {category.count === 1 ? "expense" : "expenses"}
-                          </span>
-                        )}
-                      </div>
+            <div className="mb-6 hidden h-[400px] gap-4 md:flex">
+              {/* Bar Chart */}
+              <div className="flex h-full min-w-0 flex-1 flex-col overflow-hidden rounded-lg border bg-card p-4 shadow-sm">
+                {barChartCategory ? (
+                  <>
+                    <div className="mb-4 flex h-9 items-center gap-2">
+                      <button
+                        onClick={clearAllFilters}
+                        className="flex items-center gap-1.5 rounded-md px-2 py-1 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                      >
+                        <ArrowLeft className="h-4 w-4" />
+                        All Categories
+                      </button>
+                      <span className="text-sm text-muted-foreground">/</span>
+                      <span className="min-w-0 truncate text-sm font-semibold text-foreground">
+                        {getCategoryLabelFromList(barChartCategory)}
+                      </span>
                     </div>
-                  );
-                })}
+                    <div className="mt-auto flex flex-1 items-end justify-between gap-1 sm:gap-2">
+                      {expensesBySubcategory.map((sub) => {
+                        const percentage = maxSubcategoryTotal > 0
+                          ? Math.max((sub.total / maxSubcategoryTotal) * 100, sub.total > 0 ? 3 : 0)
+                          : 0;
+
+                        return (
+                          <div key={sub.value} className="flex flex-1 flex-col items-center justify-end gap-2">
+                            <div className="relative flex h-44 w-full max-w-[48px] flex-col justify-end">
+                              {sub.total > 0 ? (
+                                <>
+                                  <div
+                                    className={`w-full rounded-t bg-linear-to-t ${getCategoryColor(barChartCategory)} transition-all duration-500`}
+                                    style={{ height: `${percentage}%` }}
+                                  />
+                                  <div className="absolute -top-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] font-semibold tabular-nums text-foreground">
+                                    ${sub.total.toLocaleString(undefined, {
+                                      minimumFractionDigits: 0,
+                                      maximumFractionDigits: 0,
+                                    })}
+                                  </div>
+                                </>
+                              ) : (
+                                <div className="w-full rounded-t border border-dashed border-muted-foreground/30 bg-transparent transition-all duration-500" style={{ height: "2px" }} />
+                              )}
+                            </div>
+                            <div className="flex min-h-10 flex-col items-center justify-start gap-0.5 text-center">
+                              <span className={`line-clamp-2 text-[10px] font-medium leading-tight ${sub.total > 0 ? "text-foreground" : "text-muted-foreground"}`}>
+                                {sub.label}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="mb-4 flex h-9 items-center gap-2">
+                      <span className="flex items-center gap-1.5 px-2 py-1 text-sm font-semibold text-foreground">
+                        All Categories
+                      </span>
+                    </div>
+                    <div className="mt-auto flex flex-1 items-end justify-between gap-1 sm:gap-2">
+                      {sortedCategories.map((category) => {
+                        const percentage = maxCategoryTotal > 0
+                          ? Math.max((category.total / maxCategoryTotal) * 100, category.total > 0 ? 3 : 0)
+                          : 0;
+
+                        return (
+                          <div
+                            key={category.value}
+                            className="flex flex-1 cursor-pointer flex-col items-center justify-end gap-2 transition-opacity hover:opacity-80"
+                            onClick={() => {
+                              setBarChartCategory(category.value as ExpenseCategory);
+                              setSelectedCategory(category.value as ExpenseCategory);
+                            }}
+                          >
+                            <div className="relative flex h-44 w-full max-w-[48px] flex-col justify-end">
+                              {category.total > 0 ? (
+                                <>
+                                  <div
+                                    className={`w-full rounded-t bg-linear-to-t ${getCategoryColor(category.value)} transition-all duration-500`}
+                                    style={{ height: `${percentage}%` }}
+                                  />
+                                  <div className="absolute -top-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] font-semibold tabular-nums text-foreground">
+                                    ${category.total.toLocaleString(undefined, {
+                                      minimumFractionDigits: 0,
+                                      maximumFractionDigits: 0,
+                                    })}
+                                  </div>
+                                </>
+                              ) : (
+                                <div className="w-full rounded-t border border-dashed border-muted-foreground/30 bg-transparent transition-all duration-500" style={{ height: "2px" }} />
+                              )}
+                            </div>
+                            <div className="flex min-h-10 flex-col items-center justify-start gap-0.5 text-center">
+                              <span className={`line-clamp-2 text-[10px] font-medium leading-tight ${category.total > 0 ? "text-foreground" : "text-muted-foreground"}`}>
+                                {category.label}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Donut Chart */}
+              <div className="flex h-full w-72 shrink-0 flex-col rounded-lg border bg-card p-4 shadow-sm">
+                <span className="mb-2 px-2 py-1 text-sm font-semibold text-foreground">
+                  Breakdown
+                </span>
+                <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-3 overflow-hidden">
+                  {/* SVG Donut */}
+                  <div className="relative">
+                    <svg viewBox="0 0 120 120" className="h-40 w-40">
+                      {donutData.segments.length > 0 ? (
+                        donutData.segments.map((seg) => {
+                          const r = 48;
+                          const cx = 60;
+                          const cy = 60;
+                          const circumference = 2 * Math.PI * r;
+                          const startRad = ((seg.startAngle - 90) * Math.PI) / 180;
+                          const endRad = ((seg.endAngle - 90) * Math.PI) / 180;
+
+                          // Arc path
+                          const x1 = cx + r * Math.cos(startRad);
+                          const y1 = cy + r * Math.sin(startRad);
+                          const x2 = cx + r * Math.cos(endRad);
+                          const y2 = cy + r * Math.sin(endRad);
+                          const largeArc = seg.endAngle - seg.startAngle > 180 ? 1 : 0;
+
+                          // For a single segment spanning full circle
+                          if (seg.fraction >= 0.9999) {
+                            return (
+                              <circle
+                                key={seg.value}
+                                cx={cx}
+                                cy={cy}
+                                r={r}
+                                fill="none"
+                                stroke={seg.color}
+                                strokeWidth="20"
+                                opacity={seg.opacity}
+                              />
+                            );
+                          }
+
+                          return (
+                            <path
+                              key={seg.value}
+                              d={`M ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2}`}
+                              fill="none"
+                              stroke={seg.color}
+                              strokeWidth="20"
+                              opacity={seg.opacity}
+                              strokeLinecap="butt"
+                            />
+                          );
+                        })
+                      ) : (
+                        <circle
+                          cx="60"
+                          cy="60"
+                          r="48"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="20"
+                          className="text-muted-foreground/20"
+                          strokeDasharray="4 4"
+                        />
+                      )}
+                    </svg>
+                    {/* Center total */}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <span className="text-lg font-bold tabular-nums text-foreground">
+                        ${donutData.total.toLocaleString(undefined, {
+                          minimumFractionDigits: 0,
+                          maximumFractionDigits: 0,
+                        })}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground">total</span>
+                    </div>
+                  </div>
+
+                  {/* Legend */}
+                  <div className="flex min-h-0 w-full flex-1 flex-col gap-1 overflow-y-auto px-1 pr-2">
+                    {donutData.segments.map((seg) => (
+                      <div key={seg.value} className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-1.5 overflow-hidden">
+                          <div
+                            className="h-2.5 w-2.5 shrink-0 rounded-sm"
+                            style={{ backgroundColor: seg.color, opacity: seg.opacity }}
+                          />
+                          <span className="truncate text-[10px] text-muted-foreground">
+                            {seg.label}
+                          </span>
+                        </div>
+                        <span className="shrink-0 text-[10px] font-medium tabular-nums text-foreground">
+                          {(seg.fraction * 100).toFixed(1)}%
+                        </span>
+                      </div>
+                    ))}
+                 
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -640,7 +886,7 @@ export default function ExpensesContent({
                               </span>
                             </div>
 
-                            <div className="grid grid-cols-1 items-start gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                            <div className="grid grid-cols-1 items-start gap-2 sm:grid-cols-2 lg:grid-cols-3">
                               {monthExpenses.map((expense) => (
                                 <ExpenseCard
                                   key={expense.id}
@@ -661,7 +907,7 @@ export default function ExpensesContent({
             </div>
           ) : (
             /* Wishlist: flat grid sorted by votes */
-            <div className="grid grid-cols-1 items-start gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="grid grid-cols-1 items-start gap-2 sm:grid-cols-2 lg:grid-cols-3">
               {sortedExpenses.map((expense) => (
                 <ExpenseCard
                   key={expense.id}

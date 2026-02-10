@@ -3,17 +3,15 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log("🌱 Seeding expenses...");
+  console.log("🌱 Seeding expenses from 2025 CSV data...");
 
-  // Get the first admin user, or create a test user if none exists
+  // Get the first admin user, or any user if none exists
   let user = await prisma.user.findFirst({
     where: { isAdmin: true },
   });
 
   if (!user) {
-    // Try to get any user
     user = await prisma.user.findFirst();
-    
     if (!user) {
       console.log("❌ No users found. Please create a user first.");
       return;
@@ -22,414 +20,631 @@ async function main() {
 
   console.log(`✅ Using user: ${user.name} (${user.email})`);
 
-  // Get current date for calculations
-  const now = new Date();
-  const currentYear = now.getFullYear();
-  const currentMonth = now.getMonth();
+  // Helper to create a date in 2025
+  const d = (month: number, day: number) => new Date(2025, month - 1, day);
 
-  // Helper to create date
-  const createDate = (year: number, month: number, day: number) => {
-    return new Date(year, month, day);
-  };
+  // ── All 2025 expenses from the CSV ──────────────────────────────────
 
-  // Dummy expenses data
-  const expenses = [
-    // Maintenance & Repairs
+  const expenses: Array<{
+    title: string;
+    description: string | null;
+    cost: number;
+    date: Date | null;
+    category: string;
+    subcategory: string | null;
+    isPlanned: boolean;
+  }> = [
+    // ═══════════════════════════════════════════════════════════════════
+    //  OVERHEAD / RECURRING
+    // ═══════════════════════════════════════════════════════════════════
+
+    // ── Adams Pest Control ────────────────────────────────────────────
     {
-      title: "Plumbing Repair - Kitchen Sink",
-      description: "Fixed leaky faucet and replaced pipes under sink",
-      cost: 450.0,
-      date: createDate(currentYear, currentMonth - 2, 15),
+      title: "Pest Control Service",
+      description: "Adams Pest Control; fixing holes where mice are getting in",
+      cost: 150.72,
+      date: d(5, 15),
       category: "maintenance",
-      subcategory: "plumbing",
+      subcategory: "pest_control",
       isPlanned: false,
     },
     {
-      title: "Electrical Panel Upgrade",
-      description: "Upgraded electrical panel to 200 amp service",
-      cost: 3200.0,
-      date: createDate(currentYear, currentMonth - 1, 5),
+      title: "Pest Control Service",
+      description: "Adams Pest Control; fixing holes where mice are getting in",
+      cost: 150.72,
+      date: d(8, 15),
       category: "maintenance",
-      subcategory: "electrical",
+      subcategory: "pest_control",
       isPlanned: false,
     },
     {
-      title: "HVAC System Maintenance",
-      description: "Annual service and filter replacement",
-      cost: 275.0,
-      date: createDate(currentYear, currentMonth - 1, 20),
+      title: "Pest Control Service",
+      description: "Adams Pest Control; fixing holes where mice are getting in",
+      cost: 150.72,
+      date: d(11, 15),
       category: "maintenance",
-      subcategory: "hvac",
-      isPlanned: false,
-    },
-    {
-      title: "Roof Shingle Replacement",
-      description: "Replaced damaged shingles on north side",
-      cost: 850.0,
-      date: createDate(currentYear, currentMonth - 3, 10),
-      category: "maintenance",
-      subcategory: "roofing",
-      isPlanned: false,
-    },
-    {
-      title: "Refrigerator Repair",
-      description: "Fixed compressor and replaced door seal",
-      cost: 425.0,
-      date: createDate(currentYear, currentMonth, 3),
-      category: "maintenance",
-      subcategory: "appliances",
-      isPlanned: false,
-    },
-    {
-      title: "Foundation Crack Repair",
-      description: "Sealed foundation cracks in basement",
-      cost: 1200.0,
-      date: createDate(currentYear, currentMonth - 4, 22),
-      category: "maintenance",
-      subcategory: "structural",
+      subcategory: "pest_control",
       isPlanned: false,
     },
 
-    // Utilities & Services
+    // ── Garbage Service ──────────────────────────────────────────────
     {
-      title: "Electric Bill - January",
-      description: "Monthly electricity usage",
-      cost: 185.50,
-      date: createDate(currentYear, currentMonth - 1, 15),
+      title: "Trash Pickup",
+      description: "Garbage service",
+      cost: 124.13,
+      date: d(8, 1),
       category: "utilities",
-      subcategory: "electricity",
+      subcategory: "trash",
       isPlanned: false,
     },
     {
-      title: "Electric Bill - February",
-      description: "Monthly electricity usage",
-      cost: 192.75,
-      date: createDate(currentYear, currentMonth, 15),
-      category: "utilities",
-      subcategory: "electricity",
-      isPlanned: false,
-    },
-    {
-      title: "Water & Sewer - Q1",
-      description: "Quarterly water and sewer bill",
-      cost: 245.0,
-      date: createDate(currentYear, currentMonth - 1, 1),
-      category: "utilities",
-      subcategory: "water_sewer",
-      isPlanned: false,
-    },
-    {
-      title: "Internet Service - Annual",
-      description: "Yearly internet subscription",
-      cost: 1200.0,
-      date: createDate(currentYear, currentMonth - 2, 1),
-      category: "utilities",
-      subcategory: "internet",
-      isPlanned: false,
-    },
-    {
-      title: "Propane Tank Refill",
-      description: "Winter propane refill",
-      cost: 450.0,
-      date: createDate(currentYear, currentMonth - 1, 10),
-      category: "utilities",
-      subcategory: "propane",
-      isPlanned: false,
-    },
-    {
-      title: "Trash Service - Monthly",
-      description: "Monthly waste collection",
-      cost: 35.0,
-      date: createDate(currentYear, currentMonth, 1),
+      title: "Trash Pickup",
+      description: "Garbage service",
+      cost: 19.10,
+      date: d(9, 1),
       category: "utilities",
       subcategory: "trash",
       isPlanned: false,
     },
 
-    // Landscaping & Outdoor
+    // ── Electricity – Crow Wing Power (monthly) ──────────────────────
     {
-      title: "Lawn Mowing Service - Spring",
-      description: "Professional lawn care for spring season",
-      cost: 600.0,
-      date: createDate(currentYear, currentMonth - 2, 1),
-      category: "landscaping",
-      subcategory: "lawn_care",
+      title: "Electric Bill",
+      description: "Crow Wing Power monthly electricity",
+      cost: 325.00,
+      date: d(1, 15),
+      category: "utilities",
+      subcategory: "electricity",
       isPlanned: false,
     },
     {
-      title: "Tree Removal - Dead Pine",
-      description: "Removed dead pine tree near driveway",
-      cost: 1200.0,
-      date: createDate(currentYear, currentMonth - 3, 18),
-      category: "landscaping",
-      subcategory: "tree_removal",
+      title: "Electric Bill",
+      description: "Crow Wing Power monthly electricity",
+      cost: 325.00,
+      date: d(2, 15),
+      category: "utilities",
+      subcategory: "electricity",
       isPlanned: false,
     },
     {
-      title: "Deck Staining",
-      description: "Stained and sealed deck",
-      cost: 350.0,
-      date: createDate(currentYear, currentMonth - 1, 25),
-      category: "landscaping",
-      subcategory: "deck_patio",
+      title: "Electric Bill",
+      description: "Crow Wing Power monthly electricity",
+      cost: 404.00,
+      date: d(3, 15),
+      category: "utilities",
+      subcategory: "electricity",
       isPlanned: false,
     },
     {
-      title: "Dock Repairs",
-      description: "Replaced damaged dock boards",
-      cost: 850.0,
-      date: createDate(currentYear, currentMonth - 2, 12),
-      category: "landscaping",
+      title: "Electric Bill",
+      description: "Crow Wing Power monthly electricity",
+      cost: 208.00,
+      date: d(5, 15),
+      category: "utilities",
+      subcategory: "electricity",
+      isPlanned: false,
+    },
+    {
+      title: "Electric Bill",
+      description: "Crow Wing Power monthly electricity",
+      cost: 151.00,
+      date: d(6, 15),
+      category: "utilities",
+      subcategory: "electricity",
+      isPlanned: false,
+    },
+    {
+      title: "Electric Bill",
+      description: "Crow Wing Power monthly electricity",
+      cost: 144.00,
+      date: d(7, 15),
+      category: "utilities",
+      subcategory: "electricity",
+      isPlanned: false,
+    },
+    {
+      title: "Electric Bill",
+      description: "Crow Wing Power monthly electricity",
+      cost: 154.00,
+      date: d(8, 15),
+      category: "utilities",
+      subcategory: "electricity",
+      isPlanned: false,
+    },
+    {
+      title: "Electric Bill",
+      description: "Crow Wing Power monthly electricity",
+      cost: 152.00,
+      date: d(9, 15),
+      category: "utilities",
+      subcategory: "electricity",
+      isPlanned: false,
+    },
+    {
+      title: "Electric Bill",
+      description: "Crow Wing Power monthly electricity",
+      cost: 194.00,
+      date: d(10, 15),
+      category: "utilities",
+      subcategory: "electricity",
+      isPlanned: false,
+    },
+    {
+      title: "Electric Bill",
+      description: "Crow Wing Power monthly electricity",
+      cost: 114.00,
+      date: d(11, 15),
+      category: "utilities",
+      subcategory: "electricity",
+      isPlanned: false,
+    },
+    {
+      title: "Electric Bill",
+      description: "Crow Wing Power monthly electricity",
+      cost: 148.00,
+      date: d(12, 15),
+      category: "utilities",
+      subcategory: "electricity",
+      isPlanned: false,
+    },
+
+    // ── Ferrel Gas – Propane ─────────────────────────────────────────
+    {
+      title: "Propane Refill",
+      description: "Ferrel Gas",
+      cost: 278.60,
+      date: d(8, 15),
+      category: "utilities",
+      subcategory: "propane",
+      isPlanned: false,
+    },
+    {
+      title: "Propane Refill",
+      description: "Ferrel Gas",
+      cost: 347.50,
+      date: d(11, 15),
+      category: "utilities",
+      subcategory: "propane",
+      isPlanned: false,
+    },
+
+    // ── Lakes Area Dock and Lift (Shane) ─────────────────────────────
+    {
+      title: "Dock Installation",
+      description: "Lakes Area Dock and Lift (Shane)",
+      cost: 525.00,
+      date: d(5, 1),
+      category: "marine",
       subcategory: "dock",
       isPlanned: false,
     },
     {
-      title: "Fire Pit Installation",
-      description: "Installed new stone fire pit",
-      cost: 1200.0,
-      date: createDate(currentYear, currentMonth - 4, 5),
+      title: "Dock Service",
+      description: "Lakes Area Dock and Lift (Shane)",
+      cost: 550.00,
+      date: d(7, 1),
+      category: "marine",
+      subcategory: "dock",
+      isPlanned: false,
+    },
+
+    // ── Marriott Vacation Club ──────────────────────────────────────
+    {
+      title: "Annual Maintenance Fee",
+      description: "Marriott Vacation Club",
+      cost: 3995.70,
+      date: d(1, 15),
+      category: "other",
+      subcategory: "vacation_club",
+      isPlanned: false,
+    },
+
+    // ── Woodland Insurance – Auto Owners ─────────────────────────────
+    {
+      title: "Property Insurance Premium",
+      description: "Woodland Insurance (Auto Owners), includes umbrella policy",
+      cost: 3519.48,
+      date: d(10, 1),
+      category: "insurance",
+      subcategory: "property_insurance",
+      isPlanned: false,
+    },
+
+    // ── Abound by Marriott – Club Dues ──────────────────────────────
+    {
+      title: "Club Dues",
+      description: "Abound by Marriott annual dues",
+      cost: 250.00,
+      date: d(1, 15),
+      category: "other",
+      subcategory: "vacation_club",
+      isPlanned: false,
+    },
+
+    // ── Bruce L Hoffarber CPA – Tax Prep ─────────────────────────────
+    {
+      title: "Tax Preparation",
+      description: "Bruce L Hoffarber CPA annual trust tax preparation",
+      cost: 700.00,
+      date: d(5, 1),
+      category: "tax_fees",
+      subcategory: "tax_preparation",
+      isPlanned: false,
+    },
+
+    // ── TDS Communications – Phone/Internet (monthly) ────────────────
+    {
+      title: "Monthly Service Bill",
+      description: "TDS Communications phone/internet",
+      cost: 135.00,
+      date: d(1, 1),
+      category: "utilities",
+      subcategory: "internet",
+      isPlanned: false,
+    },
+    {
+      title: "Monthly Service Bill",
+      description: "TDS Communications phone/internet",
+      cost: 135.00,
+      date: d(2, 1),
+      category: "utilities",
+      subcategory: "internet",
+      isPlanned: false,
+    },
+    {
+      title: "Monthly Service Bill",
+      description: "TDS Communications phone/internet",
+      cost: 135.00,
+      date: d(3, 1),
+      category: "utilities",
+      subcategory: "internet",
+      isPlanned: false,
+    },
+    {
+      title: "Monthly Service Bill",
+      description: "TDS Communications phone/internet",
+      cost: 135.00,
+      date: d(4, 1),
+      category: "utilities",
+      subcategory: "internet",
+      isPlanned: false,
+    },
+    {
+      title: "Monthly Service Bill",
+      description: "TDS Communications phone/internet",
+      cost: 134.17,
+      date: d(5, 1),
+      category: "utilities",
+      subcategory: "internet",
+      isPlanned: false,
+    },
+    {
+      title: "Monthly Service Bill",
+      description: "TDS Communications phone/internet",
+      cost: 134.17,
+      date: d(6, 1),
+      category: "utilities",
+      subcategory: "internet",
+      isPlanned: false,
+    },
+    {
+      title: "Monthly Service Bill",
+      description: "TDS Communications phone/internet",
+      cost: 135.00,
+      date: d(7, 1),
+      category: "utilities",
+      subcategory: "internet",
+      isPlanned: false,
+    },
+    {
+      title: "Monthly Service Bill",
+      description: "TDS Communications phone/internet",
+      cost: 134.97,
+      date: d(8, 1),
+      category: "utilities",
+      subcategory: "internet",
+      isPlanned: false,
+    },
+    {
+      title: "Monthly Service Bill",
+      description: "TDS Communications phone/internet",
+      cost: 135.00,
+      date: d(9, 1),
+      category: "utilities",
+      subcategory: "internet",
+      isPlanned: false,
+    },
+    {
+      title: "Monthly Service Bill",
+      description: "TDS Communications phone/internet",
+      cost: 134.97,
+      date: d(10, 1),
+      category: "utilities",
+      subcategory: "internet",
+      isPlanned: false,
+    },
+    {
+      title: "Monthly Service Bill",
+      description: "TDS Communications phone/internet",
+      cost: 135.20,
+      date: d(11, 1),
+      category: "utilities",
+      subcategory: "internet",
+      isPlanned: false,
+    },
+    {
+      title: "Monthly Service Bill",
+      description: "TDS Communications phone/internet",
+      cost: 135.20,
+      date: d(12, 1),
+      category: "utilities",
+      subcategory: "internet",
+      isPlanned: false,
+    },
+
+    // ── Towerview Services – Snow Plowing ────────────────────────────
+    {
+      title: "Snow Plowing",
+      description: "Towerview Services",
+      cost: 119.00,
+      date: d(2, 15),
       category: "landscaping",
-      subcategory: "fire_pit",
+      subcategory: "snow_removal",
+      isPlanned: false,
+    },
+    {
+      title: "Snow Plowing",
+      description: "Towerview Services",
+      cost: 104.00,
+      date: d(4, 15),
+      category: "landscaping",
+      subcategory: "snow_removal",
       isPlanned: false,
     },
 
-    // Supplies & Materials
+    // ── Cabin Check Inc. (Rick Craig) ────────────────────────────────
     {
-      title: "Cleaning Supplies - Bulk Order",
-      description: "Stocked up on cleaning supplies for season",
-      cost: 125.0,
-      date: createDate(currentYear, currentMonth - 1, 8),
-      category: "supplies",
-      subcategory: "cleaning_supplies",
-      isPlanned: false,
-    },
-    {
-      title: "Power Tools - Drill & Saw",
-      description: "New cordless drill and circular saw",
-      cost: 450.0,
-      date: createDate(currentYear, currentMonth - 2, 20),
-      category: "supplies",
-      subcategory: "tools",
-      isPlanned: false,
-    },
-    {
-      title: "Hardware Store Run",
-      description: "Various screws, nails, and hardware",
-      cost: 85.0,
-      date: createDate(currentYear, currentMonth, 5),
-      category: "supplies",
-      subcategory: "hardware",
-      isPlanned: false,
-    },
-    {
-      title: "Paint - Exterior",
-      description: "Exterior paint for touch-ups",
-      cost: 180.0,
-      date: createDate(currentYear, currentMonth - 1, 12),
-      category: "supplies",
-      subcategory: "paint",
-      isPlanned: false,
-    },
-    {
-      title: "Lumber - Deck Project",
-      description: "Pressure-treated lumber for deck repairs",
-      cost: 425.0,
-      date: createDate(currentYear, currentMonth - 2, 15),
-      category: "supplies",
-      subcategory: "lumber",
+      title: "Cabin Check Visit",
+      description: "Cabin Check Inc. (Rick Craig)",
+      cost: 140.00,
+      date: d(10, 15),
+      category: "maintenance",
+      subcategory: "cabin_check",
       isPlanned: false,
     },
 
-    // Tax & Fees
+    // ── Property Taxes ───────────────────────────────────────────────
     {
-      title: "Property Tax - 2024",
-      description: "Annual property tax payment",
-      cost: 3500.0,
-      date: createDate(currentYear, currentMonth - 3, 1),
+      title: "Property Taxes - 1st Half",
+      description: "Semi-annual property tax payment",
+      cost: 1881.00,
+      date: d(5, 15),
       category: "tax_fees",
       subcategory: "property_tax",
       isPlanned: false,
     },
     {
-      title: "HOA Fees - Q1",
-      description: "Quarterly HOA assessment",
-      cost: 450.0,
-      date: createDate(currentYear, currentMonth - 2, 1),
+      title: "Property Taxes - 2nd Half",
+      description: "Semi-annual property tax payment",
+      cost: 1881.00,
+      date: d(10, 15),
       category: "tax_fees",
-      subcategory: "hoa_fees",
+      subcategory: "property_tax",
       isPlanned: false,
     },
+
+    // ── Wheeler Marine – Boat Storage ────────────────────────────────
     {
-      title: "Building Permit - Deck",
-      description: "Permit for deck construction",
-      cost: 150.0,
-      date: createDate(currentYear, currentMonth - 4, 10),
+      title: "Boat Storage",
+      description: "Wheeler Marine seasonal storage",
+      cost: 291.95,
+      date: d(10, 1),
+      category: "marine",
+      subcategory: "boat_storage",
+      isPlanned: false,
+    },
+
+    // ── Wheeler Marine – Boat Service ────────────────────────────────
+    {
+      title: "Boat Maintenance",
+      description: "Wheeler Marine annual service",
+      cost: 1717.78,
+      date: d(6, 15),
+      category: "marine",
+      subcategory: "boat_service",
+      isPlanned: false,
+    },
+
+    // ── MN Dept of Revenue – Trust Taxes ─────────────────────────────
+    {
+      title: "State Trust Tax",
+      description: "MN Dept of Revenue",
+      cost: 152.00,
+      date: d(4, 15),
       category: "tax_fees",
-      subcategory: "permits",
+      subcategory: "trust_tax",
       isPlanned: false,
     },
 
-    // Insurance
+    // ── Tortuga fees ─────────────────────────────────────────────────
     {
-      title: "Property Insurance - Annual",
-      description: "Annual property insurance premium",
-      cost: 1800.0,
-      date: createDate(currentYear, currentMonth - 2, 1),
-      category: "insurance",
-      subcategory: "property_insurance",
-      isPlanned: false,
-    },
-    {
-      title: "Liability Insurance",
-      description: "Additional liability coverage",
-      cost: 350.0,
-      date: createDate(currentYear, currentMonth - 1, 1),
-      category: "insurance",
-      subcategory: "liability",
-      isPlanned: false,
-    },
-
-    // Improvements & Upgrades
-    {
-      title: "Kitchen Renovation",
-      description: "Complete kitchen remodel with new cabinets and countertops",
-      cost: 15000.0,
-      date: createDate(currentYear, currentMonth - 5, 1),
-      category: "improvements",
-      subcategory: "renovations",
-      isPlanned: false,
-    },
-    {
-      title: "New Refrigerator",
-      description: "Energy-efficient French door refrigerator",
-      cost: 2200.0,
-      date: createDate(currentYear, currentMonth - 3, 20),
-      category: "improvements",
-      subcategory: "appliances",
-      isPlanned: false,
-    },
-    {
-      title: "Living Room Furniture Set",
-      description: "New sofa, coffee table, and side tables",
-      cost: 3500.0,
-      date: createDate(currentYear, currentMonth - 2, 10),
-      category: "improvements",
-      subcategory: "furniture",
-      isPlanned: false,
-    },
-    {
-      title: "Solar Panel Installation",
-      description: "Installed solar panels for energy efficiency",
-      cost: 12000.0,
-      date: createDate(currentYear, currentMonth - 6, 15),
-      category: "improvements",
-      subcategory: "energy_efficiency",
-      isPlanned: false,
-    },
-    {
-      title: "Bathroom Addition",
-      description: "Added new bathroom to second floor",
-      cost: 18000.0,
-      date: createDate(currentYear, currentMonth - 8, 1),
-      category: "improvements",
-      subcategory: "additions",
-      isPlanned: false,
-    },
-
-    // Emergency & Unexpected
-    {
-      title: "Storm Damage - Roof",
-      description: "Repaired roof damage from severe storm",
-      cost: 3500.0,
-      date: createDate(currentYear, currentMonth - 1, 28),
-      category: "emergency",
-      subcategory: "storm_damage",
-      isPlanned: false,
-    },
-    {
-      title: "Emergency Plumbing - Burst Pipe",
-      description: "Emergency repair for burst pipe in basement",
-      cost: 850.0,
-      date: createDate(currentYear, currentMonth - 2, 14),
-      category: "emergency",
-      subcategory: "emergency_repairs",
-      isPlanned: false,
-    },
-    {
-      title: "Water Heater Replacement",
-      description: "Replaced failed water heater",
-      cost: 1200.0,
-      date: createDate(currentYear, currentMonth - 1, 5),
-      category: "emergency",
-      subcategory: "replacements",
-      isPlanned: false,
-    },
-
-    // Other
-    {
-      title: "Miscellaneous Expenses",
-      description: "Various small expenses",
-      cost: 150.0,
-      date: createDate(currentYear, currentMonth, 1),
+      title: "Timeshare Fees",
+      description: "Tortuga unit 480 maintenance fees",
+      cost: 59.52,
+      date: d(1, 15),
       category: "other",
-      subcategory: "general",
+      subcategory: "vacation_club",
+      isPlanned: false,
+    },
+    {
+      title: "Timeshare Fees",
+      description: "Tortuga unit 481 maintenance fees",
+      cost: 59.52,
+      date: d(1, 15),
+      category: "other",
+      subcategory: "vacation_club",
       isPlanned: false,
     },
 
-    // Planned Expenses (Wishlist)
+    // ── CJ Services – Window Cleaning ────────────────────────────────
     {
-      title: "Hot Tub Installation",
-      description: "Would love to add a hot tub for year-round enjoyment",
-      cost: 8000.0,
-      date: null,
+      title: "Window Cleaning",
+      description: "CJ Services",
+      cost: 450.00,
+      date: d(9, 15),
+      category: "maintenance",
+      subcategory: "cleaning",
+      isPlanned: false,
+    },
+
+    // ── Zaffke Plumbing (Northland Septic) ───────────────────────────
+    {
+      title: "Plumbing Service",
+      description: "Zaffke Plumbing (part of Northland Septic)",
+      cost: 855.00,
+      date: d(11, 15),
+      category: "maintenance",
+      subcategory: "plumbing",
+      isPlanned: false,
+    },
+
+    // ── CJ Chem Dry – Rug Cleaning ──────────────────────────────────
+    {
+      title: "Rug Cleaning",
+      description: "CJ Chem Dry",
+      cost: 77.00,
+      date: d(2, 15),
+      category: "maintenance",
+      subcategory: "cleaning",
+      isPlanned: false,
+    },
+
+    // ═══════════════════════════════════════════════════════════════════
+    //  EXTRAORDINARY EXPENSES (reimbursements & one-off purchases)
+    // ═══════════════════════════════════════════════════════════════════
+
+    // ── Ben – Supplies ───────────────────────────────────────────────
+    {
+      title: "Supplies Reimbursement",
+      description: "Ben - cabin supplies purchase",
+      cost: 72.89,
+      date: d(1, 15),
+      category: "supplies",
+      subcategory: "general_supplies",
+      isPlanned: false,
+    },
+
+    // ── Teri Wuebker ─────────────────────────────────────────────────
+    {
+      title: "Supplies Reimbursement",
+      description: "Teri Wuebker - cabin supplies purchase",
+      cost: 391.33,
+      date: d(7, 15),
+      category: "supplies",
+      subcategory: "general_supplies",
+      isPlanned: false,
+    },
+
+    // ── Jenny Wuebker (multiple months) ──────────────────────────────
+    {
+      title: "Supplies Reimbursement",
+      description: "Jenny Wuebker - cabin supplies and purchases",
+      cost: 1094.51,
+      date: d(2, 15),
+      category: "supplies",
+      subcategory: "general_supplies",
+      isPlanned: false,
+    },
+    {
+      title: "Supplies Reimbursement",
+      description: "Jenny Wuebker - cabin supplies and purchases",
+      cost: 870.32,
+      date: d(3, 15),
+      category: "supplies",
+      subcategory: "general_supplies",
+      isPlanned: false,
+    },
+    {
+      title: "Supplies Reimbursement",
+      description: "Jenny Wuebker - cabin supplies and purchases",
+      cost: 268.85,
+      date: d(6, 15),
+      category: "supplies",
+      subcategory: "general_supplies",
+      isPlanned: false,
+    },
+    {
+      title: "Supplies Reimbursement",
+      description: "Jenny Wuebker - cabin supplies and purchases",
+      cost: 446.34,
+      date: d(7, 15),
+      category: "supplies",
+      subcategory: "general_supplies",
+      isPlanned: false,
+    },
+    {
+      title: "Supplies Reimbursement",
+      description: "Jenny Wuebker - cabin supplies and purchases",
+      cost: 336.53,
+      date: d(9, 15),
+      category: "supplies",
+      subcategory: "general_supplies",
+      isPlanned: false,
+    },
+
+    // ── Lisa and Lou Malice ──────────────────────────────────────────
+    {
+      title: "Supplies Reimbursement",
+      description: "Lisa and Lou Malice - cabin supplies purchase",
+      cost: 252.00,
+      date: d(12, 15),
+      category: "supplies",
+      subcategory: "general_supplies",
+      isPlanned: false,
+    },
+
+    // ── Lake Life Inc. ───────────────────────────────────────────────
+    {
+      title: "Improvement Project",
+      description: "Lake Life Inc. (Tristan, 218-547-6200) - cabin improvement project",
+      cost: 6400.00,
+      date: d(10, 15),
       category: "improvements",
       subcategory: "general_improvements",
-      isPlanned: true,
+      isPlanned: false,
     },
+
+    // ── Erin Wuebker ─────────────────────────────────────────────────
     {
-      title: "New Deck Expansion",
-      description: "Expand the deck to accommodate more seating",
-      cost: 5000.0,
-      date: null,
+      title: "Supplies Reimbursement",
+      description: "Erin Wuebker - cabin supplies purchase",
+      cost: 133.31,
+      date: d(5, 15),
+      category: "supplies",
+      subcategory: "general_supplies",
+      isPlanned: false,
+    },
+
+    // ── Charley Wagner – Tree Removal ────────────────────────────────
+    {
+      title: "Tree Removal",
+      description: "Charley Wagner tree removal service, 303-917-1497",
+      cost: 3400.00,
+      date: d(5, 15),
       category: "landscaping",
-      subcategory: "deck_patio",
-      isPlanned: true,
-    },
-    {
-      title: "Smart Home System",
-      description: "Install smart thermostats, lights, and security system",
-      cost: 2500.0,
-      date: null,
-      category: "improvements",
-      subcategory: "energy_efficiency",
-      isPlanned: true,
-    },
-    {
-      title: "New Washer & Dryer",
-      description: "Upgrade to energy-efficient washer and dryer set",
-      cost: 1800.0,
-      date: null,
-      category: "improvements",
-      subcategory: "appliances",
-      isPlanned: true,
-    },
-    {
-      title: "Outdoor Kitchen",
-      description: "Build outdoor kitchen with grill and prep area",
-      cost: 6000.0,
-      date: null,
-      category: "improvements",
-      subcategory: "additions",
-      isPlanned: true,
+      subcategory: "tree_removal",
+      isPlanned: false,
     },
   ];
 
-  // Delete existing expenses (optional - comment out if you want to keep existing data)
-  const deleteCount = await prisma.expense.deleteMany({
-    where: {
-      userId: user.id,
-    },
-  });
+  // Delete ALL existing expenses (both dummy and real)
+  const deleteVotes = await prisma.expenseVote.deleteMany({});
+  console.log(`🗑️  Deleted ${deleteVotes.count} expense votes`);
+
+  const deleteComments = await prisma.expenseComment.deleteMany({});
+  console.log(`🗑️  Deleted ${deleteComments.count} expense comments`);
+
+  const deleteCount = await prisma.expense.deleteMany({});
   console.log(`🗑️  Deleted ${deleteCount.count} existing expenses`);
 
   // Create expenses
@@ -442,7 +657,23 @@ async function main() {
     });
   }
 
-  console.log(`✅ Created ${expenses.length} expenses`);
+  console.log(`✅ Created ${expenses.length} expenses from 2025 CSV data`);
+
+  // Print summary by category
+  const byCategory: Record<string, { count: number; total: number }> = {};
+  for (const e of expenses) {
+    if (!byCategory[e.category]) byCategory[e.category] = { count: 0, total: 0 };
+    byCategory[e.category].count++;
+    byCategory[e.category].total += e.cost;
+  }
+
+  console.log("\n📊 Summary by category:");
+  let grandTotal = 0;
+  for (const [cat, data] of Object.entries(byCategory).sort((a, b) => b[1].total - a[1].total)) {
+    console.log(`   ${cat}: ${data.count} items, $${data.total.toFixed(2)}`);
+    grandTotal += data.total;
+  }
+  console.log(`\n💰 Grand total: $${grandTotal.toFixed(2)}`);
   console.log("🎉 Seeding completed!");
 }
 

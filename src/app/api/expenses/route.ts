@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Date required for incurred expenses" }, { status: 400 });
   }
 
-  const validCategories = ["maintenance", "utilities", "landscaping", "supplies", "tax_fees", "insurance", "improvements", "emergency", "other"];
+  const validCategories = ["maintenance", "utilities", "landscaping", "marine", "supplies", "tax_fees", "insurance", "improvements", "emergency", "other"];
   if (!category || !validCategories.includes(category)) {
     return NextResponse.json({ error: "Valid category required" }, { status: 400 });
   }
@@ -166,7 +166,7 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Valid cost required" }, { status: 400 });
   }
 
-  const validCategories = ["maintenance", "utilities", "landscaping", "supplies", "tax_fees", "insurance", "improvements", "emergency", "other"];
+  const validCategories = ["maintenance", "utilities", "landscaping", "marine", "supplies", "tax_fees", "insurance", "improvements", "emergency", "other"];
   if (category !== undefined && !validCategories.includes(category)) {
     return NextResponse.json({ error: "Valid category required" }, { status: 400 });
   }

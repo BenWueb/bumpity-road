@@ -2,6 +2,7 @@ export type ExpenseCategory =
   | "maintenance" 
   | "utilities" 
   | "landscaping" 
+  | "marine"
   | "supplies" 
   | "tax_fees" 
   | "insurance" 
@@ -11,15 +12,17 @@ export type ExpenseCategory =
 
 export type ExpenseSubcategory = 
   // Maintenance
-  | "plumbing" | "electrical" | "hvac" | "roofing" | "structural" | "appliances" | "general_maintenance"
+  | "plumbing" | "electrical" | "hvac" | "roofing" | "structural" | "appliances" | "pest_control" | "cleaning" | "cabin_check" | "general_maintenance"
   // Utilities
   | "electricity" | "water_sewer" | "internet" | "phone" | "propane" | "trash" | "other_utilities"
   // Landscaping
-  | "lawn_care" | "tree_removal" | "deck_patio" | "dock" | "fire_pit" | "general_landscaping"
+  | "lawn_care" | "tree_removal" | "snow_removal" | "deck_patio" | "fire_pit" | "general_landscaping"
+  // Marine & Waterfront
+  | "dock" | "boat_storage" | "boat_service" | "general_marine"
   // Supplies
   | "cleaning_supplies" | "tools" | "hardware" | "paint" | "lumber" | "general_supplies"
   // Tax & Fees
-  | "property_tax" | "hoa_fees" | "permits" | "licenses" | "other_fees"
+  | "property_tax" | "tax_preparation" | "trust_tax" | "hoa_fees" | "permits" | "licenses" | "other_fees"
   // Insurance
   | "property_insurance" | "liability" | "other_insurance"
   // Improvements
@@ -27,7 +30,7 @@ export type ExpenseSubcategory =
   // Emergency
   | "storm_damage" | "emergency_repairs" | "replacements" | "other_emergency"
   // Other
-  | "general";
+  | "vacation_club" | "general";
 
 export interface ExpenseComment {
   id: string;
@@ -82,6 +85,7 @@ export const EXPENSE_CATEGORIES = [
   { value: "maintenance", label: "Maintenance & Repairs" },
   { value: "utilities", label: "Utilities & Services" },
   { value: "landscaping", label: "Landscaping & Outdoor" },
+  { value: "marine", label: "Marine & Waterfront" },
   { value: "supplies", label: "Supplies & Materials" },
   { value: "tax_fees", label: "Tax & Fees" },
   { value: "insurance", label: "Insurance" },
@@ -98,6 +102,9 @@ export const EXPENSE_SUBCATEGORIES: Record<ExpenseCategory, Array<{ value: Expen
     { value: "roofing", label: "Roofing" },
     { value: "structural", label: "Structural" },
     { value: "appliances", label: "Appliances" },
+    { value: "pest_control", label: "Pest Control" },
+    { value: "cleaning", label: "Cleaning" },
+    { value: "cabin_check", label: "Cabin Check" },
     { value: "general_maintenance", label: "General Maintenance" },
   ],
   utilities: [
@@ -112,10 +119,16 @@ export const EXPENSE_SUBCATEGORIES: Record<ExpenseCategory, Array<{ value: Expen
   landscaping: [
     { value: "lawn_care", label: "Lawn Care" },
     { value: "tree_removal", label: "Tree Removal" },
+    { value: "snow_removal", label: "Snow Removal" },
     { value: "deck_patio", label: "Deck & Patio" },
-    { value: "dock", label: "Dock" },
     { value: "fire_pit", label: "Fire Pit" },
     { value: "general_landscaping", label: "General Landscaping" },
+  ],
+  marine: [
+    { value: "dock", label: "Dock" },
+    { value: "boat_storage", label: "Boat Storage" },
+    { value: "boat_service", label: "Boat Service" },
+    { value: "general_marine", label: "General Marine" },
   ],
   supplies: [
     { value: "cleaning_supplies", label: "Cleaning Supplies" },
@@ -127,6 +140,8 @@ export const EXPENSE_SUBCATEGORIES: Record<ExpenseCategory, Array<{ value: Expen
   ],
   tax_fees: [
     { value: "property_tax", label: "Property Tax" },
+    { value: "tax_preparation", label: "Tax Preparation" },
+    { value: "trust_tax", label: "Trust Tax" },
     { value: "hoa_fees", label: "HOA Fees" },
     { value: "permits", label: "Permits" },
     { value: "licenses", label: "Licenses" },
@@ -152,6 +167,7 @@ export const EXPENSE_SUBCATEGORIES: Record<ExpenseCategory, Array<{ value: Expen
     { value: "other_emergency", label: "Other Emergency" },
   ],
   other: [
+    { value: "vacation_club", label: "Vacation Club" },
     { value: "general", label: "General" },
   ],
 };

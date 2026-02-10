@@ -1,6 +1,7 @@
 import {
   Wrench,
   TreePine,
+  Waves,
   MoreHorizontal,
   Zap,
   Receipt,
@@ -10,7 +11,7 @@ import {
   AlertTriangle,
   type LucideIcon,
 } from "lucide-react";
-import { EXPENSE_CATEGORIES } from "@/types/expense";
+import { EXPENSE_CATEGORIES, EXPENSE_SUBCATEGORIES, type ExpenseCategory } from "@/types/expense";
 import { CARD_GRADIENTS } from "@/lib/ui-gradients";
 
 /**
@@ -21,6 +22,7 @@ export function getCategoryLabel(category: string): string {
     maintenance: "Maintenance & Repairs",
     utilities: "Utilities & Services",
     landscaping: "Landscaping & Outdoor",
+    marine: "Marine & Waterfront",
     supplies: "Supplies & Materials",
     tax_fees: "Tax & Fees",
     insurance: "Insurance",
@@ -36,6 +38,13 @@ export function getCategoryLabel(category: string): string {
  */
 export function getSubcategoryLabel(subcategory: string | null): string | null {
   if (!subcategory) return null;
+  // Search through all category subcategory mappings for the label
+  for (const categoryKey in EXPENSE_SUBCATEGORIES) {
+    const subs = EXPENSE_SUBCATEGORIES[categoryKey as ExpenseCategory];
+    const found = subs.find((s) => s.value === subcategory);
+    if (found) return found.label;
+  }
+  // Fallback: title-case the value
   return subcategory
     .split("_")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
@@ -50,6 +59,7 @@ export function getCategoryIcon(category: string): LucideIcon {
     maintenance: Wrench,
     utilities: Zap,
     landscaping: TreePine,
+    marine: Waves,
     supplies: Package,
     tax_fees: Receipt,
     insurance: Shield,
@@ -68,6 +78,7 @@ export function getCategoryGradient(category: string): string {
     maintenance: CARD_GRADIENTS.slate,
     utilities: CARD_GRADIENTS.emerald,
     landscaping: CARD_GRADIENTS.rose,
+    marine: CARD_GRADIENTS.sky,
     supplies: CARD_GRADIENTS.violet,
     tax_fees: CARD_GRADIENTS.amber,
     insurance: CARD_GRADIENTS.sky,
@@ -86,6 +97,7 @@ export function getCategoryColor(category: string): string {
     maintenance: "from-slate-500 to-slate-600",
     utilities: "from-emerald-500 to-emerald-600",
     landscaping: "from-rose-500 to-rose-600",
+    marine: "from-cyan-500 to-sky-600",
     supplies: "from-violet-500 to-violet-600",
     tax_fees: "from-amber-500 to-amber-600",
     insurance: "from-sky-500 to-sky-600",
@@ -94,6 +106,25 @@ export function getCategoryColor(category: string): string {
     other: "from-slate-500 to-slate-600",
   };
   return colorMap[category] || "from-slate-500 to-slate-600";
+}
+
+/**
+ * Get a solid hex color for an expense category (for SVG charts)
+ */
+export function getCategoryHexColor(category: string): string {
+  const colorMap: Record<string, string> = {
+    maintenance: "#64748b",   // slate-500
+    utilities: "#10b981",     // emerald-500
+    landscaping: "#f43f5e",   // rose-500
+    marine: "#06b6d4",        // cyan-500
+    supplies: "#8b5cf6",      // violet-500
+    tax_fees: "#f59e0b",      // amber-500
+    insurance: "#0ea5e9",     // sky-500
+    improvements: "#a78bfa",  // violet-400
+    emergency: "#fb7185",     // rose-400
+    other: "#94a3b8",         // slate-400
+  };
+  return colorMap[category] || "#94a3b8";
 }
 
 /**
