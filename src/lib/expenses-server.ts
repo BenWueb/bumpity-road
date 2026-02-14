@@ -37,6 +37,8 @@ function transformExpense(
     category: e.category as Expense["category"],
     subcategory: e.subcategory as Expense["subcategory"],
     isPlanned: e.isPlanned,
+    checkNumber: e.checkNumber ?? null,
+    isPaid: e.isPaid ?? true,
     receiptImageUrl: e.receiptImageUrl,
     receiptImagePublicId: e.receiptImagePublicId,
     userId: e.userId,

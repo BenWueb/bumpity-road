@@ -194,6 +194,26 @@ export default function ExpenseCard({
             </p>
           )}
 
+          {/* Check number & paid status (only for incurred expenses) */}
+          {!expense.isPlanned && (
+            <div className="flex flex-wrap items-center gap-3 text-xs">
+              <span
+                className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-medium ${
+                  expense.isPaid
+                    ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300"
+                    : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
+                }`}
+              >
+                {expense.isPaid ? "Paid" : "Unpaid"}
+              </span>
+              {expense.checkNumber && (
+                <span className="text-muted-foreground">
+                  Check #{expense.checkNumber}
+                </span>
+              )}
+            </div>
+          )}
+
           {/* Receipt image (only for incurred expenses) */}
           {!expense.isPlanned && expense.receiptImageUrl && expense.receiptImagePublicId && (
             <div className="relative rounded-md border bg-muted/30 p-2">

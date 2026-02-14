@@ -16,6 +16,7 @@ import {
   X,
   ChevronUp,
   ChevronDown,
+  ChevronRight,
 } from "lucide-react";
 import { formatExpenseDate, formatExpenseDateShort, getCategoryLabel, getSubcategoryLabel, getCategoryIcon } from "@/lib/expense-utils";
 import type { LucideIcon } from "lucide-react";
@@ -314,21 +315,30 @@ function ExpenseRow({
   };
 
 
+  const [isDesktopExpanded, setIsDesktopExpanded] = useState(false);
+
   return (
     <>
       <tr
-        className="group cursor-pointer transition-colors md:cursor-default hover:bg-muted/30"
+        className="group cursor-pointer transition-colors hover:bg-muted/30"
         onClick={(e) => {
-          // Only open modal on mobile
           if (window.innerWidth < 768) {
             e.stopPropagation();
             setShowMobileModal(true);
+          } else {
+            // Toggle expand on desktop
+            setIsDesktopExpanded((prev) => !prev);
           }
         }}
       >
         {/* Name */}
         <td className="px-3 py-2">
           <div className="flex items-center gap-2">
+            <ChevronRight
+              className={`hidden h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform duration-200 md:block ${
+                isDesktopExpanded ? "rotate-90" : ""
+              }`}
+            />
             {expense.isPlanned && (
               <Lightbulb className="h-3.5 w-3.5 shrink-0 text-amber-500" />
             )}
@@ -398,7 +408,7 @@ function ExpenseRow({
           <td className="hidden px-3 py-2 md:table-cell">
             <div className="flex items-center gap-0.5">
               <button
-                onClick={() => handleVote(1)}
+                onClick={(e) => { e.stopPropagation(); handleVote(1); }}
                 disabled={isVoting || !currentUserId}
                 className={`rounded p-1 transition-colors ${
                   localUserVote === 1
@@ -413,7 +423,7 @@ function ExpenseRow({
                 {localVoteScore}
               </span>
               <button
-                onClick={() => handleVote(-1)}
+                onClick={(e) => { e.stopPropagation(); handleVote(-1); }}
                 disabled={isVoting || !currentUserId}
                 className={`rounded p-1 transition-colors ${
                   localUserVote === -1
@@ -432,7 +442,7 @@ function ExpenseRow({
         {isWishlist && (
           <td className="hidden px-3 py-2 md:table-cell">
             <button
-              onClick={() => setIsExpanded(!isExpanded)}
+              onClick={(e) => { e.stopPropagation(); setIsExpanded(!isExpanded); }}
               className="inline-flex items-center gap-1.5 rounded-md px-1.5 py-0.5 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
               title={isExpanded ? "Hide comments" : "Show comments"}
             >
@@ -451,14 +461,20 @@ function ExpenseRow({
         <td className="hidden px-3 py-2 text-right md:table-cell">
           <div className="flex items-center justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100">
             <button
-              onClick={onEdit}
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit();
+              }}
               className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
               title="Edit"
             >
               <Edit2 className="h-3.5 w-3.5" />
             </button>
             <button
-              onClick={() => setShowDeleteConfirm(true)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowDeleteConfirm(true);
+              }}
               className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
               title="Delete"
             >
@@ -467,6 +483,130 @@ function ExpenseRow({
           </div>
         </td>
       </tr>
+
+      {/* Desktop expanded details */}
+      {isDesktopExpanded && (
+        <tr className="hidden border-t border-dashed border-border/50 bg-muted/20 md:table-row">
+          <td colSpan={colSpan} className="px-6 py-4">
+            <div className="flex gap-6">
+              {/* Left: Description & details */}
+              <div className="min-w-0 flex-1 space-y-3">
+                {expense.description && (
+                  <div>
+                    <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                      Description
+                    </span>
+                    <p className="mt-1 text-sm text-foreground">
+                      {expense.description}
+                    </p>
+                  </div>
+                )}
+
+                <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
+                  <div>
+                    <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                      Added by
+                    </span>
+                    <p className="mt-0.5 font-medium text-foreground">{expense.user.name}</p>
+                  </div>
+                  <div>
+                    <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                      Date
+                    </span>
+                    <p className="mt-0.5 font-medium text-foreground">
+                      {formatExpenseDate(expense.date)}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                      Cost
+                    </span>
+                    <p className="mt-0.5 font-medium text-foreground">
+                      {expense.isPlanned && "~"}$
+                      {expense.cost.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
+                    </p>
+                  </div>
+                  {!expense.isPlanned && (
+                    <div>
+                      <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                        Status
+                      </span>
+                      <p className="mt-0.5">
+                        <span
+                          className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                            expense.isPaid
+                              ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300"
+                              : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
+                          }`}
+                        >
+                          {expense.isPaid ? "Paid" : "Unpaid"}
+                        </span>
+                      </p>
+                    </div>
+                  )}
+                  {!expense.isPlanned && expense.checkNumber && (
+                    <div>
+                      <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                        Check #
+                      </span>
+                      <p className="mt-0.5 font-medium text-foreground">{expense.checkNumber}</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Actions */}
+                <div className="flex items-center gap-2 pt-1">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEdit();
+                    }}
+                    className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                  >
+                    <Edit2 className="h-3.5 w-3.5" />
+                    Edit
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowDeleteConfirm(true);
+                    }}
+                    className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    Delete
+                  </button>
+                </div>
+              </div>
+
+              {/* Right: Receipt thumbnail */}
+              {!expense.isPlanned && expense.receiptImageUrl && expense.receiptImagePublicId && (
+                <div className="shrink-0">
+                  <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                    Receipt
+                  </span>
+                  <div className="mt-1">
+                    <CldImage
+                      src={expense.receiptImagePublicId}
+                      alt="Receipt"
+                      width={200}
+                      height={200}
+                      className="h-24 w-24 cursor-pointer rounded-md border object-cover transition-opacity hover:opacity-80"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        window.open(expense.receiptImageUrl || "", "_blank");
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          </td>
+        </tr>
+      )}
 
       {/* Mobile Modal */}
       <Modal
@@ -526,6 +666,28 @@ function ExpenseRow({
               <span className="text-xs text-muted-foreground">Added by</span>
               <p className="text-sm font-medium">{expense.user.name}</p>
             </div>
+            {!expense.isPlanned && (
+              <div>
+                <span className="text-xs text-muted-foreground">Status</span>
+                <p className="text-sm font-medium">
+                  <span
+                    className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                      expense.isPaid
+                        ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300"
+                        : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
+                    }`}
+                  >
+                    {expense.isPaid ? "Paid" : "Unpaid"}
+                  </span>
+                </p>
+              </div>
+            )}
+            {!expense.isPlanned && expense.checkNumber && (
+              <div>
+                <span className="text-xs text-muted-foreground">Check #</span>
+                <p className="text-sm font-medium">{expense.checkNumber}</p>
+              </div>
+            )}
             {isWishlist && (
               <>
                 <div>

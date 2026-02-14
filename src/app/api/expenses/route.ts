@@ -62,6 +62,8 @@ export async function POST(req: NextRequest) {
     category,
     subcategory,
     isPlanned,
+    checkNumber,
+    isPaid,
     receiptImageUrl,
     receiptImagePublicId,
   } = body as {
@@ -72,6 +74,8 @@ export async function POST(req: NextRequest) {
     category?: string;
     subcategory?: string | null;
     isPlanned?: boolean;
+    checkNumber?: string | null;
+    isPaid?: boolean;
     receiptImageUrl?: string | null;
     receiptImagePublicId?: string | null;
   };
@@ -103,6 +107,8 @@ export async function POST(req: NextRequest) {
       category,
       subcategory: subcategory || null,
       isPlanned: isPlanned || false,
+      checkNumber: checkNumber?.trim() || null,
+      isPaid: isPaid ?? true,
       receiptImageUrl: receiptImageUrl || null,
       receiptImagePublicId: receiptImagePublicId || null,
       userId: adminCheck.userId,
@@ -132,6 +138,8 @@ export async function PATCH(req: NextRequest) {
     category,
     subcategory,
     isPlanned,
+    checkNumber,
+    isPaid,
     receiptImageUrl,
     receiptImagePublicId,
     removeReceipt,
@@ -144,6 +152,8 @@ export async function PATCH(req: NextRequest) {
     category?: string;
     subcategory?: string | null;
     isPlanned?: boolean;
+    checkNumber?: string | null;
+    isPaid?: boolean;
     receiptImageUrl?: string | null;
     receiptImagePublicId?: string | null;
     removeReceipt?: boolean;
@@ -205,6 +215,8 @@ export async function PATCH(req: NextRequest) {
       ...(category !== undefined ? { category } : {}),
       ...(subcategory !== undefined ? { subcategory: subcategory || null } : {}),
       ...(isPlanned !== undefined ? { isPlanned } : {}),
+      ...(checkNumber !== undefined ? { checkNumber: checkNumber?.trim() || null } : {}),
+      ...(isPaid !== undefined ? { isPaid } : {}),
       ...(receiptImageUrl !== undefined ? { receiptImageUrl: receiptImageUrl || null } : {}),
       ...(receiptImagePublicId !== undefined
         ? { receiptImagePublicId: receiptImagePublicId || null }

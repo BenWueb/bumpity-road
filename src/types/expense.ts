@@ -66,6 +66,8 @@ export interface Expense {
   category: ExpenseCategory;
   subcategory: ExpenseSubcategory | null;
   isPlanned: boolean;
+  checkNumber: string | null; // Check number used for payment (only for incurred expenses)
+  isPaid: boolean; // Whether the expense has been paid
   receiptImageUrl: string | null; // Cloudinary URL for receipt image (only for incurred expenses)
   receiptImagePublicId: string | null; // Cloudinary public ID for receipt deletion
   userId: string;

@@ -50,10 +50,11 @@ export default function ExpensesContent({
   const [dateTo, setDateTo] = useState("");
   const [amountMin, setAmountMin] = useState("");
   const [amountMax, setAmountMax] = useState("");
+  const [paidFilter, setPaidFilter] = useState<"all" | "paid" | "unpaid">("all");
   const [barChartCategory, setBarChartCategory] = useState<ExpenseCategory | null>(null);
 
   const hasActiveFilters =
-    !!selectedCategory || !!dateFrom || !!dateTo || !!amountMin || !!amountMax;
+    !!selectedCategory || !!dateFrom || !!dateTo || !!amountMin || !!amountMax || paidFilter !== "all";
 
   const clearAllFilters = () => {
     setSelectedCategory(null);
@@ -61,6 +62,7 @@ export default function ExpensesContent({
     setDateTo("");
     setAmountMin("");
     setAmountMax("");
+    setPaidFilter("all");
     setBarChartCategory(null);
   };
 
@@ -103,9 +105,13 @@ export default function ExpensesContent({
       if (minAmt !== null && !isNaN(minAmt) && e.cost < minAmt) return false;
       if (maxAmt !== null && !isNaN(maxAmt) && e.cost > maxAmt) return false;
 
+      // Paid/unpaid filter (only applies to incurred)
+      if (paidFilter === "paid" && !e.isPaid) return false;
+      if (paidFilter === "unpaid" && e.isPaid) return false;
+
       return true;
     });
-  }, [activeExpenses, selectedCategory, dateFrom, dateTo, amountMin, amountMax]);
+  }, [activeExpenses, selectedCategory, dateFrom, dateTo, amountMin, amountMax, paidFilter]);
 
   // Calculate totals
   const incurredTotal = useMemo(
@@ -462,6 +468,7 @@ export default function ExpensesContent({
                       selectedCategory,
                       dateFrom || dateTo ? "date" : null,
                       amountMin || amountMax ? "amount" : null,
+                      paidFilter !== "all" ? "paid" : null,
                     ].filter(Boolean).length}
                   </span>
                 )}
@@ -526,6 +533,36 @@ export default function ExpensesContent({
                     ))}
                   </div>
                 </div>
+
+                {/* Payment status filter (only for incurred) */}
+                {activeTab === "incurred" && (
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                      Payment Status
+                    </label>
+                    <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                      {(
+                        [
+                          { value: "all", label: "All" },
+                          { value: "paid", label: "Paid" },
+                          { value: "unpaid", label: "Unpaid" },
+                        ] as const
+                      ).map((option) => (
+                        <button
+                          key={option.value}
+                          onClick={() => setPaidFilter(option.value)}
+                          className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors sm:px-3 sm:py-1.5 ${
+                            paidFilter === option.value
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                          }`}
+                        >
+                          {option.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Date range & Amount range in a row */}
                 <div className="grid gap-4 sm:grid-cols-2">

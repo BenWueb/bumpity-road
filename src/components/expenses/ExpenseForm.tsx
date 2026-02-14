@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { Expense, EXPENSE_CATEGORIES, EXPENSE_SUBCATEGORIES } from "@/types/expense";
-import { Lightbulb, Receipt, X, Image as ImageIcon } from "lucide-react";
+import { Lightbulb, Receipt, X, Image as ImageIcon, Check, Clock } from "lucide-react";
 import { CldUploadButton, CldImage } from "next-cloudinary";
 
 interface ExpenseFormProps {
@@ -31,6 +31,7 @@ export default function ExpenseForm({
   const [receiptImagePublicId, setReceiptImagePublicId] = useState<
     string | null
   >(expense?.receiptImagePublicId ?? null);
+  const [isPaid, setIsPaid] = useState(expense?.isPaid ?? true);
   const [formData, setFormData] = useState({
     title: expense?.title || "",
     description: expense?.description || "",
@@ -42,6 +43,7 @@ export default function ExpenseForm({
       : today,
     category: expense?.category || "",
     subcategory: expense?.subcategory || "",
+    checkNumber: expense?.checkNumber || "",
   });
 
   const availableSubcategories = useMemo(() => {
@@ -86,6 +88,8 @@ export default function ExpenseForm({
             date: formData.date || null,
             isPlanned,
             subcategory: formData.subcategory || null,
+            checkNumber: !isPlanned ? (formData.checkNumber || null) : null,
+            isPaid: !isPlanned ? isPaid : true,
             receiptImageUrl: receiptImageUrl || null,
             receiptImagePublicId: receiptImagePublicId || null,
             // If removing receipt, send null
@@ -97,6 +101,8 @@ export default function ExpenseForm({
             date: formData.date || null,
             isPlanned,
             subcategory: formData.subcategory || null,
+            checkNumber: !isPlanned ? (formData.checkNumber || null) : null,
+            isPaid: !isPlanned ? isPaid : true,
             receiptImageUrl: receiptImageUrl || null,
             receiptImagePublicId: receiptImagePublicId || null,
           };
@@ -133,7 +139,7 @@ export default function ExpenseForm({
     <div className="rounded-lg border bg-card p-4 shadow-sm">
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Planned / Incurred toggle */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <button
             type="button"
             onClick={() => {
@@ -142,13 +148,13 @@ export default function ExpenseForm({
                 setFormData((prev) => ({ ...prev, date: today }));
               }
             }}
-            className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+            className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
               !isPlanned
                 ? "bg-primary text-primary-foreground"
                 : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
             }`}
           >
-            <Receipt className="h-4 w-4" />
+            <Receipt className="h-3 w-3" />
             Incurred
           </button>
           <button
@@ -160,13 +166,13 @@ export default function ExpenseForm({
               setReceiptImageUrl(null);
               setReceiptImagePublicId(null);
             }}
-            className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+            className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
               isPlanned
                 ? "bg-amber-500 text-white"
                 : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
             }`}
           >
-            <Lightbulb className="h-4 w-4" />
+            <Lightbulb className="h-3 w-3" />
             Wishlist
           </button>
         </div>
@@ -280,6 +286,57 @@ export default function ExpenseForm({
                 </option>
               ))}
             </select>
+          </div>
+        )}
+
+        {/* Check number & Paid status (only for incurred expenses) */}
+        {!isPlanned && (
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <label htmlFor="checkNumber" className="text-sm font-medium">
+                Check Number
+              </label>
+              <input
+                id="checkNumber"
+                type="text"
+                value={formData.checkNumber}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setFormData((prev) => ({ ...prev, checkNumber: e.target.value }))
+                }
+                placeholder="Optional"
+                className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Payment Status</label>
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setIsPaid(true)}
+                  className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                    isPaid
+                      ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300"
+                      : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                  }`}
+                >
+                  <Check className="h-3 w-3" />
+                  Paid
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsPaid(false)}
+                  className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                    !isPaid
+                      ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
+                      : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                  }`}
+                >
+                  <Clock className="h-3 w-3" />
+                  Unpaid
+                </button>
+              </div>
+            </div>
           </div>
         )}
 
