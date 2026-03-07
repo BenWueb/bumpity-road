@@ -1,0 +1,51 @@
+---
+description: Cloudinary image upload, display, and deletion patterns
+globs: 
+alwaysApply: false
+---
+
+# Cloudinary Image Patterns
+
+## Upload (Client)
+Use `CldUploadButton` from `next-cloudinary` with preset `bumpity-road`:
+```tsx
+import { CldUploadButton, CldImage } from "next-cloudinary";
+
+<CldUploadButton
+  uploadPreset="bumpity-road"
+  onSuccess={(result) => {
+    const info = result.info as { secure_url: string; public_id: string; width: number; height: number };
+    setImage({ url: info.secure_url, publicId: info.public_id });
+  }}
+  className="rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground"
+>
+  Upload Image
+</CldUploadButton>
+```
+
+## Display (Client)
+Use `CldImage` for optimized display:
+```tsx
+<CldImage src={publicId} alt="description" width={400} height={300} crop="fill" className="rounded-lg" />
+```
+For non-Cloudinary URLs or lightbox, use plain `<img>` with `/* eslint-disable @next/next/no-img-element */`.
+
+## Deletion (Server)
+In API DELETE routes, always clean up Cloudinary images before database deletion:
+```typescript
+import { deleteCloudinaryImage, deleteCloudinaryImages } from "@/utils/cloudinary";
+
+// Single image
+await deleteCloudinaryImage(entry.imagePublicId);
+
+// Multiple images (chunks of 100)
+await deleteCloudinaryImages(publicIds);
+```
+
+## Database Fields
+Store both URL and public ID for every image:
+```prisma
+imageUrl      String
+imagePublicId String
+```
+Some models store arrays: `imageUrls String[]`, `imagePublicIds String[]` (e.g., LoonObservation).

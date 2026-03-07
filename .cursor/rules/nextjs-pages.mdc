@@ -1,0 +1,55 @@
+---
+description: Conventions for creating Next.js pages in this project
+globs: src/app/**/page.tsx
+alwaysApply: false
+---
+
+# Next.js Page Conventions
+
+## Page Structure
+
+```tsx
+import { Suspense } from "react";
+import { SomeIcon } from "lucide-react";
+import { getData } from "@/lib/feature-server";
+import { FeatureList } from "@/components/feature";
+import { PageHeader } from "@/components/PageHeader";
+
+function FeatureSkeleton() {
+  return (/* loading skeleton matching the real layout */);
+}
+
+async function FeatureContent() {
+  const { entries, isAdmin, currentUserId } = await getData();
+  return <FeatureList initialEntries={entries} initialIsAdmin={isAdmin} currentUserId={currentUserId} />;
+}
+
+export default function FeaturePage() {
+  return (
+    <div className="min-h-screen bg-background">
+      <PageHeader
+        title="Feature"
+        subtitle="Description"
+        icon={<SomeIcon className="h-5 w-5 md:h-6 md:w-6" />}
+        iconWrapperClassName="flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-COLOR-500 to-COLOR-600 text-white shadow-lg md:h-12 md:w-12"
+      />
+      <div className="mx-auto max-w-6xl p-4 md:p-6">
+        <Suspense fallback={<FeatureSkeleton />}>
+          <FeatureContent />
+        </Suspense>
+      </div>
+    </div>
+  );
+}
+```
+
+## Key Rules
+- Wrap page content in `min-h-screen bg-background`
+- Always use `PageHeader` for consistency
+- Use `Suspense` with a skeleton fallback for server-fetched content
+- Content area: `mx-auto max-w-6xl p-4 md:p-6`
+- Masonry layouts use CSS columns: `columns-1 gap-4 sm:columns-2 lg:columns-3`
+- Server data functions return `{ entries, currentUserId?, isAdmin? }` — pass all to client
+
+## Existing Pages
+Home (`/`), Guestbook, Puzzles, Blog (+slug), Gallery, Adventures (+id), Loon, Todos, Expenses, Account, Login, Signup, About, Recipes (placeholder), SOP (placeholder), Wildlife (placeholder)

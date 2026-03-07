@@ -49,7 +49,7 @@ export function CalendarSkeleton() {
             <div className="h-4 w-24 animate-pulse rounded-md bg-accent sm:h-5 sm:w-32" />
             <div className="mt-2 h-3 w-32 animate-pulse rounded-md bg-accent sm:h-4 sm:w-40" />
           </div>
-          <div className="h-8 w-8 animate-pulse rounded-md bg-accent sm:h-9 sm:w-9" />
+          <div className="h-10 w-10 animate-pulse rounded-xl bg-accent sm:h-12 sm:w-12" />
         </div>
       </div>
       <div className="relative space-y-2 px-4 pb-4 pt-3 sm:space-y-3 sm:px-6 sm:pb-6 sm:pt-4">
@@ -106,8 +106,8 @@ const Calendar = () => {
                 Upcoming events
               </div>
             </div>
-            <div className="flex h-8 w-8 items-center justify-center rounded-md border bg-background/60 shadow-sm backdrop-blur sm:h-9 sm:w-9">
-              <CalendarDays className="h-4 w-4 text-muted-foreground sm:h-5 sm:w-5" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl border bg-background/60 shadow-sm backdrop-blur sm:h-12 sm:w-12">
+              <CalendarDays className="h-5 w-5 text-muted-foreground sm:h-6 sm:w-6" />
             </div>
           </div>
         </div>

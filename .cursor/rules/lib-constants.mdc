@@ -1,0 +1,62 @@
+---
+description: Existing constants and utility functions in src/lib/
+globs: src/lib/**/*.ts,src/lib/**/*.tsx
+alwaysApply: false
+---
+
+# Library Constants & Utilities
+
+Check these before defining new constants or helpers. All in `@/lib/`.
+
+## Card Gradients (`ui-gradients.ts`)
+```typescript
+import { CARD_GRADIENTS } from "@/lib/ui-gradients";
+// Keys: slate, emerald, sky, violet, rose, amber
+<div className={`pointer-events-none absolute inset-0 ${CARD_GRADIENTS.emerald}`} />
+```
+
+## Guestbook (`guestbook-constants.ts`, `guestbook-ownership.ts`)
+- `COLOR_OPTIONS` — color choices for guestbook cards
+- `DEFAULT_COLOR`, `getGradientForColor(color)`
+- `getOwnedEntries()`, `saveOwnedEntry(id, token)`, `removeOwnedEntry(id)`, `getTokenForEntry(id)`, `getOwnedIds()`
+
+## Todos (`todo-constants.ts`)
+- `KANBAN_COLUMNS` — column definitions for Kanban board
+- `RECURRING_OPTIONS` — recurring task frequency options
+
+## Adventures (`adventure-constants.tsx`)
+- `ADVENTURE_SEASONS`, `ADVENTURE_CATEGORIES`
+- `getSeasonInfo(season)`, `getCategoryInfo(category)`, `getAdventureSeasons(adventure)`
+
+## Gallery (`gallery-constants.tsx`)
+- `SEASONS`, `ACTIVITIES`
+- `getSeasonIcon(season)`, `getActivityLabel(activity)`
+
+## Expenses (`expense-utils.ts`)
+- `getCategoryLabel`, `getSubcategoryLabel`, `getCategoryIcon`, `getCategoryGradient`
+- `formatExpenseDate`, `formatExpenseDateShort`
+
+## Loons (`loon-utils.ts`)
+- `getNestingLabel`, `getWeatherLabel`, `getWindLabel`, `getBehaviorLabel`, `getDisturbanceLabel`
+- `formatLoonDate`, `getTotalLoons`, `deriveSavedLocations`, `getNestingGradient`
+
+## Blog (`blog-utils.ts`)
+- `formatDate`, `formatLongDate`, `formatShortDate`, `wasEdited`
+
+## General (`utils.ts`)
+- `cn()` — `clsx` + `tailwind-merge` for conditional classes
+
+## Announcement (`announcement.ts`)
+- `ANNOUNCEMENT` config object for the top banner
+
+## Auth Client (`auth-client.ts`)
+- `authClient` — better-auth React client for `useSession()`, `signIn`, `signOut`
+
+## Server Data Fetching
+- `guestbook-server.ts` → `getGuestbookData()`
+- `puzzle-server.ts` → `getPuzzleData()`
+- `todos-server.ts` → `getTodosServer()`
+- `expenses-server.ts` → `getExpensesServer()`
+- `blog-server.ts` → `fetchPosts()`, `fetchPostBySlug()`, `fetchOtherPosts()`
+- `adventures-server.ts` → `fetchAdventureById()`, `fetchOtherAdventures()`
+- `loon-server.ts` → `getLoonData()`

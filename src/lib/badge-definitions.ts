@@ -106,6 +106,26 @@ export const BADGE_DEFINITIONS: Record<string, BadgeInfo> = {
     description: "Created your first adventure",
     icon: "🧭",
   },
+  LOON_SPOTTER: {
+    name: "Loon Spotter",
+    description: "Logged your first loon observation",
+    icon: "🦆",
+  },
+  LOON_WATCHER: {
+    name: "Loon Watcher",
+    description: "Logged 5 loon observations",
+    icon: "🔭",
+  },
+  LOON_TRACKER: {
+    name: "Loon Tracker",
+    description: "Logged 10 loon observations",
+    icon: "📋",
+  },
+  LOON_RANGER: {
+    name: "Loon Ranger",
+    description: "Logged 25 loon observations",
+    icon: "🏅",
+  },
 };
 
 export function getBadgeInfo(badge: string): BadgeInfo {

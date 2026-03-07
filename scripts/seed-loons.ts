@@ -1,0 +1,291 @@
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
+
+// Various spots around Woman Lake, MN
+const LOCATIONS = [
+  { lakeName: "Woman Lake", lakeArea: "North shore near the point", lat: 47.1612, lng: -94.1085 },
+  { lakeName: "Woman Lake", lakeArea: "South bay by the dock", lat: 47.1445, lng: -94.1020 },
+  { lakeName: "Woman Lake", lakeArea: "East narrows", lat: 47.1530, lng: -94.0905 },
+  { lakeName: "Woman Lake", lakeArea: "West end cove", lat: 47.1555, lng: -94.1195 },
+  { lakeName: "Woman Lake", lakeArea: "Center of lake", lat: 47.1536, lng: -94.1033 },
+  { lakeName: "Woman Lake", lakeArea: "Near the island", lat: 47.1490, lng: -94.0960 },
+];
+
+const OBSERVATIONS = [
+  {
+    date: new Date(2025, 4, 15, 7, 30),
+    time: "07:30",
+    location: LOCATIONS[0],
+    adultsCount: 2,
+    chicksCount: 0,
+    juvenilesCount: 0,
+    loonIds: ["L1", "L2"],
+    nestingActivity: "territory_established",
+    behaviors: ["wail_call", "diving", "feeding"],
+    weather: "clear",
+    windCondition: "calm",
+    disturbance: "none",
+    notes: "Pair spotted establishing territory near the north point. Both adults diving and feeding actively. Beautiful morning — no boat traffic yet.",
+  },
+  {
+    date: new Date(2025, 4, 28, 6, 45),
+    time: "06:45",
+    location: LOCATIONS[0],
+    adultsCount: 2,
+    chicksCount: 0,
+    juvenilesCount: 0,
+    loonIds: ["L1", "L2"],
+    nestingActivity: "nest_building",
+    behaviors: ["nest_sitting", "preening", "hoot_call"],
+    weather: "partly_cloudy",
+    windCondition: "light",
+    disturbance: "none",
+    notes: "Found nest being built on the marshy shore near the north point. One adult on nest, other nearby preening. Soft hoots between them.",
+  },
+  {
+    date: new Date(2025, 5, 8, 8, 0),
+    time: "08:00",
+    location: LOCATIONS[0],
+    adultsCount: 2,
+    chicksCount: 0,
+    juvenilesCount: 0,
+    loonIds: ["L1", "L2"],
+    nestingActivity: "incubating",
+    behaviors: ["nest_sitting", "territorial_display"],
+    weather: "overcast",
+    windCondition: "moderate",
+    disturbance: "boat_traffic",
+    notes: "One adult incubating, other patrolling nearby. A pontoon came within 100 yards and the patrol adult did a brief territorial display. Boat moved on.",
+  },
+  {
+    date: new Date(2025, 5, 20, 9, 15),
+    time: "09:15",
+    location: LOCATIONS[1],
+    adultsCount: 2,
+    chicksCount: 0,
+    juvenilesCount: 0,
+    loonIds: ["L3", "L4"],
+    nestingActivity: "incubating",
+    behaviors: ["nest_sitting", "feeding", "diving"],
+    weather: "clear",
+    windCondition: "calm",
+    disturbance: "none",
+    notes: "Second pair discovered nesting in the south bay! One adult sitting tight on nest, other fishing about 50 yards out. Great to see two nesting pairs this year.",
+  },
+  {
+    date: new Date(2025, 6, 1, 7, 0),
+    time: "07:00",
+    location: LOCATIONS[0],
+    adultsCount: 2,
+    chicksCount: 2,
+    juvenilesCount: 0,
+    loonIds: ["L1", "L2"],
+    nestingActivity: "hatched",
+    behaviors: ["chick_carrying", "feeding", "hoot_call", "tremolo_call"],
+    weather: "clear",
+    windCondition: "calm",
+    disturbance: "none",
+    notes: "TWO CHICKS! Both riding on an adult's back. Incredible sight. The family stayed near shore and the adults took turns diving for food. Tremolo call when an eagle flew over.",
+  },
+  {
+    date: new Date(2025, 6, 4, 18, 30),
+    time: "18:30",
+    location: LOCATIONS[2],
+    adultsCount: 1,
+    chicksCount: 0,
+    juvenilesCount: 0,
+    loonIds: ["L5"],
+    nestingActivity: "none",
+    behaviors: ["feeding", "diving", "resting"],
+    weather: "partly_cloudy",
+    windCondition: "light",
+    disturbance: "fishing",
+    notes: "Solo adult feeding in the east narrows during evening. A couple fishing boats nearby but the loon seemed unbothered. Dove repeatedly — must be good fishing here.",
+  },
+  {
+    date: new Date(2025, 6, 10, 6, 30),
+    time: "06:30",
+    location: LOCATIONS[1],
+    adultsCount: 2,
+    chicksCount: 1,
+    juvenilesCount: 0,
+    loonIds: ["L3", "L4"],
+    nestingActivity: "hatched",
+    behaviors: ["chick_carrying", "feeding", "wail_call"],
+    weather: "fog",
+    windCondition: "calm",
+    disturbance: "none",
+    notes: "South bay pair has one chick! Spotted through the morning fog. Chick riding on adult's back. Only one chick survived from this nest unfortunately. Wail calls echoing across the foggy lake — magical.",
+  },
+  {
+    date: new Date(2025, 6, 15, 10, 0),
+    time: "10:00",
+    location: LOCATIONS[4],
+    adultsCount: 3,
+    chicksCount: 2,
+    juvenilesCount: 0,
+    loonIds: ["L1", "L2", "L5"],
+    nestingActivity: "chicks_riding",
+    behaviors: ["feeding", "diving", "tremolo_call", "penguin_dance"],
+    weather: "clear",
+    windCondition: "light",
+    disturbance: "jet_ski",
+    notes: "North pair with both chicks and the solo adult all in the center of the lake. Jet ski came through and triggered tremolo calls and a penguin dance from L1. Chicks dove under. They resurfaced after the jet ski left. Frustrating to see.",
+  },
+  {
+    date: new Date(2025, 6, 22, 7, 45),
+    time: "07:45",
+    location: LOCATIONS[3],
+    adultsCount: 2,
+    chicksCount: 2,
+    juvenilesCount: 0,
+    loonIds: ["L1", "L2"],
+    nestingActivity: "chicks_riding",
+    behaviors: ["feeding", "diving", "preening", "foot_waggle"],
+    weather: "clear",
+    windCondition: "calm",
+    disturbance: "none",
+    notes: "Family of four in the west cove. Chicks growing fast — already attempting short dives on their own. Adult doing the classic foot waggle while resting. Peaceful morning.",
+  },
+  {
+    date: new Date(2025, 7, 1, 8, 30),
+    time: "08:30",
+    location: LOCATIONS[5],
+    adultsCount: 2,
+    chicksCount: 1,
+    juvenilesCount: 0,
+    loonIds: ["L3", "L4"],
+    nestingActivity: "chicks_riding",
+    behaviors: ["feeding", "diving", "hoot_call"],
+    weather: "partly_cloudy",
+    windCondition: "moderate",
+    disturbance: "none",
+    notes: "South bay family near the island. Single chick is getting bigger and diving more independently. Adults still bringing it fish. Soft hoot calls between the family.",
+  },
+  {
+    date: new Date(2025, 7, 10, 19, 0),
+    time: "19:00",
+    location: LOCATIONS[4],
+    adultsCount: 4,
+    chicksCount: 3,
+    juvenilesCount: 0,
+    loonIds: ["L1", "L2", "L3", "L4"],
+    nestingActivity: "chicks_riding",
+    behaviors: ["feeding", "wail_call", "yodel_call", "territorial_display"],
+    weather: "clear",
+    windCondition: "calm",
+    disturbance: "none",
+    notes: "Both families converged near the center at sunset! Brief territorial display between L1 and L3 — yodel call from L1. They eventually separated and went back to their territories. All 3 chicks accounted for. Stunning sunset viewing.",
+  },
+  {
+    date: new Date(2025, 7, 20, 7, 15),
+    time: "07:15",
+    location: LOCATIONS[2],
+    adultsCount: 1,
+    chicksCount: 0,
+    juvenilesCount: 1,
+    loonIds: ["L5"],
+    nestingActivity: "none",
+    behaviors: ["feeding", "diving", "flying"],
+    weather: "light_rain",
+    windCondition: "moderate",
+    disturbance: "none",
+    notes: "Solo adult L5 spotted with what appears to be a juvenile (likely from last year) in the east narrows. The juvenile was practicing flight — short runs across the water. Light rain didn't slow them down.",
+  },
+  {
+    date: new Date(2025, 8, 1, 8, 0),
+    time: "08:00",
+    location: LOCATIONS[0],
+    adultsCount: 2,
+    chicksCount: 2,
+    juvenilesCount: 0,
+    loonIds: ["L1", "L2"],
+    nestingActivity: "none",
+    behaviors: ["feeding", "diving", "flying", "preening"],
+    weather: "clear",
+    windCondition: "light",
+    disturbance: "none",
+    notes: "North pair chicks are now nearly adult-sized! One attempted a short flight — got about 20 feet off the water before splashing down. Both adults and chicks diving and feeding together. Fall migration prep underway.",
+  },
+  {
+    date: new Date(2025, 8, 10, 16, 30),
+    time: "16:30",
+    location: LOCATIONS[4],
+    adultsCount: 5,
+    chicksCount: 3,
+    juvenilesCount: 1,
+    loonIds: ["L1", "L2", "L3", "L4", "L5"],
+    nestingActivity: "none",
+    behaviors: ["feeding", "diving", "resting", "tremolo_call"],
+    weather: "partly_cloudy",
+    windCondition: "light",
+    disturbance: "eagle_predator",
+    notes: "All known Woman Lake loons gathered in center lake — 5 adults, 3 chicks from this year, and 1 juvenile. Eagle circled overhead triggering tremolo calls from multiple adults. Eagle moved on. Pre-migration gathering? Amazing to see them all together.",
+  },
+  {
+    date: new Date(2025, 8, 25, 9, 0),
+    time: "09:00",
+    location: LOCATIONS[3],
+    adultsCount: 3,
+    chicksCount: 2,
+    juvenilesCount: 1,
+    loonIds: ["L1", "L3", "L5"],
+    nestingActivity: "none",
+    behaviors: ["feeding", "diving", "flying"],
+    weather: "overcast",
+    windCondition: "strong",
+    disturbance: "none",
+    notes: "Only 3 adults today — L2 and L4 may have started migration south already. Both surviving chick pairs present plus the juvenile. Chicks practicing flight in the strong wind. Season winding down.",
+  },
+];
+
+async function main() {
+  console.log("Seeding loon observations for Woman Lake...");
+
+  const firstUser = await prisma.user.findFirst();
+  if (!firstUser) {
+    console.error("No users found in the database. Create a user first.");
+    process.exit(1);
+  }
+  console.log(`Using user "${firstUser.name}" (${firstUser.id}) as observer.`);
+
+  const deleted = await prisma.loonObservation.deleteMany();
+  console.log(`Cleared ${deleted.count} existing loon observations.`);
+
+  for (const obs of OBSERVATIONS) {
+    await prisma.loonObservation.create({
+      data: {
+        date: obs.date,
+        time: obs.time,
+        lakeName: obs.location.lakeName,
+        lakeArea: obs.location.lakeArea,
+        latitude: obs.location.lat,
+        longitude: obs.location.lng,
+        adultsCount: obs.adultsCount,
+        chicksCount: obs.chicksCount,
+        juvenilesCount: obs.juvenilesCount,
+        loonIds: obs.loonIds,
+        nestingActivity: obs.nestingActivity,
+        behaviors: obs.behaviors,
+        weather: obs.weather,
+        windCondition: obs.windCondition,
+        disturbance: obs.disturbance,
+        notes: obs.notes,
+        userId: firstUser.id,
+      },
+    });
+
+    const dateStr = obs.date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    console.log(`  Created: ${dateStr} — ${obs.location.lakeArea} (${obs.adultsCount}A ${obs.chicksCount}C)`);
+  }
+
+  console.log(`\nDone! ${OBSERVATIONS.length} loon observations seeded.`);
+}
+
+main()
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(() => prisma.$disconnect());

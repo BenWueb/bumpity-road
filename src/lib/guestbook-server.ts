@@ -8,6 +8,27 @@ export type GuestbookServerData = {
   isAdmin: boolean;
 };
 
+export async function getRecentGuestbookEntries(
+  limit = 5
+): Promise<GuestbookEntry[]> {
+  const entries = await prisma.guestbookEntry.findMany({
+    orderBy: { createdAt: "desc" },
+    take: limit,
+    select: {
+      id: true,
+      name: true,
+      message: true,
+      color: true,
+      createdAt: true,
+    },
+  });
+
+  return entries.map((e) => ({
+    ...e,
+    createdAt: e.createdAt.toISOString(),
+  }));
+}
+
 export async function getGuestbookData(): Promise<GuestbookServerData> {
   const entries = await prisma.guestbookEntry.findMany({
     orderBy: { createdAt: "desc" },

@@ -16,6 +16,7 @@ model User {
   isAdmin       Boolean        @default(false)
   isBugAdmin    Boolean        @default(false)
   isAboutAdmin  Boolean        @default(false)
+  isLoonAdmin   Boolean        @default(false)
   badges        String[]       @default([])
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
@@ -32,6 +33,8 @@ model User {
   expenses         Expense[]
   expenseComments  ExpenseComment[]
   expenseVotes     ExpenseVote[]
+  puzzles          PuzzleEntry[]
+  loonObservations LoonObservation[]
 
   @@unique([email])
   @@map("user")
@@ -288,4 +291,62 @@ model ExpenseVote {
   @@index([expenseId])
   @@index([userId])
   @@map("expense_vote")
+}
+
+model PuzzleEntry {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  completedBy   String
+  completedDate DateTime
+  notes         String?
+  imageUrl      String
+  imagePublicId String
+  color         String?
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([userId])
+  @@map("puzzle_entry")
+}
+
+model LoonObservation {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  date            DateTime
+  time            String?
+  lakeName        String
+  lakeArea        String?
+  latitude        Float?
+  longitude       Float?
+  adultsCount     Int      @default(0)
+  chicksCount     Int      @default(0)
+  juvenilesCount  Int      @default(0)
+  loonIds         String[]
+  nestingActivity String?
+  behaviors       String[]
+  weather         String?
+  windCondition   String?
+  disturbance     String?
+  notes           String?
+  imageUrls       String[]
+  imagePublicIds  String[]
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId])
+  @@index([lakeName])
+  @@index([date])
+  @@map("loon_observation")
+}
+
+model LoonNotice {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  message   String
+  enabled   Boolean  @default(true)
+  updatedAt DateTime @updatedAt
+  updatedBy String?
+
+  @@map("loon_notice")
 }

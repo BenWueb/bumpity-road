@@ -1,0 +1,41 @@
+---
+description: Badge award system - server logic and client toasts
+globs: 
+alwaysApply: false
+---
+
+# Badge System
+
+## Server-Side Award (`@/utils/badges`)
+
+Call the appropriate check function after a relevant action in an API route:
+```typescript
+import { checkAndAwardTaskBadges } from "@/utils/badges";
+const newBadges = await checkAndAwardTaskBadges(userId);
+return NextResponse.json({ entry, newBadges });
+```
+
+Available functions:
+- `checkAndAwardTaskBadges(userId)` — 5/10/20/100 completed tasks
+- `checkAndAwardBlogBadges(userId)` — 1/3/5/10 blog posts
+- `checkAndAwardAdventureBadges(userId)` — 1 adventure
+- `checkAndAwardLoonBadges(userId)` — 1/5/10/25 loon observations
+- `checkAndAwardFeedbackBadges(userId)` — 1/3/5/10 feedback reports
+- `checkAndAwardMembershipBadges(userId)` — 1/2/3/5/10 year membership
+- `awardGuestbookBadge(userId)` — guestbook signer
+
+Each returns `string[]` of newly awarded badge keys (empty if none).
+
+## Client-Side Toasts (`@/utils/badges-client`)
+
+In hooks, after a successful API call that returns `newBadges`:
+```typescript
+import { emitBadgesEarned } from "@/utils/badges-client";
+if (data.newBadges?.length) emitBadgesEarned(data.newBadges);
+```
+`BadgeClaimHandler` (in root layout) listens for `badgesEarned` events and shows toasts.
+
+## Badge Definitions (`@/lib/badge-definitions`)
+
+`BADGE_DEFINITIONS` maps badge keys to `{ name, description, icon }`. Use `getBadgeInfo(key)` for display.
+All badge keys: OG, TASK_ROOKIE/WARRIOR/MASTER/LEGEND, GUESTBOOK_SIGNER, BLOGGER_FIRST/CONTRIBUTOR/WRITER/AUTHOR, FEEDBACK_FIRST/CONTRIBUTOR/ADVOCATE/CHAMPION, MEMBER_1-10_YEARS, ADVENTURER_FIRST, LOON_SPOTTER/WATCHER/TRACKER/RANGER.

@@ -4,13 +4,9 @@
 
 ### Prisma Commands
 1. **ALWAYS kill the dev server before running Prisma commands**
-   - Check for running terminals first: `list_dir` on the terminals folder
-   - Read the terminal file to get the PID
+   - Check for running terminals first
    - Run `taskkill /PID <pid> /T /F` before any Prisma command
-   - Prisma commands that require this:
-     - `npx prisma generate`
-     - `npx prisma db push`
-     - `npx prisma migrate`
+   - Applies to: `npx prisma generate`, `npx prisma db push`, `npx prisma migrate`
 
 2. **After schema changes:**
    - Stop dev server
@@ -20,46 +16,39 @@
 ### Build Commands
 1. **DO NOT run `npm run build` unless explicitly requested**
    - The dev server with Turbopack provides real-time error feedback
-   - Let the user verify in their running dev server
-   - Only run builds when the user specifically asks to verify production build
+   - Only run builds when the user specifically asks
 
 ### Code Style
-1. **Use plain HTML elements with Tailwind CSS**
-   - Don't use shadcn/ui components (they may not exist)
-   - Style with Tailwind classes directly on `<div>`, `<button>`, `<input>`, etc.
-
+1. **Use plain HTML elements with Tailwind CSS** — no shadcn/ui
 2. **Import patterns:**
    - Auth: `import { auth } from "@/utils/auth"`
    - Prisma: `import { prisma } from "@/utils/prisma"`
    - Auth client: `import { authClient } from "@/lib/auth-client"`
+   - Gradients: `import { CARD_GRADIENTS } from "@/lib/ui-gradients"`
+   - Class merging: `import { cn } from "@/lib/utils"`
 
 3. **Card components pattern:**
    ```tsx
    <div className="relative overflow-hidden rounded-xl border bg-card shadow-sm">
-     <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[color]-50 via-background to-[color]-50 dark:from-[color]-950/30 dark:via-background dark:to-[color]-950/20" />
-     <div className="relative p-6">
-       {/* Content */}
-     </div>
+     <div className={`pointer-events-none absolute inset-0 ${CARD_GRADIENTS.emerald}`} />
+     <div className="relative p-6">{/* Content */}</div>
    </div>
    ```
 
 ### Next.js 16 Specifics
-1. **Cache invalidation:**
-   - Use `revalidatePath()` instead of `revalidateTag()`
-   - `revalidateTag` has changed signature in Next.js 16
+1. **Cache invalidation:** Use `revalidatePath()` instead of `revalidateTag()`
+2. **API Routes:** `await auth.api.getSession({ headers: await headers(), asResponse: false })`
 
-2. **API Routes:**
-   - Use `headers()` from `next/headers` for session checks
-   - Pattern: `await auth.api.getSession({ headers: await headers(), asResponse: false })`
+### Tailwind v4
+- Use `bg-linear-to-br` not `bg-gradient-to-br`
+- Use `aspect-4/3` not `aspect-[4/3]`
 
 ### File Organization
 - Types: `src/types/`
 - Hooks: `src/hooks/`
 - Utils/Libs: `src/lib/` and `src/utils/`
-- Components: `src/components/`
+- Components: `src/components/` (feature-grouped with barrel `index.ts`)
 - API Routes: `src/app/api/`
 
 ### Terminal Commands on Windows
 - Use `;` instead of `&&` for command chaining in PowerShell
-- Example: `cd path; npm run dev` not `cd path && npm run dev`
-

@@ -1,9 +1,9 @@
 "use client";
 
 import { authClient } from "@/lib/auth-client";
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Award } from "lucide-react";
+import { useLoginModal } from "@/components/LoginModal";
 
 type Provider = "google" | "apple" | "facebook" | "twitter";
 
@@ -12,6 +12,7 @@ const OG_QUESTION =
   "What are you supposed to yell when turning off of Cty Rd 5?";
 
 export default function SignUpPage() {
+  const { openLoginModal } = useLoginModal();
   const [loading, setLoading] = useState<Provider | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [secretAnswer, setSecretAnswer] = useState("");
@@ -46,7 +47,7 @@ export default function SignUpPage() {
       setError(
         `${
           provider.charAt(0).toUpperCase() + provider.slice(1)
-        } sign up failed. Please try again.`
+        } sign up failed. Please try again.`,
       );
       setLoading(null);
     }
@@ -174,9 +175,13 @@ export default function SignUpPage() {
 
         <div className="mt-6 text-center text-sm text-muted-foreground">
           Already have an account?{" "}
-          <Link href="/login" className="text-foreground underline">
+          <button
+            type="button"
+            onClick={openLoginModal}
+            className="text-foreground underline"
+          >
             Log in
-          </Link>
+          </button>
         </div>
       </div>
     </div>

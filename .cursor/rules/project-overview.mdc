@@ -1,0 +1,52 @@
+---
+description: Project overview and architecture for Bumpity Road cabin app
+alwaysApply: true
+---
+
+# Bumpity Road - Project Overview
+
+A Next.js 16 cabin management app with Turbopack, React 19, Prisma (MongoDB), and Tailwind CSS v4.
+
+## Tech Stack
+- **Framework**: Next.js 16 App Router (Turbopack)
+- **Auth**: better-auth with session-based auth
+- **Database**: MongoDB via Prisma ORM
+- **Images**: Cloudinary (next-cloudinary, upload preset `bumpity-road`)
+- **Styling**: Tailwind CSS v4 (use `bg-linear-to-br` not `bg-gradient-to-br`)
+- **Icons**: lucide-react
+- **Maps**: react-leaflet (dynamically imported for SSR compat)
+- **Path alias**: `@/*` maps to `./src/*`
+- **No shadcn/ui** — all UI is plain HTML + Tailwind
+
+## Key Architecture Patterns
+- Pages use `PageHeader` component for consistent headers with icon, title, subtitle, and optional actions
+- Public features (guestbook, puzzles) use **token-based ownership** stored in localStorage — no login required
+- Auth-gated features (gallery, blog, expenses, loons) require login via `auth.api.getSession()`
+- Server components fetch data via `*-server.ts` lib files, passed to client components as `initialEntries`
+- Client hooks (`use-*.ts`) manage state, CRUD, and optimistic updates
+- Admin checks: fetch user from Prisma, check `isAdmin` field (also `isBugAdmin`, `isAboutAdmin`)
+- Card UI: `relative overflow-hidden rounded-xl border bg-card shadow-sm` with `CARD_GRADIENTS` from `@/lib/ui-gradients`
+- Badges: server awards via `@/utils/badges`, client toasts via `emitBadgesEarned` from `@/utils/badges-client`
+
+## Features & Routes
+
+| Route | Auth | Feature |
+|-------|------|---------|
+| `/` | No | Home (calendar, weather, todos) |
+| `/guestbook` | No | Token-owned guestbook entries |
+| `/puzzles` | No | Token-owned puzzle tracking |
+| `/blog` | Yes | Blog posts with images |
+| `/gallery` | Yes | Photo gallery with lightbox |
+| `/adventures` | Yes | Adventure locations with map |
+| `/loon` | Yes | Loon observations with Leaflet map |
+| `/todos` | Yes | Kanban task board |
+| `/expenses` | Admin | Expense tracking with voting |
+| `/account` | Yes | Profile, badges, activity |
+
+## Directory Structure
+- `src/app/` — Pages and API routes (REST at `/api/[feature]/route.ts`)
+- `src/components/` — Feature-grouped (`guestbook/`, `puzzles/`, `ui/`)
+- `src/hooks/` — Client hooks (`use-guestbook.ts`, `use-puzzles.ts`, `use-todos.ts`, `use-blog.ts`)
+- `src/lib/` — Server data fetching (`*-server.ts`), constants, helpers
+- `src/types/` — TypeScript types (`guestbook.ts`, `puzzle.ts`, `todo.ts`, `loon.ts`, `expense.ts`, `blog.ts`, `gallery.ts`, `account.ts`)
+- `src/utils/` — Prisma client, auth config, cloudinary helpers, badge logic

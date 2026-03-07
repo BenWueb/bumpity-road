@@ -31,6 +31,7 @@ import { TasksCard } from "@/components/account/TasksCard";
 import { BlogPostsCard } from "@/components/account/BlogPostsCard";
 import { AdventuresCard } from "@/components/account/AdventuresCard";
 import { GalleryPhotosCard } from "@/components/account/GalleryPhotosCard";
+import { PuzzlesCard } from "@/components/account/PuzzlesCard";
 
 type Props = {
   user: AccountUser;
@@ -87,6 +88,14 @@ const MEMBERSHIP_BADGE_HIERARCHY = [
   "MEMBER_3_YEARS",
   "MEMBER_5_YEARS",
   "MEMBER_10_YEARS",
+];
+
+// Loon badges in order from lowest to highest
+const LOON_BADGE_HIERARCHY = [
+  "LOON_SPOTTER",
+  "LOON_WATCHER",
+  "LOON_TRACKER",
+  "LOON_RANGER",
 ];
 
 // Non-hierarchical badges (always show if earned or as placeholder)
@@ -167,6 +176,24 @@ function getBadgesForDisplay(
     });
   }
 
+  // Add loon badges - show highest earned OR next to earn
+  let highestLoonIndex = -1;
+  for (const badge of LOON_BADGE_HIERARCHY) {
+    if (earnedSet.has(badge)) {
+      highestLoonIndex = LOON_BADGE_HIERARCHY.indexOf(badge);
+    }
+  }
+  if (highestLoonIndex >= 0) {
+    result.push({
+      badge: LOON_BADGE_HIERARCHY[highestLoonIndex],
+      earned: true,
+    });
+  }
+  const nextLoonIndex = highestLoonIndex + 1;
+  if (nextLoonIndex < LOON_BADGE_HIERARCHY.length) {
+    result.push({ badge: LOON_BADGE_HIERARCHY[nextLoonIndex], earned: false });
+  }
+
   // Add membership badges - show highest earned OR next to earn
   let highestMembershipIndex = -1;
   for (const badge of MEMBERSHIP_BADGE_HIERARCHY) {
@@ -174,14 +201,12 @@ function getBadgesForDisplay(
       highestMembershipIndex = MEMBERSHIP_BADGE_HIERARCHY.indexOf(badge);
     }
   }
-  // Show highest earned membership badge
   if (highestMembershipIndex >= 0) {
     result.push({
       badge: MEMBERSHIP_BADGE_HIERARCHY[highestMembershipIndex],
       earned: true,
     });
   }
-  // Show next membership badge to earn (if any)
   const nextMembershipIndex = highestMembershipIndex + 1;
   if (nextMembershipIndex < MEMBERSHIP_BADGE_HIERARCHY.length) {
     result.push({
@@ -409,6 +434,9 @@ export function AccountContent({
 
         {/* Gallery Photos */}
         <GalleryPhotosCard galleryImages={galleryImages} />
+
+        {/* Puzzles */}
+        <PuzzlesCard />
       </div>
     </div>
   );

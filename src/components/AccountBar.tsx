@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { LogIn, LogOut, Settings, User } from "lucide-react";
+import { useLoginModal } from "@/components/LoginModal";
 
 function initialsFromName(name?: string | null) {
   const n = (name ?? "").trim();
@@ -17,6 +18,7 @@ function initialsFromName(name?: string | null) {
 export default function AccountBar({ collapsed }: { collapsed: boolean }) {
   const router = useRouter();
   const { data: session, isPending } = authClient.useSession();
+  const { openLoginModal } = useLoginModal();
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -28,17 +30,19 @@ export default function AccountBar({ collapsed }: { collapsed: boolean }) {
     setMounted(true);
   }, []);
 
-  // Update dropdown position when opening
+  // Update dropdown position when opening — anchor to the gear button's parent container
   useEffect(() => {
     if (open && buttonRef.current) {
-      const rect = buttonRef.current.getBoundingClientRect();
+      const container = buttonRef.current.parentElement;
+      if (!container) return;
+      const containerRect = container.getBoundingClientRect();
       setDropdownPosition({
-        left: rect.left,
-        bottom: window.innerHeight - rect.top + 8,
-        width: collapsed ? 160 : rect.width,
+        left: containerRect.left,
+        bottom: window.innerHeight - containerRect.top + 8,
+        width: containerRect.width,
       });
     }
-  }, [open, collapsed]);
+  }, [open]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -99,14 +103,17 @@ export default function AccountBar({ collapsed }: { collapsed: boolean }) {
           </>
         ) : (
           <>
-            <Link
-              href="/login"
-              onClick={() => setOpen(false)}
-              className="flex items-center gap-2 whitespace-nowrap rounded-sm px-2 py-2 text-sm hover:bg-accent"
+            <button
+              type="button"
+              onClick={() => {
+                setOpen(false);
+                openLoginModal();
+              }}
+              className="flex w-full items-center gap-2 whitespace-nowrap rounded-sm px-2 py-2 text-left text-sm hover:bg-accent"
             >
               <LogIn className="h-4 w-4 shrink-0" />
               Log in
-            </Link>
+            </button>
             <Link
               href="/signup"
               onClick={() => setOpen(false)}
@@ -132,36 +139,67 @@ export default function AccountBar({ collapsed }: { collapsed: boolean }) {
           </div>
         </div>
       ) : (
-        <div className="relative">
+        <div className="relative flex items-center gap-1">
+          {session?.user ? (
+            <Link
+              href="/account"
+              className={[
+                "min-w-0 flex-1 rounded-md px-2 py-2 transition-colors",
+                "flex items-center gap-3",
+                "hover:bg-accent",
+              ].join(" ")}
+              title={
+                collapsed
+                  ? session.user.name ?? session.user.email ?? "Account"
+                  : undefined
+              }
+            >
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border bg-background text-sm font-semibold">
+                {initialsFromName(session.user.name)}
+              </div>
+              <div className={["min-w-0 flex-1 text-left", collapsed ? "md:hidden" : ""].join(" ")}>
+                <div className="truncate text-sm font-medium">
+                  {session.user.name}
+                </div>
+                <div className="truncate text-xs text-muted-foreground">
+                  {session.user.email}
+                </div>
+              </div>
+            </Link>
+          ) : (
+            <button
+              type="button"
+              onClick={openLoginModal}
+              className={[
+                "min-w-0 flex-1 rounded-md px-2 py-2 transition-colors",
+                "flex items-center gap-3",
+                "hover:bg-accent",
+              ].join(" ")}
+              title={collapsed ? "Sign in" : undefined}
+            >
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border bg-background text-sm font-semibold">
+                {initialsFromName(null)}
+              </div>
+              <div className={["min-w-0 flex-1 text-left", collapsed ? "md:hidden" : ""].join(" ")}>
+                <div className="truncate text-sm font-medium">Guest</div>
+                <div className="truncate text-xs text-muted-foreground">
+                  Not signed in
+                </div>
+              </div>
+            </button>
+          )}
+
           <button
             ref={buttonRef}
             type="button"
             onClick={() => setOpen((v) => !v)}
             className={[
-              "w-full rounded-md px-2 py-2 transition-colors",
-              "flex cursor-pointer items-center gap-3",
-              "hover:bg-accent",
+              "shrink-0 rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground",
+              collapsed ? "md:hidden" : "",
             ].join(" ")}
-            title={
-              collapsed
-                ? session?.user?.name ?? session?.user?.email ?? "Account"
-                : undefined
-            }
+            aria-label="Account options"
           >
-            <div className="flex h-9 w-9 items-center justify-center rounded-full border bg-background text-sm font-semibold">
-              {initialsFromName(session?.user?.name)}
-            </div>
-
-            <div className={["min-w-0 flex-1 text-left", collapsed ? "md:hidden" : ""].join(" ")}>
-              <div className="truncate text-sm font-medium">
-                {session?.user?.name ?? "Guest"}
-              </div>
-              <div className="truncate text-xs text-muted-foreground">
-                {session?.user?.email ?? "Not signed in"}
-              </div>
-            </div>
-
-            <Settings className={["h-4 w-4 text-muted-foreground", collapsed ? "md:hidden" : ""].join(" ")} />
+            <Settings className="h-4 w-4" />
           </button>
 
           {open && mounted && createPortal(dropdownContent, document.body)}

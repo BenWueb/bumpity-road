@@ -5,11 +5,11 @@ import { authClient } from "@/lib/auth-client";
 import { Post } from "@/types/blog";
 import { useBlog } from "@/hooks/use-blog";
 import { NotebookPen, Plus } from "lucide-react";
-import Link from "next/link";
 import { BlogPostCard } from "./BlogPostCard";
 import { BlogPostForm } from "./BlogPostForm";
 import { BlogEditModal } from "./BlogEditModal";
 import { PageHeader } from "@/components/PageHeader";
+import { useLoginModal } from "@/components/LoginModal";
 
 type Props = {
   initialPosts: Post[];
@@ -17,6 +17,7 @@ type Props = {
 
 export function BlogList({ initialPosts }: Props) {
   const { data: session } = authClient.useSession();
+  const { openLoginModal } = useLoginModal();
   const { posts, createPost, updatePost, deletePost } = useBlog({ initialPosts });
 
   const [showForm, setShowForm] = useState(false);
@@ -44,12 +45,13 @@ export function BlogList({ initialPosts }: Props) {
               New Post
             </button>
           ) : (
-            <Link
-              href="/login"
+            <button
+              type="button"
+              onClick={openLoginModal}
               className="hidden items-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:from-emerald-600 hover:to-teal-600 md:flex"
             >
               Sign in to post
-            </Link>
+            </button>
           )
         }
         mobileAction={
@@ -62,12 +64,13 @@ export function BlogList({ initialPosts }: Props) {
               New Post
             </button>
           ) : (
-            <Link
-              href="/login"
+            <button
+              type="button"
+              onClick={openLoginModal}
               className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-2.5 text-sm font-medium text-white shadow-sm"
             >
               Sign in to post
-            </Link>
+            </button>
           )
         }
       />

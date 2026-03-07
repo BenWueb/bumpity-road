@@ -5,6 +5,9 @@ import AppSidebar from "@/components/AppSidebar";
 import BadgeClaimHandler from "@/components/BadgeClaimHandler";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import AnnouncementBar from "@/components/AnnouncementBar";
+import LoonGlobalNoticeServer from "@/components/LoonGlobalNoticeServer";
+import { LoginModalProvider } from "@/components/LoginModal";
+import { Suspense } from "react";
 
 const poppins = Poppins({
   weight: ["400", "700"],
@@ -63,14 +66,19 @@ export default function RootLayout({
         className={`${poppins.className} antialiased min-h-screen h-screen h-dvh overflow-hidden`}
       >
         <GoogleAnalytics />
-        <div className="flex min-h-screen h-screen h-dvh w-full flex-col overflow-hidden">
-          <AnnouncementBar />
-          <div className="flex min-h-0 flex-1 overflow-hidden">
-            <AppSidebar />
-            <main className="min-w-0 flex-1 overflow-y-auto pb-20 md:pb-0">{children}</main>
+        <LoginModalProvider>
+          <div className="flex min-h-screen h-screen h-dvh w-full flex-col overflow-hidden">
+            <AnnouncementBar />
+            <Suspense fallback={null}>
+              <LoonGlobalNoticeServer />
+            </Suspense>
+            <div className="flex min-h-0 flex-1 overflow-hidden">
+              <AppSidebar />
+              <main className="min-w-0 flex-1 overflow-y-auto pb-20 md:pb-0">{children}</main>
+            </div>
           </div>
-        </div>
-        <BadgeClaimHandler />
+          <BadgeClaimHandler />
+        </LoginModalProvider>
       </body>
     </html>
   );

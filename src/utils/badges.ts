@@ -20,6 +20,14 @@ const BLOG_MILESTONES = [
 // Adventure milestones
 const ADVENTURE_MILESTONES = [{ count: 1, badge: "ADVENTURER_FIRST" }];
 
+// Loon observation milestones
+const LOON_MILESTONES = [
+  { count: 1, badge: "LOON_SPOTTER" },
+  { count: 5, badge: "LOON_WATCHER" },
+  { count: 10, badge: "LOON_TRACKER" },
+  { count: 25, badge: "LOON_RANGER" },
+];
+
 // Feedback milestones
 const FEEDBACK_MILESTONES = [
   { count: 1, badge: "FEEDBACK_FIRST" },
@@ -159,6 +167,49 @@ export async function checkAndAwardAdventureBadges(
   for (const milestone of ADVENTURE_MILESTONES) {
     if (
       adventureCount >= milestone.count &&
+      !user.badges.includes(milestone.badge)
+    ) {
+      newBadges.push(milestone.badge);
+    }
+  }
+
+  if (newBadges.length > 0) {
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        badges: {
+          push: newBadges,
+        },
+      },
+    });
+  }
+
+  return newBadges;
+}
+
+/**
+ * Check and award loon observation badges for a user
+ * Call this after a user logs a new loon observation
+ */
+export async function checkAndAwardLoonBadges(
+  userId: string
+): Promise<string[]> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { badges: true },
+  });
+
+  if (!user) return [];
+
+  const observationCount = await prisma.loonObservation.count({
+    where: { userId },
+  });
+
+  const newBadges: string[] = [];
+
+  for (const milestone of LOON_MILESTONES) {
+    if (
+      observationCount >= milestone.count &&
       !user.badges.includes(milestone.badge)
     ) {
       newBadges.push(milestone.badge);

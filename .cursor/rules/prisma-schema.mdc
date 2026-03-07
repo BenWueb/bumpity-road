@@ -1,0 +1,36 @@
+---
+description: Prisma schema conventions for MongoDB
+globs: prisma/schema.prisma
+alwaysApply: false
+---
+
+# Prisma Schema Conventions
+
+## Model Pattern
+```prisma
+model FeatureEntry {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  // ... fields
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@map("feature_entry")
+}
+```
+
+## Key Rules
+- All models use `@id @default(auto()) @map("_id") @db.ObjectId` for MongoDB
+- Collection names are snake_case via `@@map()`
+- Always include `createdAt` and `updatedAt`
+- Token-based ownership: `ownerToken String?`
+- Auth-based ownership: `userId String @db.ObjectId` with `user User @relation(...)` 
+- Image fields: `imageUrl String` + `imagePublicId String` (or arrays for multi-image)
+- After schema changes: stop dev server, run `npx prisma generate` then `npx prisma db push`
+
+## Existing Models
+- **Auth**: User (with `isAdmin`, `isBugAdmin`, `isAboutAdmin`, `badges String[]`), Session, Account, Verification
+- **Content**: Post, PostImage, Comment, GalleryImage, GuestbookEntry, Adventure
+- **Tasks**: Todo (with `assignedToId`, `completedById`, `recurring`, `status`)
+- **Expenses**: Expense, ExpenseComment, ExpenseVote
+- **Nature**: LoonObservation (with arrays: `loonIds`, `behaviors`, `imageUrls`, `imagePublicIds`)
+- **Puzzles**: PuzzleEntry (with `completedBy`, `completedDate`, `pieceCount`)
+- **System**: Feedback, SiteSetting

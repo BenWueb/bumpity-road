@@ -1,0 +1,52 @@
+---
+description: React component patterns and conventions
+globs: src/components/**/*.tsx
+alwaysApply: false
+---
+
+# React Component Conventions
+
+## File Organization
+- Group components by feature: `src/components/guestbook/`, `src/components/puzzles/`, etc.
+- Each feature folder has a barrel `index.ts` exporting all components
+- Components are `"use client"` unless they only do server-side work
+
+## Naming Convention
+- `FeatureList` — main layout component (grid + form + edit modal)
+- `FeatureCard` — individual entry card with gradient overlay
+- `FeatureForm` — create/add form with controlled inputs
+- `FeatureEditModal` — edit modal wrapping `<Modal>` from `@/components/ui/Modal`
+- `FeatureDetailsView` — detail/expanded view (used by expenses, loons)
+- `FeatureLightbox` — feature-specific lightbox (gallery, puzzles)
+
+## Card Pattern
+```tsx
+import { CARD_GRADIENTS } from "@/lib/ui-gradients";
+<div className="group relative mb-4 break-inside-avoid overflow-hidden rounded-lg border bg-card shadow-sm">
+  <div className={`pointer-events-none absolute inset-0 ${CARD_GRADIENTS.emerald}`} />
+  <div className="relative p-4">{/* content */}</div>
+</div>
+```
+
+## Edit/Delete Buttons
+- Show on hover with `opacity-0 group-hover:opacity-100 transition-opacity`
+- Edit: only if `isOwned` (or `isOwner`)
+- Delete: if `canDelete` (owner or admin)
+- Use `ConfirmModal` for delete confirmation
+
+## Form Sidebar Layout
+- Desktop: sticky right column `lg:sticky lg:top-6 lg:self-start`
+- Grid: `grid gap-6 lg:grid-cols-[3fr,400px]`
+- Mobile: scroll button that jumps to form section
+
+## Masonry Layout
+- CSS columns: `columns-1 gap-4 sm:columns-2 lg:columns-3`
+- Cards use `break-inside-avoid`
+
+## Tailwind v4 Notes
+- Use `bg-linear-to-br` instead of `bg-gradient-to-br`
+- Use `aspect-4/3` instead of `aspect-[4/3]`
+
+## Existing Feature Component Sets
+Fully built: guestbook, puzzles, blog, gallery, expenses, loons, todos, account
+Each has List, Card, Form, EditModal (and some have Lightbox, DetailsView)

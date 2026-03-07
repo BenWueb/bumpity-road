@@ -4,6 +4,7 @@ import { authClient } from "@/lib/auth-client";
 import { CldUploadWidget } from "next-cloudinary";
 import Image from "next/image";
 import Link from "next/link";
+import { useLoginModal } from "@/components/LoginModal";
 import { useCallback, useEffect, useState } from "react";
 import { emitBadgesEarned } from "@/utils/badges-client";
 import { PageHeader } from "@/components/PageHeader";
@@ -49,6 +50,7 @@ const CATEGORIES = ADVENTURE_CATEGORIES;
 
 export default function AdventuresPage() {
   const { data: session } = authClient.useSession();
+  const { openLoginModal } = useLoginModal();
   const [adventures, setAdventures] = useState<Adventure[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -393,12 +395,13 @@ export default function AdventuresPage() {
               New Adventure
             </button>
           ) : (
-            <Link
-              href="/login"
+            <button
+              type="button"
+              onClick={openLoginModal}
               className="hidden items-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:from-emerald-600 hover:to-teal-600 md:flex"
             >
               Sign in to share
-            </Link>
+            </button>
           )
         }
         mobileAction={
@@ -411,12 +414,13 @@ export default function AdventuresPage() {
               New Adventure
             </button>
           ) : (
-            <Link
-              href="/login"
+            <button
+              type="button"
+              onClick={openLoginModal}
               className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-2.5 text-sm font-medium text-white shadow-sm"
             >
               Sign in to share an adventure
-            </Link>
+            </button>
           )
         }
       />

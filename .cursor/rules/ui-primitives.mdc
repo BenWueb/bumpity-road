@@ -1,0 +1,65 @@
+---
+description: Reusable UI primitives available in src/components/ui/
+globs: src/components/**/*.tsx
+alwaysApply: false
+---
+
+# Reusable UI Primitives
+
+Always check these existing components before building new UI. Import from `@/components/ui/`.
+
+## Modal
+`Modal` — base portal modal with overlay, escape/click-outside closing, optional title bar.
+```tsx
+import { Modal } from "@/components/ui/Modal";
+<Modal isOpen={open} onClose={close} title="Edit Entry"
+  panelClassName="w-full max-w-md rounded-xl border bg-background p-4 shadow-xl md:p-6">
+  {children}
+</Modal>
+```
+Props: `isOpen`, `onClose`, `title?`, `closeOnOverlayClick?`, `closeOnEscape?`, `showCloseButton?`, `overlayClassName?`, `panelClassName?`
+
+## ConfirmModal
+`ConfirmModal` — confirmation dialog (wraps Modal). Variants: `"danger"` | `"default"`.
+```tsx
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
+<ConfirmModal isOpen={show} onClose={cancel} onConfirm={handleDelete}
+  message="This cannot be undone." variant="danger" isLoading={deleting} />
+```
+
+## PhotoLightbox
+`PhotoLightbox` — full-screen image viewer with zoom, pan, pinch, keyboard nav.
+```tsx
+import { PhotoLightbox } from "@/components/ui/PhotoLightbox";
+<PhotoLightbox images={urls} initialIndex={0} onClose={close} />
+```
+
+## ToggleGroup
+`ToggleGroup` — segmented toggle buttons (e.g., Cards/Details/Map views).
+```tsx
+import { ToggleGroup } from "@/components/ui/ToggleGroup";
+<ToggleGroup options={[{ value: "cards", label: "Cards", icon: <Grid /> }]} value={view} onChange={setView} />
+```
+
+## InfoCard
+`InfoCard` — section card with title, icon, and content.
+```tsx
+import { InfoCard } from "@/components/ui/InfoCard";
+<InfoCard title="Details" icon={<Info />}>{content}</InfoCard>
+```
+
+## SuggestionPicker
+`SuggestionPicker` — searchable dropdown for string suggestions with clear button.
+```tsx
+import { SuggestionPicker } from "@/components/ui/SuggestionPicker";
+<SuggestionPicker value={selected} onChange={setSelected} suggestions={items} placeholder="Filter..." />
+```
+
+## PageHeader (shared component)
+`PageHeader` — consistent page header with icon, title, subtitle, desktop/mobile actions.
+```tsx
+import { PageHeader } from "@/components/PageHeader";
+<PageHeader title="Feature" subtitle="Description" icon={<Icon className="h-5 w-5 md:h-6 md:w-6" />}
+  iconWrapperClassName="flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-emerald-500 to-emerald-600 text-white shadow-lg md:h-12 md:w-12"
+  desktopAction={<button>Add</button>} />
+```

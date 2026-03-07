@@ -8,7 +8,7 @@ import {
   Camera,
   LogIn,
 } from "lucide-react";
-import Link from "next/link";
+import { useLoginModal } from "@/components/LoginModal";
 import { useCallback, useEffect, useState } from "react";
 import type { GalleryImage, PendingUpload } from "@/types/gallery";
 import { GalleryUploadPanel, type GalleryUploadFormState } from "@/components/gallery/GalleryUploadPanel";
@@ -17,6 +17,7 @@ import { PageHeader } from "@/components/PageHeader";
 
 export default function GalleryPage() {
   const { data: session } = authClient.useSession();
+  const { openLoginModal } = useLoginModal();
   const [images, setImages] = useState<GalleryImage[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null);
@@ -246,13 +247,14 @@ export default function GalleryPage() {
               </CldUploadButton>
             ) : null
           ) : (
-            <Link
-              href="/login"
+            <button
+              type="button"
+              onClick={openLoginModal}
               className="hidden items-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:from-emerald-600 hover:to-teal-600 md:flex"
             >
               <LogIn className="h-4 w-4" />
               Sign in to upload
-            </Link>
+            </button>
           )
         }
         mobileAction={
@@ -269,13 +271,14 @@ export default function GalleryPage() {
               </CldUploadButton>
             ) : null
           ) : (
-            <Link
-              href="/login"
+            <button
+              type="button"
+              onClick={openLoginModal}
               className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-2.5 text-sm font-medium text-white shadow-sm"
             >
               <LogIn className="h-4 w-4" />
               Sign in to upload
-            </Link>
+            </button>
           )
         }
         mobileActionClassName="border-b bg-card/30 px-4 py-3 md:hidden"

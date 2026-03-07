@@ -1,0 +1,53 @@
+---
+description: Client-side hook patterns for feature state management
+globs: src/hooks/use-*.ts
+alwaysApply: false
+---
+
+# Client Hook Conventions
+
+## Hook Structure
+
+Each feature has a `use-{feature}.ts` hook that manages:
+- State (`entries`, `isAdmin`, `isLoading`, `ownedIds`)
+- CRUD operations (`createEntry`, `updateEntry`, `deleteEntry`)
+- Ownership checks (`isOwned`, `canDelete`, `canEdit`)
+
+## Pattern
+
+```typescript
+export function useFeature(options: { initialEntries?: Entry[]; initialIsAdmin?: boolean; currentUserId?: string } = {}) {
+  const [entries, setEntries] = useState(options.initialEntries ?? []);
+  const [isAdmin, setIsAdmin] = useState(options.initialIsAdmin ?? false);
+  const [isLoading, setIsLoading] = useState(!options.initialEntries);
+
+  // Fetch if no SSR data provided
+  useEffect(() => { if (!options.initialEntries) loadEntries(); }, [options.initialEntries]);
+
+  // CRUD with useCallback, optimistic deletes
+  const createEntry = useCallback(async (input) => {
+    const res = await fetch("/api/feature", { method: "POST", ... });
+    const data = await res.json();
+    setEntries(prev => [data.entry, ...prev]);
+    if (data.newBadges?.length) emitBadgesEarned(data.newBadges);
+    return data.entry;
+  }, []);
+
+  const deleteEntry = useCallback(async (id) => {
+    const prev = entries;
+    setEntries(e => e.filter(x => x.id !== id)); // optimistic
+    const res = await fetch(`/api/feature?id=${id}`, { method: "DELETE" });
+    if (!res.ok) setEntries(prev); // rollback
+  }, [entries]);
+
+  return { entries, isAdmin, isLoading, createEntry, updateEntry, deleteEntry, isOwned, canDelete };
+}
+```
+
+## Key Conventions
+- Accept `initialEntries` from SSR to avoid client-side refetch
+- Use `useCallback` for all CRUD functions
+- Optimistic delete: remove from state immediately, restore on failure
+- Token-based ownership (guestbook, puzzles): check via `*-ownership.ts` lib (localStorage)
+- Auth-based ownership (blog, loons, gallery): check `entry.user?.id === currentUserId`
+- Always emit badges: `emitBadgesEarned(data.newBadges)` after create/update

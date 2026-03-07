@@ -20,6 +20,7 @@ import {
   TentTree,
   Binoculars,
   Panda,
+  Puzzle,
   Wrench,
   X,
 } from "lucide-react";
@@ -169,6 +170,12 @@ export default function AppSidebar() {
         icon: UtensilsCrossed,
       },
       {
+        href: "/puzzles",
+        label: "Puzzles",
+        icon: Puzzle,
+        pill: SIDEBAR_PILL_STYLES.NEW,
+      },
+      {
         href: "/sop",
         label: "SOP",
         icon: NotebookText,
@@ -190,7 +197,7 @@ export default function AppSidebar() {
         href: "/loon",
         label: "Loons",
         icon: Binoculars,
-        pill: SIDEBAR_PILL_STYLES.SOON,
+        pill: SIDEBAR_PILL_STYLES.NEW,
       },
 
       {

@@ -1,0 +1,50 @@
+---
+description: Conventions for Next.js API routes
+globs: src/app/api/**/route.ts
+alwaysApply: false
+---
+
+# API Route Conventions
+
+## Auth Pattern
+
+```typescript
+import { auth } from "@/utils/auth";
+import { prisma } from "@/utils/prisma";
+import { headers } from "next/headers";
+import { NextRequest, NextResponse } from "next/server";
+
+const session = await auth.api.getSession({ headers: await headers(), asResponse: false });
+if (session?.user?.id) {
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { isAdmin: true },
+  });
+}
+```
+
+## Token-Based Ownership (guestbook, puzzles)
+
+- POST: generate `randomBytes(32).toString("hex")` token, return `ownerToken` to client
+- PATCH: require `ownerToken` match
+- DELETE: support owner-token and admin delete (`?admin=true`)
+- GET: never expose `ownerToken` in responses
+
+## Response Format
+- Success: `NextResponse.json({ entry })` or `NextResponse.json({ entries, isAdmin })`
+- Error: `NextResponse.json({ error: "message" }, { status: 4xx })`
+- Always `select` specific fields — never return full model with sensitive fields
+
+## Badge Integration
+After create/update actions, call the appropriate badge function and return `newBadges`:
+```typescript
+import { checkAndAwardTaskBadges } from "@/utils/badges";
+const newBadges = await checkAndAwardTaskBadges(userId);
+return NextResponse.json({ entry, newBadges });
+```
+
+## Cloudinary Cleanup
+When deleting entries with images, call `deleteCloudinaryImage(publicId)` or `deleteCloudinaryImages(publicIds)` before database deletion.
+
+## Existing API Routes
+`/api/about`, `/api/adventures`, `/api/auth/[...all]`, `/api/badges`, `/api/blog`, `/api/calendar`, `/api/expenses` (+votes, +comments), `/api/feedback`, `/api/gallery`, `/api/guestbook`, `/api/loons`, `/api/puzzles`, `/api/settings`, `/api/todos`, `/api/users`

@@ -1,8 +1,10 @@
 import HeaderComponent from "@/components/HeaderComponent";
 import Calendar, { CalendarSkeleton } from "@/components/Calendar";
 import WeatherCard, { WeatherCardSkeleton } from "@/components/WeatherCard";
+import LoonDashboardCard, { LoonDashboardCardSkeleton } from "@/components/LoonDashboardCard";
 import { TodoCardSkeleton } from "@/components/TodoCard";
 import { TodoCardServer } from "@/components/TodoCardServer";
+import { GuestbookCarousel, GuestbookCarouselSkeleton } from "@/components/GuestbookCarousel";
 import { Suspense } from "react";
 import Link from "next/link";
 import { CARD_GRADIENTS } from "@/lib/ui-gradients";
@@ -19,6 +21,10 @@ export default function Home() {
     <div className="p-4 sm:p-6 md:p-8">
       <div className="flex flex-col gap-4 sm:gap-6">
         <HeaderComponent />
+
+        <Suspense fallback={<GuestbookCarouselSkeleton />}>
+          <GuestbookCarousel />
+        </Suspense>
 
         {/* Quick Action Cards */}
         <div className="grid grid-cols-4 gap-1.5 sm:grid-cols-3 sm:gap-3 md:grid-cols-4 md:gap-3 lg:gap-4 xl:grid-cols-5">
@@ -115,9 +121,12 @@ export default function Home() {
         </div>
 
         {/* Main Cards */}
-        <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2">
           <Suspense fallback={<WeatherCardSkeleton />}>
             <WeatherCard />
+          </Suspense>
+          <Suspense fallback={<LoonDashboardCardSkeleton />}>
+            <LoonDashboardCard />
           </Suspense>
           <Suspense fallback={<CalendarSkeleton />}>
             <Calendar />

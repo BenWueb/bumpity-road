@@ -1,0 +1,36 @@
+---
+description: Existing client-side hooks — check before creating new ones
+globs: src/hooks/**/*.ts
+alwaysApply: false
+---
+
+# Existing Hooks
+
+Check these hooks before writing new client logic. All are in `@/hooks/`.
+
+## Feature CRUD Hooks
+| Hook | Manages | Returns |
+|------|---------|---------|
+| `useGuestbook` | Guestbook entries | `entries, createEntry, updateEntry, deleteEntry, isOwned, canDelete, canEdit, getTokenForEntry` |
+| `usePuzzles` | Puzzle entries | `entries, createEntry, updateEntry, deleteEntry, isOwned, canDelete` |
+| `useBlog` | Blog posts | `posts, createPost, updatePost, deletePost, refreshPosts` |
+| `useTodos` | Todo items | `todos, addTodo, updateTodo, deleteTodo, toggleComplete, updateStatus, assignTodo, pendingTodos, completedTodos, getTodosByStatus` |
+| `useLoonDelete` | Loon delete flow | `deleteTarget, isDeleting, requestDelete, confirmDelete, cancelDelete` |
+
+## Expense Hooks
+| Hook | Manages | Returns |
+|------|---------|---------|
+| `useExpenseVoting` | Vote score/state | `localVoteScore, localUserVote, isVoting, handleVote` |
+| `useExpenseComments` | Comment CRUD | `localComments, commentText, setCommentText, handleAddComment, handleDeleteComment` |
+
+## Utility Hooks
+| Hook | Purpose | Returns |
+|------|---------|---------|
+| `useUserSearch` | Debounced user search via `/api/users?q=` | `query, setQuery, results, isSearching, reset` |
+| `useClickOutside` | Click-outside detection | Side effect (calls handler) |
+| `useIsMobile` | Mobile breakpoint (< 768px) | `boolean` |
+
+## Common Parameters
+- `initialEntries` / `initialPosts` — SSR data to avoid client refetch
+- `initialIsAdmin` — admin status from server
+- `currentUserId` — for ownership checks

@@ -22,7 +22,7 @@ export default function LoginPage() {
       setError(
         `${
           provider.charAt(0).toUpperCase() + provider.slice(1)
-        } sign in failed. Please try again.`
+        } sign in failed. Please try again.`,
       );
       setLoading(null);
     }
