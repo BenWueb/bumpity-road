@@ -21,6 +21,7 @@ import type {
   AccountAdventure,
   AccountFeedback,
   AccountGalleryImage,
+  AccountLoonObservation,
   AccountPost,
   AccountUser,
 } from "@/types/account";
@@ -32,6 +33,7 @@ import { BlogPostsCard } from "@/components/account/BlogPostsCard";
 import { AdventuresCard } from "@/components/account/AdventuresCard";
 import { GalleryPhotosCard } from "@/components/account/GalleryPhotosCard";
 import { PuzzlesCard } from "@/components/account/PuzzlesCard";
+import { LoonObservationsCard } from "@/components/account/LoonObservationsCard";
 
 type Props = {
   user: AccountUser;
@@ -39,6 +41,7 @@ type Props = {
   posts: AccountPost[];
   adventures: AccountAdventure[];
   galleryImages: AccountGalleryImage[];
+  loonObservations: AccountLoonObservation[];
   feedback: AccountFeedback[];
   newMembershipBadges?: string[];
 };
@@ -224,6 +227,7 @@ export function AccountContent({
   posts,
   adventures,
   galleryImages,
+  loonObservations,
   feedback: initialFeedback,
   newMembershipBadges,
 }: Props) {
@@ -408,6 +412,7 @@ export function AccountContent({
             postsCount={posts.length}
             adventuresCount={adventures.length}
             photosCount={galleryImages.length}
+            loonObservationsCount={loonObservations.length}
             todoCount={todosByStatus.todo.length}
             inProgressCount={todosByStatus.in_progress.length}
             doneCount={todosByStatus.done.length}
@@ -434,6 +439,9 @@ export function AccountContent({
 
         {/* Gallery Photos */}
         <GalleryPhotosCard galleryImages={galleryImages} />
+
+        {/* Loon Observations */}
+        <LoonObservationsCard loonObservations={loonObservations} />
 
         {/* Puzzles */}
         <PuzzlesCard />

@@ -40,7 +40,7 @@ export function GuestbookCarouselClient({ entries }: Props) {
               />
               <div className="relative flex flex-col items-center justify-center px-8 pb-6 pt-4 text-center">
                 <Quote className="mb-2 h-5 w-5 text-muted-foreground/40" />
-                <p className="max-w-3xl text-base text-foreground/80 md:text-lg">
+                <p className="max-w-3xl text-sm text-foreground/80 md:text-lg">
                   {entry.message}
                 </p>
                 <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">

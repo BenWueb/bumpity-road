@@ -40,6 +40,17 @@ export type AccountGalleryImage = {
   createdAt: string;
 };
 
+export type AccountLoonObservation = {
+  id: string;
+  date: string;
+  lakeName: string;
+  adultsCount: number;
+  chicksCount: number;
+  juvenilesCount: number;
+  imageUrls: string[];
+  createdAt: string;
+};
+
 export type AccountFeedback = {
   id: string;
   type: string;

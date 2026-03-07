@@ -1,19 +1,25 @@
+"use client";
+
 import {
+  Bird,
   Camera,
   CheckCircle2,
   Circle,
   Clock,
   ListTodo,
   NotebookPen,
+  Puzzle,
   TentTree,
 } from "lucide-react";
 import { AccountCard } from "./AccountCard";
 import { CARD_GRADIENTS } from "@/lib/ui-gradients";
+import { useEffect, useState } from "react";
 
 type Props = {
   postsCount: number;
   adventuresCount: number;
   photosCount: number;
+  loonObservationsCount: number;
   todoCount: number;
   inProgressCount: number;
   doneCount: number;
@@ -23,14 +29,38 @@ export function ActivityOverviewCard({
   postsCount,
   adventuresCount,
   photosCount,
+  loonObservationsCount,
   todoCount,
   inProgressCount,
   doneCount,
 }: Props) {
+  const [puzzlesCount, setPuzzlesCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const res = await fetch("/api/puzzles");
+        if (res.ok) {
+          const data = await res.json();
+          const currentUserId = data.currentUserId;
+          if (!currentUserId) {
+            setPuzzlesCount(0);
+            return;
+          }
+          const owned = (data.entries ?? []).filter(
+            (e: { userId?: string }) => e.userId === currentUserId
+          );
+          setPuzzlesCount(owned.length);
+        }
+      } catch {
+        setPuzzlesCount(0);
+      }
+    }
+    load();
+  }, []);
+
   return (
-    <AccountCard
-      gradientClassName={CARD_GRADIENTS.emerald}
-    >
+    <AccountCard gradientClassName={CARD_GRADIENTS.emerald}>
       <div className="relative p-4 md:p-6">
         <div className="flex items-center gap-2">
           <ListTodo className="h-4 w-4 text-muted-foreground md:h-5 md:w-5" />
@@ -38,7 +68,7 @@ export function ActivityOverviewCard({
             Activity Overview
           </h3>
         </div>
-        <div className="mt-3 grid grid-cols-3 gap-3  md:mt-4 md:gap-4">
+        <div className="mt-3 grid grid-cols-3 gap-3 md:mt-4 md:gap-4">
           <div className="text-center">
             <div className="text-2xl font-bold text-violet-600 dark:text-violet-400 md:text-3xl">
               {postsCount}
@@ -64,6 +94,24 @@ export function ActivityOverviewCard({
             <div className="mt-0.5 flex items-center justify-center gap-1 text-[10px] text-muted-foreground md:mt-1 md:text-xs">
               <Camera className="h-3 w-3" />
               Photos
+            </div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-sky-600 dark:text-sky-400 md:text-3xl">
+              {loonObservationsCount}
+            </div>
+            <div className="mt-0.5 flex items-center justify-center gap-1 text-[10px] text-muted-foreground md:mt-1 md:text-xs">
+              <Bird className="h-3 w-3" />
+              Loons
+            </div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-amber-600 dark:text-amber-400 md:text-3xl">
+              {puzzlesCount === null ? "..." : puzzlesCount}
+            </div>
+            <div className="mt-0.5 flex items-center justify-center gap-1 text-[10px] text-muted-foreground md:mt-1 md:text-xs">
+              <Puzzle className="h-3 w-3" />
+              Puzzles
             </div>
           </div>
         </div>

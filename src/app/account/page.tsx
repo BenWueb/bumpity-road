@@ -46,8 +46,8 @@ async function getAccountData() {
     updatedBadges = [...user.badges, ...newMembershipBadges];
   }
 
-  // Fetch todos, posts, adventures, and gallery images in parallel
-  const [todos, posts, adventures, galleryImages] = await Promise.all([
+  // Fetch todos, posts, adventures, gallery images, and loon observations in parallel
+  const [todos, posts, adventures, galleryImages, loonObservations] = await Promise.all([
     prisma.todo.findMany({
       where: {
         OR: [{ userId: session.user.id }, { assignedToId: session.user.id }],
@@ -95,6 +95,20 @@ async function getAccountData() {
         width: true,
         height: true,
         caption: true,
+        createdAt: true,
+      },
+    }),
+    prisma.loonObservation.findMany({
+      where: { userId: session.user.id },
+      orderBy: { date: "desc" },
+      select: {
+        id: true,
+        date: true,
+        lakeName: true,
+        adultsCount: true,
+        chicksCount: true,
+        juvenilesCount: true,
+        imageUrls: true,
         createdAt: true,
       },
     }),
@@ -146,6 +160,17 @@ async function getAccountData() {
     createdAt: img.createdAt.toISOString(),
   }));
 
+  const formattedLoonObservations = loonObservations.map((obs) => ({
+    id: obs.id,
+    date: obs.date.toISOString(),
+    lakeName: obs.lakeName,
+    adultsCount: obs.adultsCount,
+    chicksCount: obs.chicksCount,
+    juvenilesCount: obs.juvenilesCount,
+    imageUrls: obs.imageUrls,
+    createdAt: obs.createdAt.toISOString(),
+  }));
+
   // Fetch feedback if user is a bug admin
   let formattedFeedback: {
     id: string;
@@ -186,6 +211,7 @@ async function getAccountData() {
     posts: formattedPosts,
     adventures: formattedAdventures,
     galleryImages: formattedGalleryImages,
+    loonObservations: formattedLoonObservations,
     feedback: formattedFeedback,
     newMembershipBadges,
   };
@@ -218,6 +244,7 @@ async function AccountData() {
       posts={data.posts}
       adventures={data.adventures}
       galleryImages={data.galleryImages}
+      loonObservations={data.loonObservations}
       feedback={data.feedback}
       newMembershipBadges={data.newMembershipBadges}
     />
