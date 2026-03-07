@@ -1,6 +1,7 @@
 "use client";
 
 import { CalendarDays, MapPin } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { CARD_GRADIENTS } from "@/lib/ui-gradients";
 
@@ -93,7 +94,7 @@ const Calendar = () => {
     if (events === null) return <CalendarSkeleton />;
 
     return (
-      <div className="relative w-full  overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm">
+      <Link href="/calendar" className="group relative block w-full overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm transition-shadow hover:shadow-md">
         <div className={`pointer-events-none absolute inset-0 ${CARD_GRADIENTS.sky}`} />
 
         <div className="relative px-4 pt-4 sm:px-6 sm:pt-6">
@@ -149,7 +150,7 @@ const Calendar = () => {
             </div>
           )}
         </div>
-      </div>
+      </Link>
     );
   }, [events, error]);
 

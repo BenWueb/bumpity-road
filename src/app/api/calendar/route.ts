@@ -54,8 +54,11 @@ export async function GET(req: Request) {
     const maxResultsRaw = url.searchParams.get("maxResults");
     const maxResults = Math.min(
       Math.max(Number(maxResultsRaw ?? "10") || 10, 1),
-      25
+      250
     );
+
+    const timeMinParam = url.searchParams.get("timeMin");
+    const timeMaxParam = url.searchParams.get("timeMax");
 
     const auth = new google.auth.JWT({
       email: clientEmail,
@@ -68,7 +71,8 @@ export async function GET(req: Request) {
 
     const res = await calendar.events.list({
       calendarId,
-      timeMin: now.toISOString(),
+      timeMin: timeMinParam || now.toISOString(),
+      ...(timeMaxParam && { timeMax: timeMaxParam }),
       maxResults,
       singleEvents: true,
       orderBy: "startTime",

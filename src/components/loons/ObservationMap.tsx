@@ -22,6 +22,18 @@ function makeIcon(color: string, size: "sm" | "md") {
 
 const defaultIcon = makeIcon("blue", "sm");
 const activeIcon = makeIcon("red", "md");
+const cabinIcon = new L.DivIcon({
+  html: `<div style="display:flex;flex-direction:column;align-items:center;pointer-events:auto;">
+    <span style="font-size:28px;line-height:1;filter:drop-shadow(0 1px 2px rgba(0,0,0,.4));">🏠</span>
+    <span style="font-size:10px;font-weight:700;color:#fff;background:#16a34a;padding:1px 5px;border-radius:4px;margin-top:2px;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.3);">Cabin</span>
+  </div>`,
+  iconSize: [50, 50],
+  iconAnchor: [25, 45],
+  popupAnchor: [0, -40],
+  className: "",
+});
+
+const CABIN_COORDS: [number, number] = [46.95939881662997, -94.29017871431405];
 
 type LocationCluster = {
   lakeName: string;
@@ -78,15 +90,14 @@ export default function ObservationMap({
       return [savedLocations[0].latitude, savedLocations[0].longitude];
     if (clusters.length > 0)
       return [clusters[0].latitude, clusters[0].longitude];
-    return [47.1536, -94.1033];
+    return CABIN_COORDS;
   }, [savedLocations, clusters]);
 
   if (clusters.length === 0) return null;
 
   return (
     <div
-      className="relative z-0 overflow-hidden rounded-lg border shadow-sm"
-      style={{ height: 420 }}
+      className="relative z-0 h-[250px] overflow-hidden rounded-lg border shadow-sm md:h-[420px]"
     >
       <div
         className="pointer-events-none absolute bottom-2 left-2 rounded-md bg-black/50 px-2.5 py-1 text-[11px] text-white backdrop-blur-sm"
@@ -104,6 +115,12 @@ export default function ObservationMap({
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+
+        <Marker position={CABIN_COORDS} icon={cabinIcon}>
+          <Popup>
+            <div className="text-xs font-semibold">The Cabin</div>
+          </Popup>
+        </Marker>
 
         {clusters.map((cluster, i) => {
           const isActive = filterLakeArea != null && cluster.lakeArea === filterLakeArea;

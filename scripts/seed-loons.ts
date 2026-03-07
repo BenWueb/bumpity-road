@@ -2,14 +2,14 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-// Various spots around Woman Lake, MN
+// Various spots around Woman Lake, MN (cabin at 46.9594, -94.2902)
 const LOCATIONS = [
-  { lakeName: "Woman Lake", lakeArea: "North shore near the point", lat: 47.1612, lng: -94.1085 },
-  { lakeName: "Woman Lake", lakeArea: "South bay by the dock", lat: 47.1445, lng: -94.1020 },
-  { lakeName: "Woman Lake", lakeArea: "East narrows", lat: 47.1530, lng: -94.0905 },
-  { lakeName: "Woman Lake", lakeArea: "West end cove", lat: 47.1555, lng: -94.1195 },
-  { lakeName: "Woman Lake", lakeArea: "Center of lake", lat: 47.1536, lng: -94.1033 },
-  { lakeName: "Woman Lake", lakeArea: "Near the island", lat: 47.1490, lng: -94.0960 },
+  { lakeName: "Woman Lake", lakeArea: "North shore near the point", lat: 46.9682, lng: -94.2870 },
+  { lakeName: "Woman Lake", lakeArea: "South bay by the dock", lat: 46.9510, lng: -94.2935 },
+  { lakeName: "Woman Lake", lakeArea: "East narrows", lat: 46.9590, lng: -94.2780 },
+  { lakeName: "Woman Lake", lakeArea: "West end cove", lat: 46.9620, lng: -94.3010 },
+  { lakeName: "Woman Lake", lakeArea: "Center of lake", lat: 46.9595, lng: -94.2900 },
+  { lakeName: "Woman Lake", lakeArea: "Near the island", lat: 46.9555, lng: -94.2850 },
 ];
 
 const OBSERVATIONS = [

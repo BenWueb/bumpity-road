@@ -8,6 +8,7 @@ import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   BookOpen,
+  CalendarDays,
   CheckSquare,
   Home,
   Images,
@@ -137,6 +138,12 @@ export default function AppSidebar() {
   const items: NavItem[] = useMemo(
     () => [
       { href: "/", label: "Home", icon: Home },
+      {
+        href: "/calendar",
+        label: "Calendar",
+        icon: CalendarDays,
+        pill: SIDEBAR_PILL_STYLES.BUILDING,
+      },
       {
         href: "/todos",
         label: "Tasks",

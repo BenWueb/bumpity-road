@@ -257,10 +257,14 @@ export default function LoonsContent({
   );
 
   // --- Actions ---
-  function openForm() {
-    setShowForm(true);
-    requestAnimationFrame(() => {
-      scrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+  function toggleForm() {
+    setShowForm((prev) => {
+      if (!prev) {
+        requestAnimationFrame(() => {
+          scrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+        });
+      }
+      return !prev;
     });
   }
 
@@ -401,12 +405,17 @@ export default function LoonsContent({
 
   return (
     <div className="flex h-full flex-col">
+      <div
+        ref={scrollRef}
+        className="flex-1 overflow-x-hidden overflow-y-scroll"
+      >
       <PageHeader
         icon={<Binoculars className="h-6 w-6" />}
         title="Loon Observations"
         subtitle={`Tracking loons across ${uniqueLakes.length} lake${uniqueLakes.length !== 1 ? "s" : ""}`}
         iconWrapperClassName="flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-sky-500 to-blue-600 text-white shadow-lg md:h-12 md:w-12"
         innerClassName="mx-auto max-w-6xl px-4 py-4 md:px-6 md:py-6"
+        mobileActionClassName="sticky top-0 z-10 border-b bg-card/80 px-4 py-3 backdrop-blur-sm md:hidden"
         desktopAction={
           <div className="hidden items-center gap-2 md:flex">
             {filteredPhotoCount > 0 && (
@@ -433,10 +442,10 @@ export default function LoonsContent({
             </button>
             {isLoggedIn ? (
               <button
-                onClick={openForm}
+                onClick={toggleForm}
                 className="flex items-center gap-2 rounded-md bg-primary px-3 py-2 text-sm text-primary-foreground hover:bg-primary/90"
               >
-                Log Observation
+                {showForm ? "Cancel" : "Log Observation"}
               </button>
             ) : (
               <button
@@ -466,10 +475,10 @@ export default function LoonsContent({
             )}
             {isLoggedIn ? (
               <button
-                onClick={openForm}
+                onClick={toggleForm}
                 className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90"
               >
-                Log Observation
+                {showForm ? "Cancel" : "Log Observation"}
               </button>
             ) : (
               <button
@@ -485,10 +494,6 @@ export default function LoonsContent({
         }
       />
 
-      <div
-        ref={scrollRef}
-        className="flex-1 overflow-x-hidden overflow-y-scroll"
-      >
         <div className="mx-auto max-w-6xl p-4 md:p-6">
           {showForm && (
             <div className="mb-6">

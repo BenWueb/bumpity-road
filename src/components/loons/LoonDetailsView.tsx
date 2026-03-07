@@ -21,6 +21,7 @@ import {
   Calendar,
   Clock,
   FileText,
+  X,
 } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
@@ -334,6 +335,12 @@ export default function LoonDetailsView({
                     <Trash2 className="h-4 w-4" />
                   </button>
                 )}
+                <button
+                  onClick={() => setSelectedObs(null)}
+                  className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                >
+                  <X className="h-4 w-4" />
+                </button>
               </div>
             </div>
 

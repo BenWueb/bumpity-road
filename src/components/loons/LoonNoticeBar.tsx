@@ -154,8 +154,8 @@ export default function LoonNoticeBar({ notice: initial, isLoonAdmin }: Props) {
   return (
     <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-500/20 dark:bg-amber-950/40">
       <div className="flex items-center justify-center gap-3">
-        <div className="flex flex-1 items-center justify-center gap-2.5 text-base font-medium text-amber-900 dark:text-amber-100">
-          <Megaphone className="h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" />
+        <div className="flex flex-1 items-center justify-center gap-2.5 text-xs font-medium text-amber-900 md:text-base dark:text-amber-100">
+          <Megaphone className="h-4 w-4 shrink-0 text-amber-600 md:h-5 md:w-5 dark:text-amber-400" />
           <span>{notice.message}</span>
         </div>
         {isLoonAdmin && (
