@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  Bird,
+  Origami,
   Camera,
   CheckCircle2,
   Circle,
@@ -48,7 +48,7 @@ export function ActivityOverviewCard({
             return;
           }
           const owned = (data.entries ?? []).filter(
-            (e: { userId?: string }) => e.userId === currentUserId
+            (e: { userId?: string }) => e.userId === currentUserId,
           );
           setPuzzlesCount(owned.length);
         }
@@ -101,7 +101,7 @@ export function ActivityOverviewCard({
               {loonObservationsCount}
             </div>
             <div className="mt-0.5 flex items-center justify-center gap-1 text-[10px] text-muted-foreground md:mt-1 md:text-xs">
-              <Bird className="h-3 w-3" />
+              <Origami className="h-3 w-3" />
               Loons
             </div>
           </div>
@@ -150,5 +150,3 @@ export function ActivityOverviewCard({
     </AccountCard>
   );
 }
-
-

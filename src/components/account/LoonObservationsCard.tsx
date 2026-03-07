@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Bird } from "lucide-react";
+import { Origami } from "lucide-react";
 import { AccountCard } from "./AccountCard";
 import type { AccountLoonObservation } from "@/types/account";
 import { CARD_GRADIENTS } from "@/lib/ui-gradients";
@@ -22,7 +22,7 @@ export function LoonObservationsCard({ loonObservations }: Props) {
       <div className="relative">
         <div className="flex items-center justify-between border-b px-4 py-3 md:px-6 md:py-4">
           <div className="flex items-center gap-2">
-            <Bird className="h-4 w-4 text-muted-foreground md:h-5 md:w-5" />
+            <Origami className="h-4 w-4 text-muted-foreground md:h-5 md:w-5" />
             <h3 className="text-sm font-semibold md:text-lg">
               Your Loon Observations
             </h3>
@@ -35,7 +35,7 @@ export function LoonObservationsCard({ loonObservations }: Props) {
         <div className="divide-y">
           {loonObservations.length === 0 ? (
             <div className="px-4 py-6 text-center text-sm text-muted-foreground md:px-6 md:py-8">
-              <Bird className="mx-auto mb-2 h-6 w-6 opacity-50 md:h-8 md:w-8" />
+              <Origami className="mx-auto mb-2 h-6 w-6 opacity-50 md:h-8 md:w-8" />
               <p>No loon observations yet.</p>
               <p className="mt-1 text-xs text-muted-foreground md:text-sm">
                 Head to the lake and log your first sighting!
@@ -68,7 +68,7 @@ export function LoonObservationsCard({ loonObservations }: Props) {
                     </div>
                   ) : (
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-sky-100 dark:bg-sky-900/30 md:h-12 md:w-12">
-                      <Bird className="h-5 w-5 text-sky-500 md:h-6 md:w-6" />
+                      <Origami className="h-5 w-5 text-sky-500 md:h-6 md:w-6" />
                     </div>
                   )}
                   <div className="min-w-0 flex-1">

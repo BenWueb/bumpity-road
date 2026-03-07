@@ -1,7 +1,7 @@
 import { prisma } from "@/utils/prisma";
 import { unstable_cache } from "next/cache";
 import { CARD_GRADIENTS } from "@/lib/ui-gradients";
-import { Bird, Baby, Eye, MapPin } from "lucide-react";
+import { Origami, Baby, Eye, MapPin } from "lucide-react";
 import Link from "next/link";
 
 interface LoonStats {
@@ -94,11 +94,12 @@ const getLoonStats = unstable_cache(
       totalAdults,
       totalChicks,
       recentObservations: observations.slice(0, 3),
-      lastObservationDate: observations.length > 0 ? observations[0].date : null,
+      lastObservationDate:
+        observations.length > 0 ? observations[0].date : null,
     };
   },
   ["loon-dashboard-stats"],
-  { revalidate: 120 }
+  { revalidate: 120 },
 );
 
 export function LoonDashboardCardSkeleton() {
@@ -185,7 +186,7 @@ export default async function LoonDashboardCard() {
             </div>
           </div>
           <div className="flex h-10 w-10 items-center justify-center rounded-xl border bg-background/60 shadow-sm backdrop-blur sm:h-12 sm:w-12">
-            <Bird className="h-5 w-5 text-sky-600 dark:text-sky-400 sm:h-6 sm:w-6" />
+            <Origami className="h-5 w-5 text-sky-600 dark:text-sky-400 sm:h-6 sm:w-6" />
           </div>
         </div>
       </Link>
@@ -206,7 +207,7 @@ export default async function LoonDashboardCard() {
           </div>
           <div className="flex flex-col items-center rounded-lg border bg-background/60 px-2 py-2.5 shadow-sm backdrop-blur">
             <div className="flex items-center gap-1 text-muted-foreground">
-              <Bird className="h-3 w-3" />
+              <Origami className="h-3 w-3" />
             </div>
             <div className="mt-0.5 text-xl font-bold tabular-nums text-foreground">
               {uniqueLoonIds.length > 0 ? uniqueLoonIds.length : "—"}
@@ -253,20 +254,17 @@ export default async function LoonDashboardCard() {
                     )}
                   </div>
                   <div className="flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground">
-                    {obs.weather && (
-                      <span>{getWeatherEmoji(obs.weather)}</span>
-                    )}
+                    {obs.weather && <span>{getWeatherEmoji(obs.weather)}</span>}
                     <span className="font-medium tabular-nums text-foreground">
                       {total}
                     </span>
-                    <Bird className="h-3 w-3" />
+                    <Origami className="h-3 w-3" />
                   </div>
                 </Link>
               );
             })}
           </div>
         )}
-
       </div>
     </div>
   );

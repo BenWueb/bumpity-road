@@ -26,20 +26,20 @@ type ApiEvent = {
   htmlLink: string | null;
 };
 
-type ViewType = "dayGridMonth" | "timeGridWeek" | "timeGridDay" | "listWeek";
+type ViewType = "dayGridMonth" | "timeGridWeek" | "timeGridDay" | "listYear";
 
 const VIEW_OPTIONS: { value: ViewType; label: string; icon: React.ReactNode }[] = [
+  { value: "listYear", label: "All", icon: <List className="h-4 w-4" /> },
   { value: "dayGridMonth", label: "Month", icon: <LayoutGrid className="h-4 w-4" /> },
   { value: "timeGridWeek", label: "Week", icon: <CalendarIcon className="h-4 w-4" /> },
   { value: "timeGridDay", label: "Day", icon: <Clock className="h-4 w-4" /> },
-  { value: "listWeek", label: "List", icon: <List className="h-4 w-4" /> },
 ];
 
 export default function CalendarView() {
   const calendarRef = useRef<FullCalendar>(null);
   const [currentTitle, setCurrentTitle] = useState("");
-  const [activeView, setActiveView] = useState<ViewType>("dayGridMonth");
-  const fetchedRanges = useRef<Set<string>>(new Set());
+  const [activeView, setActiveView] = useState<ViewType>("listYear");
+  const eventCache = useRef<Map<string, EventInput[]>>(new Map());
 
   const fetchEvents = useCallback(
     async (
@@ -48,8 +48,9 @@ export default function CalendarView() {
       failureCallback: (error: Error) => void
     ) => {
       const rangeKey = `${info.startStr}_${info.endStr}`;
-      if (fetchedRanges.current.has(rangeKey)) {
-        successCallback([]);
+      const cached = eventCache.current.get(rangeKey);
+      if (cached) {
+        successCallback(cached);
         return;
       }
 
@@ -63,7 +64,6 @@ export default function CalendarView() {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
         const data = (await res.json()) as { events: ApiEvent[] };
-        fetchedRanges.current.add(rangeKey);
 
         const events: EventInput[] = data.events.map((e) => {
           const isAllDay = e.start ? /^\d{4}-\d{2}-\d{2}$/.test(e.start) : false;
@@ -80,6 +80,7 @@ export default function CalendarView() {
           };
         });
 
+        eventCache.current.set(rangeKey, events);
         successCallback(events);
       } catch (err) {
         failureCallback(err instanceof Error ? err : new Error(String(err)));
@@ -163,13 +164,13 @@ export default function CalendarView() {
         <FullCalendar
           ref={calendarRef}
           plugins={[dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin]}
-          initialView="dayGridMonth"
+          initialView="listYear"
           headerToolbar={false}
           events={fetchEvents}
           datesSet={handleDatesSet}
           eventClick={handleEventClick}
           height="auto"
-          dayMaxEvents={3}
+          dayMaxEvents={5}
           nowIndicator
           eventDisplay="block"
           eventTimeFormat={{

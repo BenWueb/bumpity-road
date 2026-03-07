@@ -88,12 +88,15 @@ export async function GET(req: Request) {
         htmlLink: e.htmlLink ?? null,
       })) ?? [];
 
-    return NextResponse.json({ events });
+    return NextResponse.json(
+      { events },
+      { headers: { "Cache-Control": "no-store, max-age=0" } }
+    );
   } catch (error) {
     console.error("Error fetching calendar events:", error);
     return NextResponse.json(
       { error: "Failed to fetch calendar events" },
-      { status: 500 }
+      { status: 500, headers: { "Cache-Control": "no-store, max-age=0" } }
     );
   }
 }

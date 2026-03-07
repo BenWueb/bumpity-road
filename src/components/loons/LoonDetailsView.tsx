@@ -16,7 +16,7 @@ import {
   MapPin,
   Trash2,
   User,
-  Bird,
+  Origami,
   Baby,
   Calendar,
   Clock,
@@ -90,9 +90,7 @@ export default function LoonDetailsView({
     const dir = sortDir === "asc" ? 1 : -1;
     switch (sortField) {
       case "date":
-        return (
-          (new Date(a.date).getTime() - new Date(b.date).getTime()) * dir
-        );
+        return (new Date(a.date).getTime() - new Date(b.date).getTime()) * dir;
       case "lakeName":
         return a.lakeName.localeCompare(b.lakeName) * dir;
       case "totalLoons":
@@ -368,7 +366,7 @@ export default function LoonDetailsView({
             {/* Loon counts */}
             <div className="grid grid-cols-3 gap-3">
               <div className="rounded-lg border bg-muted/30 p-3 text-center">
-                <Bird className="mx-auto mb-1 h-4 w-4 text-sky-500" />
+                <Origami className="mx-auto mb-1 h-4 w-4 text-sky-500" />
                 <div className="text-xl font-bold">{modalObs.adultsCount}</div>
                 <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
                   Adults
@@ -382,7 +380,7 @@ export default function LoonDetailsView({
                 </div>
               </div>
               <div className="rounded-lg border bg-muted/30 p-3 text-center">
-                <Bird className="mx-auto mb-1 h-4 w-4 text-amber-500" />
+                <Origami className="mx-auto mb-1 h-4 w-4 text-amber-500" />
                 <div className="text-xl font-bold">
                   {modalObs.juvenilesCount}
                 </div>

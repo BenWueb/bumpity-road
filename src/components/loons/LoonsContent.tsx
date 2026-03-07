@@ -35,7 +35,7 @@ import {
   ImageDown,
   MapPin,
   Tag,
-  Bird,
+  Origami,
   Baby,
   Egg,
   Eye,
@@ -85,8 +85,9 @@ export default function LoonsContent({
   // --- Core data state ---
   const [observations, setObservations] =
     useState<LoonObservation[]>(initialObservations);
-  const [savedLocations, setSavedLocations] =
-    useState<SavedLocation[]>(initialSavedLocations);
+  const [savedLocations, setSavedLocations] = useState<SavedLocation[]>(
+    initialSavedLocations,
+  );
 
   // --- UI state ---
   const [showForm, setShowForm] = useState(false);
@@ -95,7 +96,9 @@ export default function LoonsContent({
   const [showFilters, setShowFilters] = useState(false);
   const [isDownloadingPhotos, setIsDownloadingPhotos] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [highlightedObs, setHighlightedObs] = useState<LoonObservation | null>(null);
+  const [highlightedObs, setHighlightedObs] = useState<LoonObservation | null>(
+    null,
+  );
 
   // Open observation modal when ?obs=<id> is in the URL
   useEffect(() => {
@@ -120,7 +123,7 @@ export default function LoonsContent({
   // --- Derived data ---
   const uniqueLakes = useMemo(
     () => Array.from(new Set(observations.map((o) => o.lakeName))).sort(),
-    [observations]
+    [observations],
   );
 
   const uniqueLakeAreas = useMemo(
@@ -129,18 +132,17 @@ export default function LoonsContent({
         new Set(
           observations
             .filter(
-              (o) =>
-                o.lakeArea && (!filterLake || o.lakeName === filterLake)
+              (o) => o.lakeArea && (!filterLake || o.lakeName === filterLake),
             )
-            .map((o) => o.lakeArea!)
-        )
+            .map((o) => o.lakeArea!),
+        ),
       ).sort(),
-    [observations, filterLake]
+    [observations, filterLake],
   );
 
   const uniqueLoonIds = useMemo(
     () => Array.from(new Set(observations.flatMap((o) => o.loonIds))).sort(),
-    [observations]
+    [observations],
   );
 
   const hasActiveFilters =
@@ -191,9 +193,9 @@ export default function LoonsContent({
   const sortedObservations = useMemo(
     () =>
       [...filteredObservations].sort(
-        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
       ),
-    [filteredObservations]
+    [filteredObservations],
   );
 
   const totalLoons = useMemo(() => {
@@ -206,18 +208,18 @@ export default function LoonsContent({
     }
     return Array.from(latest.values()).reduce(
       (sum, o) => sum + getTotalLoons(o),
-      0
+      0,
     );
   }, [observations]);
 
   const totalChicks = useMemo(
     () => observations.reduce((sum, o) => sum + o.chicksCount, 0),
-    [observations]
+    [observations],
   );
 
   const uniqueLoonCount = useMemo(
     () => new Set(observations.flatMap((o) => o.loonIds)).size,
-    [observations]
+    [observations],
   );
 
   const activeNestingCount = useMemo(
@@ -226,14 +228,14 @@ export default function LoonsContent({
         (o) =>
           o.nestingActivity &&
           o.nestingActivity !== "none" &&
-          o.nestingActivity !== "failed"
+          o.nestingActivity !== "failed",
       ).length,
-    [observations]
+    [observations],
   );
 
   const filteredPhotoCount = useMemo(
     () => sortedObservations.reduce((sum, o) => sum + o.imageUrls.length, 0),
-    [sortedObservations]
+    [sortedObservations],
   );
 
   const observationsByMonth = useMemo(() => {
@@ -254,7 +256,7 @@ export default function LoonsContent({
         const [yb, mb] = b.split("-").map(Number);
         return yb * 12 + mb - (ya * 12 + ma);
       }),
-    [observationsByMonth]
+    [observationsByMonth],
   );
 
   // --- Actions ---
@@ -323,8 +325,8 @@ export default function LoonsContent({
         Math.max(
           key.length,
           ...rows.map(
-            (r) => String((r as Record<string, unknown>)[key] ?? "").length
-          )
+            (r) => String((r as Record<string, unknown>)[key] ?? "").length,
+          ),
         ) + 2,
     }));
     worksheet["!cols"] = colWidths;
@@ -333,7 +335,7 @@ export default function LoonsContent({
     XLSX.utils.book_append_sheet(workbook, worksheet, "Loon Observations");
     XLSX.writeFile(
       workbook,
-      `loon-observations-${new Date().toISOString().slice(0, 10)}.xlsx`
+      `loon-observations-${new Date().toISOString().slice(0, 10)}.xlsx`,
     );
   }, [sortedObservations]);
 
@@ -343,8 +345,7 @@ export default function LoonsContent({
       if (obs.imageUrls.length === 0) continue;
       const dateStr = new Date(obs.date).toISOString().slice(0, 10);
       const area = obs.lakeArea ? sanitizeFilename(obs.lakeArea) : "unknown";
-      const loonTag =
-        obs.loonIds.length > 0 ? `_${obs.loonIds.join("-")}` : "";
+      const loonTag = obs.loonIds.length > 0 ? `_${obs.loonIds.join("-")}` : "";
       for (let i = 0; i < obs.imageUrls.length; i++) {
         const suffix = obs.imageUrls.length > 1 ? `_${i + 1}` : "";
         photos.push({
@@ -370,7 +371,7 @@ export default function LoonsContent({
           } catch {
             // skip failed downloads
           }
-        })
+        }),
       );
 
       const content = await zip.generateAsync({ type: "blob" });
@@ -410,92 +411,92 @@ export default function LoonsContent({
         ref={scrollRef}
         className="flex-1 overflow-x-hidden overflow-y-scroll"
       >
-      <PageHeader
-        icon={<Binoculars className="h-6 w-6" />}
-        title="Loon Observations"
-        subtitle={`Tracking loons across ${uniqueLakes.length} lake${uniqueLakes.length !== 1 ? "s" : ""}`}
-        iconWrapperClassName="flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-sky-500 to-blue-600 text-white shadow-lg md:h-12 md:w-12"
-        innerClassName="mx-auto max-w-6xl px-4 py-4 md:px-6 md:py-6"
-        mobileActionClassName="sticky top-0 z-10 border-b bg-card/80 px-4 py-3 backdrop-blur-sm md:hidden"
-        desktopAction={
-          <div className="hidden items-center gap-2 md:flex">
-            {filteredPhotoCount > 0 && (
+        <PageHeader
+          icon={<Binoculars className="h-6 w-6" />}
+          title="Loon Observations"
+          subtitle={`Tracking loons across ${uniqueLakes.length} lake${uniqueLakes.length !== 1 ? "s" : ""}`}
+          iconWrapperClassName="flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-sky-500 to-blue-600 text-white shadow-lg md:h-12 md:w-12"
+          innerClassName="mx-auto max-w-6xl px-4 py-4 md:px-6 md:py-6"
+          mobileActionClassName="sticky top-0 z-10 border-b bg-card/80 px-4 py-3 backdrop-blur-sm md:hidden"
+          desktopAction={
+            <div className="hidden items-center gap-2 md:flex">
+              {filteredPhotoCount > 0 && (
+                <button
+                  onClick={handleDownloadPhotos}
+                  disabled={isDownloadingPhotos}
+                  className="flex items-center gap-2 rounded-md bg-linear-to-br from-sky-500 to-blue-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:from-sky-600 hover:to-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  title={`Download ${filteredPhotoCount} photo${filteredPhotoCount !== 1 ? "s" : ""} as ZIP`}
+                >
+                  <ImageDown className="h-4 w-4" />
+                  {isDownloadingPhotos
+                    ? "Zipping..."
+                    : `Photos (${filteredPhotoCount})`}
+                </button>
+              )}
               <button
-                onClick={handleDownloadPhotos}
-                disabled={isDownloadingPhotos}
-                className="flex items-center gap-2 rounded-md bg-linear-to-br from-sky-500 to-blue-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:from-sky-600 hover:to-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-                title={`Download ${filteredPhotoCount} photo${filteredPhotoCount !== 1 ? "s" : ""} as ZIP`}
+                onClick={handleExportExcel}
+                disabled={sortedObservations.length === 0}
+                className="flex items-center gap-2 rounded-md bg-linear-to-br from-emerald-500 to-teal-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:from-emerald-600 hover:to-teal-700 disabled:cursor-not-allowed disabled:opacity-50"
+                title="Export to Excel"
               >
-                <ImageDown className="h-4 w-4" />
-                {isDownloadingPhotos
-                  ? "Zipping..."
-                  : `Photos (${filteredPhotoCount})`}
+                <Download className="h-4 w-4" />
+                Export
               </button>
-            )}
-            <button
-              onClick={handleExportExcel}
-              disabled={sortedObservations.length === 0}
-              className="flex items-center gap-2 rounded-md bg-linear-to-br from-emerald-500 to-teal-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:from-emerald-600 hover:to-teal-700 disabled:cursor-not-allowed disabled:opacity-50"
-              title="Export to Excel"
-            >
-              <Download className="h-4 w-4" />
-              Export
-            </button>
-            {isLoggedIn ? (
-              <button
-                onClick={toggleForm}
-                className="hidden items-center gap-2 rounded-lg bg-linear-to-r from-emerald-500 to-teal-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:from-emerald-600 hover:to-teal-600 md:flex"
-              >
-                <Plus className="h-4 w-4" />
-                {showForm ? "Cancel" : "Log Observation"}
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={openLoginModal}
-                className="hidden items-center gap-2 rounded-lg bg-linear-to-r from-emerald-500 to-teal-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:from-emerald-600 hover:to-teal-600 md:flex"
-              >
-                <LogIn className="h-4 w-4" />
-                Sign in to log
-              </button>
-            )}
-          </div>
-        }
-        mobileAction={
-          <div className="flex w-full flex-col gap-2">
-            {filteredPhotoCount > 0 && (
-              <button
-                onClick={handleDownloadPhotos}
-                disabled={isDownloadingPhotos}
-                className="flex w-full items-center justify-center gap-2 rounded-lg bg-linear-to-br from-sky-500 to-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:from-sky-600 hover:to-blue-700 disabled:opacity-50"
-              >
-                <ImageDown className="h-4 w-4" />
-                {isDownloadingPhotos
-                  ? "Zipping..."
-                  : `Download Photos (${filteredPhotoCount})`}
-              </button>
-            )}
-            {isLoggedIn ? (
-              <button
-                onClick={toggleForm}
-                className="flex w-full items-center justify-center gap-2 rounded-lg bg-linear-to-r from-emerald-500 to-teal-500 px-3 py-2 text-sm font-medium text-white shadow-sm"
-              >
-                <Plus className="h-4 w-4" />
-                {showForm ? "Cancel" : "Log Observation"}
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={openLoginModal}
-                className="flex w-full items-center justify-center gap-2 rounded-lg bg-linear-to-r from-emerald-500 to-teal-500 px-3 py-2 text-sm font-medium text-white shadow-sm"
-              >
-                <LogIn className="h-4 w-4" />
-                Sign in to log
-              </button>
-            )}
-          </div>
-        }
-      />
+              {isLoggedIn ? (
+                <button
+                  onClick={toggleForm}
+                  className="hidden items-center gap-2 rounded-lg bg-linear-to-r from-emerald-500 to-teal-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:from-emerald-600 hover:to-teal-600 md:flex"
+                >
+                  <Plus className="h-4 w-4" />
+                  {showForm ? "Cancel" : "Log Observation"}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={openLoginModal}
+                  className="hidden items-center gap-2 rounded-lg bg-linear-to-r from-emerald-500 to-teal-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:from-emerald-600 hover:to-teal-600 md:flex"
+                >
+                  <LogIn className="h-4 w-4" />
+                  Sign in to log
+                </button>
+              )}
+            </div>
+          }
+          mobileAction={
+            <div className="flex w-full flex-col gap-2">
+              {filteredPhotoCount > 0 && (
+                <button
+                  onClick={handleDownloadPhotos}
+                  disabled={isDownloadingPhotos}
+                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-linear-to-br from-sky-500 to-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:from-sky-600 hover:to-blue-700 disabled:opacity-50"
+                >
+                  <ImageDown className="h-4 w-4" />
+                  {isDownloadingPhotos
+                    ? "Zipping..."
+                    : `Download Photos (${filteredPhotoCount})`}
+                </button>
+              )}
+              {isLoggedIn ? (
+                <button
+                  onClick={toggleForm}
+                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-linear-to-r from-emerald-500 to-teal-500 px-3 py-2 text-sm font-medium text-white shadow-sm"
+                >
+                  <Plus className="h-4 w-4" />
+                  {showForm ? "Cancel" : "Log Observation"}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={openLoginModal}
+                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-linear-to-r from-emerald-500 to-teal-500 px-3 py-2 text-sm font-medium text-white shadow-sm"
+                >
+                  <LogIn className="h-4 w-4" />
+                  Sign in to log
+                </button>
+              )}
+            </div>
+          }
+        />
 
         <div className="mx-auto max-w-6xl p-4 md:p-6">
           {showForm && (
@@ -536,7 +537,7 @@ export default function LoonsContent({
             <div className="rounded-lg border bg-card p-3 shadow-sm">
               <div className="flex items-center gap-2">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/30">
-                  <Bird className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                  <Origami className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
                   <div className="text-xl font-bold tabular-nums">
@@ -672,9 +673,7 @@ export default function LoonsContent({
                         <button
                           key={lake}
                           onClick={() => {
-                            setFilterLake(
-                              filterLake === lake ? null : lake
-                            );
+                            setFilterLake(filterLake === lake ? null : lake);
                             setFilterLakeArea(null);
                           }}
                           className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
@@ -861,7 +860,7 @@ export default function LoonsContent({
                 const monthObs = observationsByMonth[key];
                 const monthTotal = monthObs.reduce(
                   (sum, o) => sum + getTotalLoons(o),
-                  0
+                  0,
                 );
 
                 return (
@@ -954,7 +953,7 @@ function HighlightedObservationModal({
 
       <div className="grid grid-cols-3 gap-3">
         <div className="rounded-lg border bg-muted/30 p-3 text-center">
-          <Bird className="mx-auto mb-1 h-4 w-4 text-sky-500" />
+          <Origami className="mx-auto mb-1 h-4 w-4 text-sky-500" />
           <div className="text-xl font-bold">{observation.adultsCount}</div>
           <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
             Adults
@@ -968,10 +967,8 @@ function HighlightedObservationModal({
           </div>
         </div>
         <div className="rounded-lg border bg-muted/30 p-3 text-center">
-          <Bird className="mx-auto mb-1 h-4 w-4 text-amber-500" />
-          <div className="text-xl font-bold">
-            {observation.juvenilesCount}
-          </div>
+          <Origami className="mx-auto mb-1 h-4 w-4 text-amber-500" />
+          <div className="text-xl font-bold">{observation.juvenilesCount}</div>
           <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
             Juveniles
           </div>
