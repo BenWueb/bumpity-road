@@ -19,6 +19,7 @@ import {
   List,
   Download,
   ArrowLeft,
+  Plus,
 } from "lucide-react";
 import ExpenseCard from "@/components/expenses/ExpenseCard";
 import ExpenseDetailsView from "@/components/expenses/ExpenseDetailsView";
@@ -347,6 +348,7 @@ export default function ExpensesContent({
 
   return (
     <div className="flex h-full flex-col">
+      <div className="flex-1 overflow-x-hidden overflow-y-scroll">
       <PageHeader
         icon={<Wrench className="h-6 w-6" />}
         title="Expenses"
@@ -356,6 +358,7 @@ export default function ExpensesContent({
             : `Wishlist estimate: ~$${plannedTotal.toLocaleString()}`
         }
         innerClassName="mx-auto max-w-6xl px-4 py-4 md:px-6 md:py-6"
+        mobileActionClassName="sticky top-0 z-10 border-b bg-card/80 px-4 py-3 backdrop-blur-sm md:hidden"
         desktopAction={
           <div className="hidden items-center gap-2 md:flex">
             <button
@@ -369,8 +372,9 @@ export default function ExpensesContent({
             </button>
             <button
               onClick={() => setShowForm(true)}
-              className="flex items-center gap-2 rounded-md bg-primary px-3 py-2 text-sm text-primary-foreground hover:bg-primary/90"
+              className="hidden items-center gap-2 rounded-lg bg-linear-to-r from-emerald-500 to-teal-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:from-emerald-600 hover:to-teal-600 md:flex"
             >
+              <Plus className="h-4 w-4" />
               Add Expense
             </button>
           </div>
@@ -378,14 +382,14 @@ export default function ExpensesContent({
         mobileAction={
           <button
             onClick={() => setShowForm(true)}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90"
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-linear-to-r from-emerald-500 to-teal-500 px-3 py-2 text-sm font-medium text-white shadow-sm"
           >
+            <Plus className="h-4 w-4" />
             Add Expense
           </button>
         }
       />
 
-      <div className="flex-1 overflow-x-hidden overflow-y-scroll">
         <div className="mx-auto max-w-6xl p-4 md:p-6">
           {showForm && (
             <div className="mb-6">

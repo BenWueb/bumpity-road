@@ -389,7 +389,7 @@ export default function AdventuresPage() {
           isLoggedIn ? (
             <button
               onClick={() => setShowForm(true)}
-              className="hidden items-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:from-emerald-600 hover:to-teal-600 md:flex"
+              className="hidden items-center gap-2 rounded-lg bg-linear-to-r from-emerald-500 to-teal-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:from-emerald-600 hover:to-teal-600 md:flex"
             >
               <Plus className="h-4 w-4" />
               New Adventure
@@ -398,7 +398,7 @@ export default function AdventuresPage() {
             <button
               type="button"
               onClick={openLoginModal}
-              className="hidden items-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:from-emerald-600 hover:to-teal-600 md:flex"
+              className="hidden items-center gap-2 rounded-lg bg-linear-to-r from-emerald-500 to-teal-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:from-emerald-600 hover:to-teal-600 md:flex"
             >
               Sign in to share
             </button>
@@ -408,7 +408,7 @@ export default function AdventuresPage() {
           isLoggedIn ? (
             <button
               onClick={() => setShowForm(true)}
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-2.5 text-sm font-medium text-white shadow-sm"
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-linear-to-r from-emerald-500 to-teal-500 px-3 py-2 text-sm font-medium text-white shadow-sm"
             >
               <Plus className="h-4 w-4" />
               New Adventure
@@ -417,7 +417,7 @@ export default function AdventuresPage() {
             <button
               type="button"
               onClick={openLoginModal}
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-2.5 text-sm font-medium text-white shadow-sm"
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-linear-to-r from-emerald-500 to-teal-500 px-4 py-2.5 text-sm font-medium text-white shadow-sm"
             >
               Sign in to share an adventure
             </button>

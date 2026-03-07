@@ -195,7 +195,7 @@ export default function TodosKanban({ initialTodos }: Props) {
             </button>
           ) : null
         }
-        mobileActionClassName="border-b bg-card/30 px-3 py-2 md:hidden"
+        mobileActionClassName="sticky top-0 z-10 border-b bg-card/80 px-3 py-2 backdrop-blur-sm md:hidden"
       />
 
       <div className="mx-auto box-border w-full max-w-6xl px-3 py-3 md:px-6 md:py-6">

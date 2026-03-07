@@ -5,6 +5,7 @@ import { CldUploadButton, CldImage } from "next-cloudinary";
 import { getActivityLabel, getSeasonIcon, SEASONS } from "@/lib/gallery-constants";
 import {
   ImagePlus,
+  Plus,
   Camera,
   LogIn,
 } from "lucide-react";
@@ -240,9 +241,9 @@ export default function GalleryPage() {
                 uploadPreset="bumpity-road"
                 onSuccess={handleUploadSuccess}
                 options={{ multiple: false, maxFiles: 1 }}
-                className="hidden items-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:from-emerald-600 hover:to-teal-600 md:flex"
+                className="hidden items-center gap-2 rounded-lg bg-linear-to-r from-emerald-500 to-teal-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:from-emerald-600 hover:to-teal-600 md:flex"
               >
-                <ImagePlus className="h-4 w-4" />
+                <Plus className="h-4 w-4" />
                 Upload Photo
               </CldUploadButton>
             ) : null
@@ -250,7 +251,7 @@ export default function GalleryPage() {
             <button
               type="button"
               onClick={openLoginModal}
-              className="hidden items-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:from-emerald-600 hover:to-teal-600 md:flex"
+              className="hidden items-center gap-2 rounded-lg bg-linear-to-r from-emerald-500 to-teal-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:from-emerald-600 hover:to-teal-600 md:flex"
             >
               <LogIn className="h-4 w-4" />
               Sign in to upload
@@ -264,9 +265,9 @@ export default function GalleryPage() {
                 uploadPreset="bumpity-road"
                 onSuccess={handleUploadSuccess}
                 options={{ multiple: false, maxFiles: 1 }}
-                className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-2.5 text-sm font-medium text-white shadow-sm"
+                className="flex w-full items-center justify-center gap-2 rounded-lg bg-linear-to-r from-emerald-500 to-teal-500 px-3 py-2 text-sm font-medium text-white shadow-sm"
               >
-                <ImagePlus className="h-4 w-4" />
+                <Plus className="h-4 w-4" />
                 Upload Photo
               </CldUploadButton>
             ) : null
@@ -274,14 +275,14 @@ export default function GalleryPage() {
             <button
               type="button"
               onClick={openLoginModal}
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-2.5 text-sm font-medium text-white shadow-sm"
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-linear-to-r from-emerald-500 to-teal-500 px-3 py-2 text-sm font-medium text-white shadow-sm"
             >
               <LogIn className="h-4 w-4" />
               Sign in to upload
             </button>
           )
         }
-        mobileActionClassName="border-b bg-card/30 px-4 py-3 md:hidden"
+        mobileActionClassName="sticky top-0 z-10 border-b bg-card/80 px-4 py-3 backdrop-blur-sm md:hidden"
       />
 
       <div className="mx-auto max-w-6xl p-4 md:p-6">
@@ -336,7 +337,7 @@ export default function GalleryPage() {
               />
 
               {/* Gradient overlay - always visible */}
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+              <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent" />
 
               {/* Photo info overlay */}
               <div className="absolute inset-x-0 bottom-0 p-2 text-white">

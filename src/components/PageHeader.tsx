@@ -74,7 +74,7 @@ export function PageHeader({
       </div>
 
       {mobileAction && (
-        <div className={mobileActionClassName ?? "border-b bg-card/30 px-4 py-3 md:hidden"}>
+        <div className={mobileActionClassName ?? "sticky top-0 z-10 border-b bg-card/80 px-4 py-3 backdrop-blur-sm md:hidden"}>
           {mobileAction}
         </div>
       )}
