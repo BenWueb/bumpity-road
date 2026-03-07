@@ -41,7 +41,7 @@ export default function AnnouncementBar() {
 
   return (
     <div className={`w-full px-3 py-2 ${color.bar}`}>
-      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center text-sm font-medium">
+      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center text-xs font-medium md:text-sm">
         {ANNOUNCEMENT.message}
         {link?.label ? (
           link.action === "feedbackModal" ? (
