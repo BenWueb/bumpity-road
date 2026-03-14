@@ -186,7 +186,7 @@ export default function AppSidebar() {
         href: "/sop",
         label: "SOP",
         icon: NotebookText,
-        pill: SIDEBAR_PILL_STYLES.SOON,
+        pill: SIDEBAR_PILL_STYLES.BUILDING,
       },
       {
         href: "/adventures",

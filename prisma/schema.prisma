@@ -350,3 +350,13 @@ model LoonNotice {
 
   @@map("loon_notice")
 }
+
+model SopNotice {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  message   String
+  enabled   Boolean  @default(true)
+  updatedAt DateTime @updatedAt
+  updatedBy String?
+
+  @@map("sop_notice")
+}

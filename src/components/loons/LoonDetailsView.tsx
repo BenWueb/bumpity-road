@@ -208,7 +208,7 @@ export default function LoonDetailsView({
                       )}
                       {formatLoonDate(obs.date)}
                       {obs.imageUrls.length > 0 && (
-                        <Camera className="ml-0.5 h-3 w-3 text-muted-foreground" />
+                        <Camera className="ml-0.5 h-4 w-4 text-muted-foreground" />
                       )}
                     </div>
                     {obs.time && (

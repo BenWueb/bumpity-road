@@ -6,7 +6,7 @@ import { LoonObservation, SavedLocation } from "@/types/loon";
 import { PageHeader } from "@/components/PageHeader";
 import { ToggleGroup } from "@/components/ui/ToggleGroup";
 import { Modal } from "@/components/ui/Modal";
-import { type LoonNotice } from "@/lib/loon-server";
+import { type Notice } from "@/components/ui/NoticeBar";
 import LoonForm from "./LoonForm";
 import LoonCard from "./LoonCard";
 import LoonDetailsView from "./LoonDetailsView";
@@ -67,7 +67,7 @@ interface LoonsContentProps {
   currentUserId: string | null;
   isAdmin: boolean;
   isLoonAdmin: boolean;
-  initialNotice: LoonNotice;
+  initialNotice: Notice;
 }
 
 export default function LoonsContent({

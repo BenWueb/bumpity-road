@@ -4,11 +4,7 @@ import { headers } from "next/headers";
 import { LoonObservation, SavedLocation } from "@/types/loon";
 import { deriveSavedLocations } from "@/lib/loon-utils";
 
-export type LoonNotice = {
-  id: string;
-  message: string;
-  enabled: boolean;
-} | null;
+import { type Notice } from "@/components/ui/NoticeBar";
 
 export type LoonServerData = {
   observations: LoonObservation[];
@@ -16,7 +12,7 @@ export type LoonServerData = {
   currentUserId: string | null;
   isAdmin: boolean;
   isLoonAdmin: boolean;
-  notice: LoonNotice;
+  notice: Notice;
 };
 
 const LOON_SELECT = {

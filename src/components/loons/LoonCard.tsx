@@ -98,7 +98,7 @@ export default function LoonCard({
                 </span>
               )}
               {observation.imageUrls.length > 0 && (
-                <Camera className="h-3 w-3" />
+                <Camera className="h-4 w-4" />
               )}
             </div>
             <div className="flex flex-wrap items-center gap-2 text-[10px]">
