@@ -47,6 +47,111 @@ interface LocationData {
   lon: number;
 }
 
+interface ForecastEntry {
+  dt: number;
+  main: { temp: number; temp_min: number; temp_max: number };
+  weather: { description: string; icon: string }[];
+  dt_txt: string;
+}
+
+interface ForecastResponse {
+  list: ForecastEntry[];
+  city: { timezone: number };
+}
+
+interface DailySummary {
+  key: string;
+  label: string;
+  high: number;
+  low: number;
+  icon: string;
+  description: string;
+}
+
+function aggregateDailyForecast(forecast: ForecastResponse): DailySummary[] {
+  const tzOffsetSec = forecast.city?.timezone ?? 0;
+  const tzOffsetMs = tzOffsetSec * 1000;
+
+  const localDateKey = (unixSec: number) => {
+    const local = new Date(unixSec * 1000 + tzOffsetMs);
+    const y = local.getUTCFullYear();
+    const m = String(local.getUTCMonth() + 1).padStart(2, "0");
+    const d = String(local.getUTCDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  };
+
+  const groups = new Map<string, ForecastEntry[]>();
+  for (const entry of forecast.list ?? []) {
+    const key = localDateKey(entry.dt);
+    const arr = groups.get(key);
+    if (arr) arr.push(entry);
+    else groups.set(key, [entry]);
+  }
+
+  const todayKey = localDateKey(Math.floor(Date.now() / 1000));
+  const sortedKeys = Array.from(groups.keys()).sort();
+  const futureKeys = sortedKeys.filter((k) => k > todayKey).slice(0, 5);
+
+  return futureKeys.map((key) => {
+    const entries = groups.get(key)!;
+    let high = -Infinity;
+    let low = Infinity;
+    for (const e of entries) {
+      const max = e.main?.temp_max ?? e.main?.temp;
+      const min = e.main?.temp_min ?? e.main?.temp;
+      if (typeof max === "number" && max > high) high = max;
+      if (typeof min === "number" && min < low) low = min;
+    }
+
+    let representative = entries[Math.floor(entries.length / 2)];
+    let bestDistance = Infinity;
+    for (const e of entries) {
+      const local = new Date(e.dt * 1000 + tzOffsetMs);
+      const hour = local.getUTCHours();
+      const distance = Math.abs(hour - 12);
+      if (distance < bestDistance) {
+        bestDistance = distance;
+        representative = e;
+      }
+    }
+
+    const icon = representative.weather?.[0]?.icon ?? "";
+    const description = representative.weather?.[0]?.description ?? "";
+
+    const [yStr, mStr, dStr] = key.split("-");
+    const labelDate = new Date(
+      Date.UTC(Number(yStr), Number(mStr) - 1, Number(dStr))
+    );
+    const todayParts = todayKey.split("-");
+    const todayDate = new Date(
+      Date.UTC(
+        Number(todayParts[0]),
+        Number(todayParts[1]) - 1,
+        Number(todayParts[2])
+      )
+    );
+    const dayDiff = Math.round(
+      (labelDate.getTime() - todayDate.getTime()) / 86_400_000
+    );
+    const label =
+      dayDiff === 1
+        ? "Tomorrow"
+        : new Intl.DateTimeFormat(undefined, {
+            weekday: "short",
+            timeZone: "UTC",
+          }).format(labelDate);
+
+    return {
+      key,
+      label,
+      high,
+      low,
+      icon,
+      description,
+    };
+  });
+}
+
 function formatTemp(value?: number) {
   if (typeof value !== "number" || Number.isNaN(value)) return "--";
   return Math.round(value).toString();
@@ -152,7 +257,7 @@ export default async function WeatherCard() {
   }
 
   try {
-    const [weatherRes, locationRes] = await Promise.all([
+    const [weatherRes, locationRes, forecastRes] = await Promise.all([
       fetch(
         `https://api.openweathermap.org/data/2.5/weather?lat=46.987414&lon=-94.2226322&units=imperial&appid=${apiKey}`,
         { next: { revalidate: 600 } }
@@ -161,6 +266,10 @@ export default async function WeatherCard() {
         `https://api.openweathermap.org/geo/1.0/reverse?lat=46.987414&lon=-94.2226322&appid=${apiKey}`,
         { next: { revalidate: 600 } }
       ),
+      fetch(
+        `https://api.openweathermap.org/data/2.5/forecast?lat=46.987414&lon=-94.2226322&units=imperial&appid=${apiKey}`,
+        { next: { revalidate: 600 } }
+      ).catch(() => null),
     ]);
 
     if (!weatherRes.ok) {
@@ -172,6 +281,16 @@ export default async function WeatherCard() {
 
     const weatherData: WeatherData = await weatherRes.json();
     const locationData: LocationData[] = await locationRes.json();
+
+    let dailyForecast: DailySummary[] = [];
+    if (forecastRes && forecastRes.ok) {
+      try {
+        const forecastData: ForecastResponse = await forecastRes.json();
+        dailyForecast = aggregateDailyForecast(forecastData);
+      } catch {
+        dailyForecast = [];
+      }
+    }
 
     const placeName = locationData[0]?.name ?? weatherData.name ?? "Unknown";
     const description = weatherData.weather?.[0]?.description ?? "";
@@ -321,6 +440,52 @@ export default async function WeatherCard() {
               </div>
             </div>
           </div>
+
+          {dailyForecast.length > 0 && (
+            <div className="mt-3">
+              <div className="mb-1.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                5-day forecast
+              </div>
+              <div className="grid grid-cols-5 gap-1">
+                {dailyForecast.map((day) => {
+                  const dayIconUrl = day.icon
+                    ? `https://openweathermap.org/img/wn/${day.icon}.png`
+                    : null;
+                  return (
+                    <div
+                      key={day.key}
+                      className="flex flex-col items-center gap-0.5 rounded-md border bg-background/60 px-1 py-1 text-center shadow-sm backdrop-blur"
+                    >
+                      <div className="text-[10px] font-medium leading-tight text-foreground">
+                        {day.label}
+                      </div>
+                      {dayIconUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={dayIconUrl}
+                          alt={day.description || "Forecast icon"}
+                          width={32}
+                          height={32}
+                          className="h-7 w-7"
+                        />
+                      ) : (
+                        <ThermometerSun className="h-4 w-4 text-muted-foreground" />
+                      )}
+                      <div className="text-[10px] leading-tight text-foreground">
+                        <span className="font-medium">
+                          {formatTemp(day.high)}°
+                        </span>
+                        <span className="text-muted-foreground">
+                          {" / "}
+                          {formatTemp(day.low)}°
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );

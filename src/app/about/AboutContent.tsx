@@ -116,44 +116,28 @@ export default function AboutContent({ initialAbout, canEdit }: Props) {
 
       <div className="relative">
         {/* Hero */}
-        {about.heroImageUrl ? (
-          <div className="relative h-56 w-full overflow-hidden bg-accent sm:h-80 lg:h-96">
-            <Image
-              src={about.heroImageUrl}
-              alt={about.title}
-              fill
-              className="object-cover"
-              priority
-            />
-            <div className="absolute inset-0 bg-linear-to-t from-black/65 via-black/20 to-transparent" />
-            <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 lg:p-8">
-              <div className="mb-2 flex items-center justify-between gap-3">
-                {editButton}
-              </div>
-              {formattedUpdatedAt && (
-                <div className="mt-2 flex items-center gap-1.5 text-xs text-white/90 sm:text-sm">
-                  <Calendar className="h-4 w-4" />
-                  Updated {formattedUpdatedAt}
-                </div>
-              )}
-            </div>
-          </div>
-        ) : (
-          <div className="p-4 sm:p-6 md:p-8">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                {formattedUpdatedAt && (
-                  <div className="mb-3 flex items-center gap-1.5 text-xs text-muted-foreground md:text-sm">
-                    <Calendar className="h-4 w-4" />
-                    Updated {formattedUpdatedAt}
-                  </div>
-                )}
-                <h1 className="text-xl font-bold md:text-3xl">{about.title}</h1>
-              </div>
+        <div className="relative h-56 w-full overflow-hidden bg-accent sm:h-80 lg:h-96">
+          <Image
+            src="/cabin.webp"
+            alt={about.title}
+            fill
+            className="object-cover"
+            style={{ objectPosition: "center 30%" }}
+            priority
+          />
+          <div className="absolute inset-0 bg-linear-to-t from-black/65 via-black/20 to-transparent" />
+          <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 lg:p-8">
+            <div className="mb-2 flex items-center justify-between gap-3">
               {editButton}
             </div>
+            {formattedUpdatedAt && (
+              <div className="mt-2 flex items-center gap-1.5 text-xs text-white/90 sm:text-sm">
+                <Calendar className="h-4 w-4" />
+                Updated {formattedUpdatedAt}
+              </div>
+            )}
           </div>
-        )}
+        </div>
 
         {/* Info cards (hardcoded) */}
         <div className="mt-6 px-4 pb-2 sm:px-6 sm:pb-3 md:px-8 md:pb-4">
