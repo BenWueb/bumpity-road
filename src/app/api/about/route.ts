@@ -153,7 +153,7 @@ export async function PATCH(req: NextRequest) {
       }),
     ]);
 
-    revalidateTag("about-settings");
+    revalidateTag("about-settings", "max");
 
     return NextResponse.json({ success: true });
   } catch (error) {

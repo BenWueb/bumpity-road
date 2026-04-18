@@ -111,7 +111,7 @@ export async function POST(req: NextRequest) {
 
     const newBadges = await checkAndAwardAdventureBadges(session.user.id);
 
-    revalidateTag(ADVENTURES_CACHE_TAG);
+    revalidateTag(ADVENTURES_CACHE_TAG, "max");
 
     return NextResponse.json({ adventure, newBadges });
   } catch (error) {
@@ -204,7 +204,7 @@ export async function PATCH(req: NextRequest) {
       },
     });
 
-    revalidateTag(ADVENTURES_CACHE_TAG);
+    revalidateTag(ADVENTURES_CACHE_TAG, "max");
 
     return NextResponse.json({ adventure });
   } catch (error) {
@@ -255,7 +255,7 @@ export async function DELETE(req: NextRequest) {
 
     await prisma.adventure.delete({ where: { id } });
 
-    revalidateTag(ADVENTURES_CACHE_TAG);
+    revalidateTag(ADVENTURES_CACHE_TAG, "max");
 
     return NextResponse.json({ success: true });
   } catch (error) {

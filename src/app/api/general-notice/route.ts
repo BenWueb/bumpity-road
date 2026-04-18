@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  revalidateTag("general-notice");
+  revalidateTag("general-notice", "max");
 
   return NextResponse.json({ notice });
 }
