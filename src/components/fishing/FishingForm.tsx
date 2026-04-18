@@ -11,7 +11,8 @@ import {
   WIND_CONDITIONS,
   DISTURBANCES,
 } from "@/types/fishing";
-import { CldUploadButton, CldImage } from "next-cloudinary";
+import { CldImage } from "next-cloudinary";
+import { LazyCldUploadButton as CldUploadButton } from "@/components/cloudinary/LazyUpload";
 import { ImagePlus, X } from "lucide-react";
 import { emitBadgesEarned } from "@/utils/badges-client";
 import LocationPickerWrapper from "./LocationPickerWrapper";

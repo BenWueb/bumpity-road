@@ -2,6 +2,7 @@ import { auth } from "@/utils/auth";
 import { prisma } from "@/utils/prisma";
 import { deleteCloudinaryImage } from "@/utils/cloudinary";
 import { headers } from "next/headers";
+import { revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -151,6 +152,8 @@ export async function PATCH(req: NextRequest) {
         create: { key: KEYS.heroPublicId, value: heroImagePublicId ?? "" },
       }),
     ]);
+
+    revalidateTag("about-settings");
 
     return NextResponse.json({ success: true });
   } catch (error) {

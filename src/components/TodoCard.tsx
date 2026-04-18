@@ -48,7 +48,6 @@ export default function TodoCard({ initialTodos }: TodoCardClientProps = {}) {
 
   const {
     todos,
-    setTodos,
     isLoading,
     addTodo,
     deleteTodo,
@@ -57,13 +56,7 @@ export default function TodoCard({ initialTodos }: TodoCardClientProps = {}) {
     updateTodo,
     pendingTodos,
     completedTodos,
-  } = useTodos(userId);
-
-  // Hydrate with server data (avoid side-effects inside useState initializer)
-  useEffect(() => {
-    if (!initialTodos?.length) return;
-    setTodos((prev) => (prev.length === 0 ? initialTodos : prev));
-  }, [initialTodos, setTodos]);
+  } = useTodos(userId, { initialTodos });
 
   // New todo form state
   const [showInput, setShowInput] = useState(false);

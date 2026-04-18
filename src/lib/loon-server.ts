@@ -43,39 +43,48 @@ const LOON_SELECT = {
   createdAt: true,
 } as const;
 
-export async function getLoonData(): Promise<LoonServerData> {
-  const observations = await prisma.loonObservation.findMany({
-    orderBy: { date: "desc" },
-    select: LOON_SELECT,
-  });
-
-  let isAdmin = false;
-  let isLoonAdmin = false;
-  let currentUserId: string | null = null;
+async function resolveLoonSession(): Promise<{
+  currentUserId: string | null;
+  isAdmin: boolean;
+  isLoonAdmin: boolean;
+}> {
   try {
     const session = await auth.api.getSession({
       headers: await headers(),
       asResponse: false,
     });
-    if (session?.user?.id) {
-      currentUserId = session.user.id;
-      const user = await prisma.user.findUnique({
-        where: { id: session.user.id },
-        select: { isAdmin: true, isLoonAdmin: true },
-      });
-      isAdmin = user?.isAdmin ?? false;
-      isLoonAdmin = user?.isLoonAdmin ?? false;
+    if (!session?.user?.id) {
+      return { currentUserId: null, isAdmin: false, isLoonAdmin: false };
     }
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { isAdmin: true, isLoonAdmin: true },
+    });
+    return {
+      currentUserId: session.user.id,
+      isAdmin: user?.isAdmin ?? false,
+      isLoonAdmin: user?.isLoonAdmin ?? false,
+    };
   } catch {
-    // Not logged in
+    return { currentUserId: null, isAdmin: false, isLoonAdmin: false };
   }
+}
+
+export async function getLoonData(): Promise<LoonServerData> {
+  // Run the three independent reads in parallel.
+  const [observations, sessionInfo, noticeRecord] = await Promise.all([
+    prisma.loonObservation.findMany({
+      orderBy: { date: "desc" },
+      select: LOON_SELECT,
+    }),
+    resolveLoonSession(),
+    prisma.loonNotice.findFirst({
+      orderBy: { updatedAt: "desc" },
+      select: { id: true, message: true, enabled: true },
+    }),
+  ]);
 
   const savedLocations = deriveSavedLocations(observations);
-
-  const noticeRecord = await prisma.loonNotice.findFirst({
-    orderBy: { updatedAt: "desc" },
-    select: { id: true, message: true, enabled: true },
-  });
 
   return {
     observations: observations.map((o) => ({
@@ -84,9 +93,9 @@ export async function getLoonData(): Promise<LoonServerData> {
       createdAt: o.createdAt.toISOString(),
     })),
     savedLocations,
-    currentUserId,
-    isAdmin,
-    isLoonAdmin,
+    currentUserId: sessionInfo.currentUserId,
+    isAdmin: sessionInfo.isAdmin,
+    isLoonAdmin: sessionInfo.isLoonAdmin,
     notice: noticeRecord,
   };
 }

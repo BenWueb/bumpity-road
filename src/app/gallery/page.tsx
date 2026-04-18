@@ -1,7 +1,8 @@
 "use client";
 
 import { authClient } from "@/lib/auth-client";
-import { CldUploadButton, CldImage } from "next-cloudinary";
+import { CldImage } from "next-cloudinary";
+import { LazyCldUploadButton as CldUploadButton } from "@/components/cloudinary/LazyUpload";
 import { getActivityLabel, getSeasonIcon, SEASONS } from "@/lib/gallery-constants";
 import {
   ImagePlus,

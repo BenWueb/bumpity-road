@@ -1,13 +1,32 @@
 import { Suspense } from "react";
-import Link from "next/link";
-import { ArrowLeft, Info } from "lucide-react";
+import { unstable_cache } from "next/cache";
+import { Info } from "lucide-react";
 import AboutContent from "./AboutContent";
 import { prisma } from "@/utils/prisma";
 import { auth } from "@/utils/auth";
 import { headers } from "next/headers";
 import { PageHeader } from "@/components/PageHeader";
 
-export const dynamic = "force-dynamic";
+const KEYS = {
+  title: "aboutTitle",
+  content: "aboutContent",
+  heroUrl: "aboutHeroImageUrl",
+  heroPublicId: "aboutHeroImagePublicId",
+} as const;
+
+// Cache the four siteSetting reads — invalidated by the PATCH handler in
+// `/api/about` via `revalidateTag("about-settings")`.
+const getCachedAboutSettings = unstable_cache(
+  () =>
+    Promise.all([
+      prisma.siteSetting.findUnique({ where: { key: KEYS.title } }),
+      prisma.siteSetting.findUnique({ where: { key: KEYS.content } }),
+      prisma.siteSetting.findUnique({ where: { key: KEYS.heroUrl } }),
+      prisma.siteSetting.findUnique({ where: { key: KEYS.heroPublicId } }),
+    ]),
+  ["about-settings"],
+  { tags: ["about-settings"], revalidate: 600 }
+);
 
 export default function AboutPage() {
   return (
@@ -44,18 +63,8 @@ export default function AboutPage() {
 }
 
 async function AboutData() {
-  const KEYS = {
-    title: "aboutTitle",
-    content: "aboutContent",
-    heroUrl: "aboutHeroImageUrl",
-    heroPublicId: "aboutHeroImagePublicId",
-  } as const;
-
-  const [title, content, heroUrl, heroPublicId, session] = await Promise.all([
-    prisma.siteSetting.findUnique({ where: { key: KEYS.title } }),
-    prisma.siteSetting.findUnique({ where: { key: KEYS.content } }),
-    prisma.siteSetting.findUnique({ where: { key: KEYS.heroUrl } }),
-    prisma.siteSetting.findUnique({ where: { key: KEYS.heroPublicId } }),
+  const [[title, content, heroUrl, heroPublicId], session] = await Promise.all([
+    getCachedAboutSettings(),
     auth.api.getSession({ headers: await headers(), asResponse: false }),
   ]);
 

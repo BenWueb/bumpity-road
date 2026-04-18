@@ -1,6 +1,7 @@
 import { auth } from "@/utils/auth";
 import { prisma } from "@/utils/prisma";
 import { headers } from "next/headers";
+import { revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
 async function requireAdmin() {
@@ -62,6 +63,8 @@ export async function POST(req: NextRequest) {
       },
     });
   }
+
+  revalidateTag("general-notice");
 
   return NextResponse.json({ notice });
 }

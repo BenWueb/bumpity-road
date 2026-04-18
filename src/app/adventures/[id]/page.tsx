@@ -6,8 +6,6 @@ import { ArrowLeft, Calendar, MapPin, Tag } from "lucide-react";
 import { fetchAdventureById, fetchOtherAdventures } from "@/lib/adventures-server";
 import { CARD_GRADIENTS } from "@/lib/ui-gradients";
 
-export const dynamic = "force-dynamic";
-
 type Props = {
   params: Promise<{ id: string }>;
 };
@@ -103,6 +101,7 @@ async function AdventureContent({ id }: { id: string }) {
               src={adventure.headerImage}
               alt={adventure.title}
               fill
+              sizes="(min-width: 1440px) 75vw, 100vw"
               className="object-cover"
               priority
             />
@@ -207,6 +206,7 @@ async function AdventureContent({ id }: { id: string }) {
                         alt={a.title}
                         width={64}
                         height={64}
+                        sizes="64px"
                         className="h-full w-full object-cover transition-transform group-hover:scale-110"
                       />
                     </div>

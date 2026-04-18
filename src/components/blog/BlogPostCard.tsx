@@ -27,6 +27,7 @@ export function BlogPostCard({ post, isOwner, onEdit, onDelete }: Props) {
             width={post.images[0].width ?? 400}
             height={post.images[0].height ?? 300}
             alt={post.title}
+            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
             className="w-full object-cover"
           />
           {post.images.length > 1 && (

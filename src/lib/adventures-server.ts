@@ -1,4 +1,7 @@
 import { prisma } from "@/utils/prisma";
+import { unstable_cache } from "next/cache";
+
+export const ADVENTURES_CACHE_TAG = "adventures";
 
 export type AdventureDetail = {
   id: string;
@@ -27,56 +30,64 @@ export type AdventureSummary = {
   user: { name: string | null };
 };
 
-export async function fetchAdventureById(id: string): Promise<AdventureDetail | null> {
-  const a = await prisma.adventure.findUnique({
-    where: { id },
-    select: {
-      id: true,
-      title: true,
-      description: true,
-      address: true,
-      seasons: true,
-      season: true,
-      category: true,
-      headerImage: true,
-      userId: true,
-      user: { select: { id: true, name: true, image: true } },
-      createdAt: true,
-      updatedAt: true,
-    },
-  });
+export const fetchAdventureById = unstable_cache(
+  async (id: string): Promise<AdventureDetail | null> => {
+    const a = await prisma.adventure.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        address: true,
+        seasons: true,
+        season: true,
+        category: true,
+        headerImage: true,
+        userId: true,
+        user: { select: { id: true, name: true, image: true } },
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
 
-  if (!a) return null;
+    if (!a) return null;
 
-  return {
-    ...a,
-    createdAt: a.createdAt.toISOString(),
-    updatedAt: a.updatedAt.toISOString(),
-  };
-}
+    return {
+      ...a,
+      createdAt: a.createdAt.toISOString(),
+      updatedAt: a.updatedAt.toISOString(),
+    };
+  },
+  ["adventure-by-id"],
+  { tags: [ADVENTURES_CACHE_TAG], revalidate: 600 }
+);
 
-export async function fetchOtherAdventures(excludeId: string): Promise<AdventureSummary[]> {
-  const list = await prisma.adventure.findMany({
-    where: { id: { not: excludeId } },
-    orderBy: { createdAt: "desc" },
-    take: 5,
-    select: {
-      id: true,
-      title: true,
-      address: true,
-      seasons: true,
-      season: true,
-      category: true,
-      headerImage: true,
-      createdAt: true,
-      user: { select: { name: true } },
-    },
-  });
+export const fetchOtherAdventures = unstable_cache(
+  async (excludeId: string): Promise<AdventureSummary[]> => {
+    const list = await prisma.adventure.findMany({
+      where: { id: { not: excludeId } },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+      select: {
+        id: true,
+        title: true,
+        address: true,
+        seasons: true,
+        season: true,
+        category: true,
+        headerImage: true,
+        createdAt: true,
+        user: { select: { name: true } },
+      },
+    });
 
-  return list.map((a) => ({
-    ...a,
-    createdAt: a.createdAt.toISOString(),
-  }));
-}
+    return list.map((a) => ({
+      ...a,
+      createdAt: a.createdAt.toISOString(),
+    }));
+  },
+  ["other-adventures"],
+  { tags: [ADVENTURES_CACHE_TAG], revalidate: 600 }
+);
 
 

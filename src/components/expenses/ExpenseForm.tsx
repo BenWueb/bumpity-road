@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import { Expense, EXPENSE_CATEGORIES, EXPENSE_SUBCATEGORIES } from "@/types/expense";
 import { Lightbulb, Receipt, X, Image as ImageIcon, Check, Clock } from "lucide-react";
-import { CldUploadButton, CldImage } from "next-cloudinary";
+import { CldImage } from "next-cloudinary";
+import { LazyCldUploadButton as CldUploadButton } from "@/components/cloudinary/LazyUpload";
 
 interface ExpenseFormProps {
   expense?: Expense;

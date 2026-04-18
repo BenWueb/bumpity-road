@@ -1,7 +1,7 @@
 "use client";
 
 import { authClient } from "@/lib/auth-client";
-import { CldUploadWidget } from "next-cloudinary";
+import { LazyCldUploadWidget as CldUploadWidget } from "@/components/cloudinary/LazyUpload";
 import Image from "next/image";
 import Link from "next/link";
 import { useLoginModal } from "@/components/LoginModal";
@@ -572,6 +572,7 @@ export default function AdventuresPage() {
                       src={adventure.headerImage}
                       alt={adventure.title}
                       fill
+                      sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                       className="object-cover transition-transform group-hover:scale-105"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
@@ -740,6 +741,7 @@ export default function AdventuresPage() {
                       src={headerImage}
                       alt="Header preview"
                       fill
+                      sizes="400px"
                       className="object-cover"
                     />
                     <button

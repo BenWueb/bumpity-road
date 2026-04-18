@@ -53,6 +53,7 @@ export default function BlogPostImages({ images, title, author, date, headerActi
           height={headerImage.height ?? 400}
           alt={title}
           crop="fill"
+          sizes="(min-width: 1024px) 800px, 100vw"
           className="h-full w-full object-cover transition-transform hover:scale-105"
         />
         {/* Gradient overlay for text contrast */}
@@ -96,6 +97,7 @@ export default function BlogPostImages({ images, title, author, date, headerActi
                   width={img.width ?? 400}
                   height={img.height ?? 300}
                   alt={`${title} image ${i + 2}`}
+                  sizes="(min-width: 640px) 33vw, 50vw"
                   className="w-full object-cover transition-transform hover:scale-105"
                 />
               </div>

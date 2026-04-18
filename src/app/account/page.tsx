@@ -7,8 +7,9 @@ import { redirect } from "next/navigation";
 import { AccountContent } from "./AccountContent";
 import { coerceTodoStatus } from "@/types/todo";
 
-// Force dynamic rendering to ensure fresh data per user
-export const dynamic = "force-dynamic";
+// `headers()`/`getSession` already mark this route as dynamic implicitly,
+// so we don't need an explicit `force-dynamic`. Removing it lets Next opt
+// into PPR / streaming for the static parts of the response.
 
 async function getAccountData() {
   const session = await auth.api.getSession({

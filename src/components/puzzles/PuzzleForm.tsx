@@ -7,7 +7,8 @@ import {
   ColorValue,
 } from "@/lib/guestbook-constants";
 import { CARD_GRADIENTS } from "@/lib/ui-gradients";
-import { CldUploadButton, CldImage } from "next-cloudinary";
+import { CldImage } from "next-cloudinary";
+import { LazyCldUploadButton as CldUploadButton } from "@/components/cloudinary/LazyUpload";
 import { ImagePlus, X } from "lucide-react";
 import { useState } from "react";
 import { UserSuggestInput } from "./UserSuggestInput";

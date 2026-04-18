@@ -73,6 +73,9 @@ type NavItem = {
   icon: React.ComponentType<{ className?: string }>;
   pill?: NavPill;
   adminOnly?: boolean;
+  // When false, skip viewport prefetch. Use for rarely-visited / "soon"
+  // routes whose RSC payload would otherwise be fetched on every page load.
+  prefetch?: false;
 };
 
 function isActivePath(pathname: string, href: string) {
@@ -87,17 +90,45 @@ export default function AppSidebar() {
   const [isAdmin, setIsAdmin] = useState(false);
   const { data: session } = authClient.useSession();
 
-  // Check if user is admin
+  // Check if user is admin. Cached in sessionStorage so we avoid hitting
+  // /api/users on every page load. TTL is short enough that admin role
+  // changes propagate within a single browsing session.
   const checkAdmin = useCallback(async () => {
-    if (!session?.user?.id) {
+    const userIdLocal = session?.user?.id;
+    if (!userIdLocal) {
       setIsAdmin(false);
       return;
     }
+
+    const cacheKey = `sidebar:isAdmin:${userIdLocal}`;
+    const TTL_MS = 10 * 60 * 1000;
     try {
-      const res = await fetch(`/api/users?id=${session.user.id}`);
+      const cached = window.sessionStorage.getItem(cacheKey);
+      if (cached) {
+        const parsed = JSON.parse(cached) as { v: boolean; t: number };
+        if (Date.now() - parsed.t < TTL_MS) {
+          setIsAdmin(parsed.v);
+          return;
+        }
+      }
+    } catch {
+      // Ignore storage / parse errors
+    }
+
+    try {
+      const res = await fetch(`/api/users?id=${userIdLocal}`);
       if (res.ok) {
         const data = await res.json();
-        setIsAdmin(data.user?.isAdmin ?? false);
+        const value = data.user?.isAdmin ?? false;
+        setIsAdmin(value);
+        try {
+          window.sessionStorage.setItem(
+            cacheKey,
+            JSON.stringify({ v: value, t: Date.now() })
+          );
+        } catch {
+          // sessionStorage may be unavailable (private mode, quota); ignore
+        }
       }
     } catch {
       setIsAdmin(false);
@@ -189,6 +220,7 @@ export default function AppSidebar() {
         label: "SOP",
         icon: NotebookText,
         pill: SIDEBAR_PILL_STYLES.BUILDING,
+        prefetch: false,
       },
       {
         href: "/adventures",
@@ -201,6 +233,7 @@ export default function AppSidebar() {
         label: "Wildlife",
         icon: Panda,
         pill: SIDEBAR_PILL_STYLES.SOON,
+        prefetch: false,
       },
       {
         href: "/loon",
@@ -219,12 +252,14 @@ export default function AppSidebar() {
         href: "/help",
         label: "Help",
         icon: HelpCircle,
+        prefetch: false,
       },
       {
         href: "/about",
         label: "About",
         icon: Info,
         pill: SIDEBAR_PILL_STYLES.BUILDING,
+        prefetch: false,
       },
     ],
     []
@@ -307,6 +342,7 @@ export default function AppSidebar() {
                     <Link
                       href={item.href}
                       target={item.target}
+                      prefetch={item.prefetch}
                       onClick={() => {
                         // Close on mobile after clicking
                         if (window.innerWidth < 768) {

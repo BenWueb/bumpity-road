@@ -2,7 +2,9 @@ import { auth } from "@/utils/auth";
 import { prisma } from "@/utils/prisma";
 import { deleteCloudinaryImage } from "@/utils/cloudinary";
 import { checkAndAwardAdventureBadges } from "@/utils/badges";
+import { ADVENTURES_CACHE_TAG } from "@/lib/adventures-server";
 import { headers } from "next/headers";
+import { revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -109,6 +111,8 @@ export async function POST(req: NextRequest) {
 
     const newBadges = await checkAndAwardAdventureBadges(session.user.id);
 
+    revalidateTag(ADVENTURES_CACHE_TAG);
+
     return NextResponse.json({ adventure, newBadges });
   } catch (error) {
     console.error("Error creating adventure:", error);
@@ -200,6 +204,8 @@ export async function PATCH(req: NextRequest) {
       },
     });
 
+    revalidateTag(ADVENTURES_CACHE_TAG);
+
     return NextResponse.json({ adventure });
   } catch (error) {
     console.error("Error updating adventure:", error);
@@ -248,6 +254,8 @@ export async function DELETE(req: NextRequest) {
     await deleteCloudinaryImage(existing.headerImagePublicId);
 
     await prisma.adventure.delete({ where: { id } });
+
+    revalidateTag(ADVENTURES_CACHE_TAG);
 
     return NextResponse.json({ success: true });
   } catch (error) {

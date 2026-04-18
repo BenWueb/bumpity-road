@@ -2,7 +2,7 @@
 import { authClient } from "@/lib/auth-client";
 import { CreatePost } from "@/actions/CreatePost";
 
-import { CldUploadButton } from "next-cloudinary";
+import { LazyCldUploadButton as CldUploadButton } from "@/components/cloudinary/LazyUpload";
 import { useState } from "react";
 import Image from "next/image";
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { CldUploadWidget } from "next-cloudinary";
+import { LazyCldUploadWidget as CldUploadWidget } from "@/components/cloudinary/LazyUpload";
 import Image from "next/image";
 import { useMemo, useState } from "react";
 import {
@@ -121,6 +121,7 @@ export default function AboutContent({ initialAbout, canEdit }: Props) {
             src="/cabin.webp"
             alt={about.title}
             fill
+            sizes="(min-width: 1024px) 75vw, 100vw"
             className="object-cover"
             style={{ objectPosition: "center 30%" }}
             priority
@@ -261,6 +262,7 @@ export default function AboutContent({ initialAbout, canEdit }: Props) {
                       src={editHeroUrl}
                       alt="About header"
                       fill
+                      sizes="(min-width: 768px) 600px, 100vw"
                       className="object-cover"
                     />
                     <button

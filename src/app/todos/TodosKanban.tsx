@@ -20,19 +20,12 @@ export default function TodosKanban({ initialTodos }: Props) {
 
   const {
     todos,
-    setTodos,
     isLoading,
     addTodo,
     deleteTodo,
     updateStatus,
     updateTodo,
-  } = useTodos(userId);
-
-  // Hydrate with server data (avoid side-effects inside useState initializer)
-  useEffect(() => {
-    if (!initialTodos?.length) return;
-    setTodos((prev) => (prev.length === 0 ? initialTodos : prev));
-  }, [initialTodos, setTodos]);
+  } = useTodos(userId, { initialTodos });
 
   // Add/Edit task modal
   const [showAddModal, setShowAddModal] = useState(false);

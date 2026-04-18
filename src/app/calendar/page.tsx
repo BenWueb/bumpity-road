@@ -1,6 +1,6 @@
 import { CalendarDays } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
-import CalendarView from "@/components/calendar/CalendarView";
+import CalendarView from "@/components/calendar/CalendarViewClient";
 
 export default function CalendarPage() {
   return (

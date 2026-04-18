@@ -35,30 +35,36 @@ const FISH_SELECT = {
   createdAt: true,
 } as const;
 
-export async function getFishingData(): Promise<FishingServerData> {
-  const observations = await prisma.fishObservation.findMany({
-    orderBy: { date: "desc" },
-    select: FISH_SELECT,
-  });
-
-  let isAdmin = false;
-  let currentUserId: string | null = null;
+async function resolveFishingSession(): Promise<{
+  currentUserId: string | null;
+  isAdmin: boolean;
+}> {
   try {
     const session = await auth.api.getSession({
       headers: await headers(),
       asResponse: false,
     });
-    if (session?.user?.id) {
-      currentUserId = session.user.id;
-      const user = await prisma.user.findUnique({
-        where: { id: session.user.id },
-        select: { isAdmin: true },
-      });
-      isAdmin = user?.isAdmin ?? false;
+    if (!session?.user?.id) {
+      return { currentUserId: null, isAdmin: false };
     }
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { isAdmin: true },
+    });
+    return { currentUserId: session.user.id, isAdmin: user?.isAdmin ?? false };
   } catch {
-    // Not logged in
+    return { currentUserId: null, isAdmin: false };
   }
+}
+
+export async function getFishingData(): Promise<FishingServerData> {
+  const [observations, sessionInfo] = await Promise.all([
+    prisma.fishObservation.findMany({
+      orderBy: { date: "desc" },
+      select: FISH_SELECT,
+    }),
+    resolveFishingSession(),
+  ]);
 
   const savedLocations = deriveSavedLocations(observations);
 
@@ -69,7 +75,7 @@ export async function getFishingData(): Promise<FishingServerData> {
       createdAt: o.createdAt.toISOString(),
     })),
     savedLocations,
-    currentUserId,
-    isAdmin,
+    currentUserId: sessionInfo.currentUserId,
+    isAdmin: sessionInfo.isAdmin,
   };
 }

@@ -1,3 +1,4 @@
+import Image from "next/image";
 import {
   Droplets,
   Eye,
@@ -316,12 +317,12 @@ export default async function WeatherCard() {
 
             <div className="flex h-10 w-10 items-center justify-center rounded-xl border bg-background/60 shadow-sm backdrop-blur sm:h-12 sm:w-12">
               {iconUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
+                <Image
                   src={iconUrl}
                   alt={description || "Weather icon"}
                   width={48}
                   height={48}
+                  unoptimized
                   className="h-8 w-8 sm:h-10 sm:w-10"
                 />
               ) : (
@@ -460,12 +461,12 @@ export default async function WeatherCard() {
                         {day.label}
                       </div>
                       {dayIconUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
+                        <Image
                           src={dayIconUrl}
                           alt={day.description || "Forecast icon"}
                           width={32}
                           height={32}
+                          unoptimized
                           className="h-7 w-7"
                         />
                       ) : (

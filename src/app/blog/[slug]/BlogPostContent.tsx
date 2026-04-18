@@ -1,7 +1,8 @@
 "use client";
 
 import { authClient } from "@/lib/auth-client";
-import { CldImage, CldUploadButton } from "next-cloudinary";
+import { CldImage } from "next-cloudinary";
+import { LazyCldUploadButton as CldUploadButton } from "@/components/cloudinary/LazyUpload";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Calendar, ImagePlus, Pencil, Trash2, User, X } from "lucide-react";

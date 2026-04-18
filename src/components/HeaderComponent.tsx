@@ -1,16 +1,21 @@
+import Image from "next/image";
+
 const HEADER_IMAGE = "/cabin.webp";
 
 const HeaderComponent = () => {
   return (
     <div className="relative overflow-hidden rounded-xl border bg-card shadow-sm">
-      {/* Background image with overlay */}
-      <div
-        className="absolute inset-0 bg-cover"
-        style={{
-          backgroundImage: `url('${HEADER_IMAGE}')`,
-          backgroundPosition: "center 30%",
-        }}
-      />
+      <div className="absolute inset-0">
+        <Image
+          src={HEADER_IMAGE}
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover"
+          style={{ objectPosition: "center 30%" }}
+        />
+      </div>
       <div className="absolute inset-0 bg-linear-to-r from-black/40 via-black/60 to-black/40" />
 
       {/* Content */}

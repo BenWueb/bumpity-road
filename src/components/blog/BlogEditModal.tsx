@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { CldImage, CldUploadButton } from "next-cloudinary";
+import { CldImage } from "next-cloudinary";
+import { LazyCldUploadButton as CldUploadButton } from "@/components/cloudinary/LazyUpload";
 import { ImagePlus, Trash2, X } from "lucide-react";
 import { Post, PostImage, UpdatePostInput, UploadedImage } from "@/types/blog";
 import { Modal } from "@/components/ui/Modal";

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { CldImage, CldUploadButton } from "next-cloudinary";
+import { CldImage } from "next-cloudinary";
+import { LazyCldUploadButton as CldUploadButton } from "@/components/cloudinary/LazyUpload";
 import { ImagePlus, X } from "lucide-react";
 import { CreatePostInput, UploadedImage } from "@/types/blog";
 import { CARD_GRADIENTS } from "@/lib/ui-gradients";

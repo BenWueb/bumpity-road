@@ -17,6 +17,12 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  experimental: {
+    // Tree-shake icon barrels so importing `import { Foo } from "lucide-react"`
+    // only ships `Foo`, not the entire icon set. Same trick helps for
+    // `date-fns` and similar large barrel exports.
+    optimizePackageImports: ["lucide-react"],
+  },
 };
 
 export default nextConfig;

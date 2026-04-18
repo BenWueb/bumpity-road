@@ -10,9 +10,13 @@ import {
 import { emitBadgesEarned } from "@/utils/badges-client";
 import { useCallback, useEffect, useState } from "react";
 
-export function useTodos(userId: string | undefined) {
-  const [todos, setTodos] = useState<Todo[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+export function useTodos(
+  userId: string | undefined,
+  options: { initialTodos?: Todo[] } = {}
+) {
+  const { initialTodos } = options;
+  const [todos, setTodos] = useState<Todo[]>(initialTodos ?? []);
+  const [isLoading, setIsLoading] = useState(!initialTodos);
   const [error, setError] = useState<string | null>(null);
 
   const loadTodos = useCallback(async () => {
@@ -31,10 +35,13 @@ export function useTodos(userId: string | undefined) {
     }
   }, []);
 
-  // Load todos for everyone - the board is public
+  // Only fetch on mount when no SSR data was supplied. The server already
+  // returned the same data via `initialTodos`, so a network round-trip on
+  // every visit would be wasted work.
   useEffect(() => {
+    if (initialTodos) return;
     loadTodos();
-  }, [loadTodos]);
+  }, [initialTodos, loadTodos]);
 
   const addTodo = useCallback(async (input: TodoCreateInput): Promise<Todo | null> => {
     try {

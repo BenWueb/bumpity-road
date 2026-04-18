@@ -29,34 +29,39 @@ export async function getRecentGuestbookEntries(
   }));
 }
 
-export async function getGuestbookData(): Promise<GuestbookServerData> {
-  const entries = await prisma.guestbookEntry.findMany({
-    orderBy: { createdAt: "desc" },
-    select: {
-      id: true,
-      name: true,
-      message: true,
-      color: true,
-      createdAt: true,
-    },
-  });
-
-  let isAdmin = false;
+async function resolveAdminFlag(): Promise<boolean> {
   try {
     const session = await auth.api.getSession({
       headers: await headers(),
       asResponse: false,
     });
-    if (session?.user?.id) {
-      const user = await prisma.user.findUnique({
-        where: { id: session.user.id },
-        select: { isAdmin: true },
-      });
-      isAdmin = user?.isAdmin ?? false;
-    }
+    if (!session?.user?.id) return false;
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { isAdmin: true },
+    });
+    return user?.isAdmin ?? false;
   } catch {
-    // Not logged in, that's fine
+    return false;
   }
+}
+
+export async function getGuestbookData(): Promise<GuestbookServerData> {
+  // Run the entries query and the auth/admin lookup in parallel — they are
+  // independent and the auth chain is the slower of the two.
+  const [entries, isAdmin] = await Promise.all([
+    prisma.guestbookEntry.findMany({
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        name: true,
+        message: true,
+        color: true,
+        createdAt: true,
+      },
+    }),
+    resolveAdminFlag(),
+  ]);
 
   return {
     entries: entries.map((e) => ({
