@@ -6,6 +6,7 @@ import {
   FileText,
   HelpCircle,
   MessageSquarePlus,
+  NotebookText,
   Rocket,
   Sparkles,
 } from "lucide-react";
@@ -42,7 +43,9 @@ export default function HelpPage() {
   const docs = getAllDocs();
 
   const featureDocs = docs.filter((d) => d.category === "features");
-  const gettingStartedDocs = docs.filter((d) => d.category === "getting-started");
+  const gettingStartedDocs = docs.filter(
+    (d) => d.category === "getting-started",
+  );
   const conceptsDocs = docs.filter((d) => d.category === "concepts");
 
   const recentDocs = [...docs]
@@ -84,6 +87,36 @@ export default function HelpPage() {
               className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90"
             >
               Read the welcome guide
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+
+        {/* SOP card */}
+        <div className="relative mb-6 overflow-hidden rounded-xl border bg-card shadow-sm">
+          <div
+            className={`pointer-events-none absolute inset-0 ${CARD_GRADIENTS.slate}`}
+          />
+          <div className="relative flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between md:p-6">
+            <div className="flex items-start gap-3">
+              <div>
+                <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-700 dark:text-slate-300">
+                  Cabin SOPs
+                </div>
+                <h2 className="mb-1 text-lg font-semibold">
+                  Standard operating procedures
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Step-by-step guides for appliances, cleaning, seasonal tasks,
+                  and cabin systems.
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/sop"
+              className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90"
+            >
+              Open the SOPs
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
@@ -191,17 +224,13 @@ export default function HelpPage() {
           />
           <div className="relative flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between md:p-6">
             <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-background/80 shadow-sm">
-                <MessageSquarePlus className="h-5 w-5 text-foreground" />
-              </div>
               <div>
                 <h2 className="mb-1 text-lg font-semibold">
                   Something not working? Got an idea?
                 </h2>
                 <p className="text-sm text-muted-foreground">
-                  The cabin is a big place, and so is this site. Send a quick
-                  note about bugs, confusing bits, or things you wish it could
-                  do — it goes straight to the people who can fix it.
+                  Send a quick note about bugs, confusing bits, or ideas for
+                  improvements.
                 </p>
               </div>
             </div>
