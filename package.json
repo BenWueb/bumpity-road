@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "test": "jest",
     "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
     "postinstall": "node scripts/postinstall.mjs",
     "seed:expenses": "tsx scripts/seed-expenses.ts",
     "seed:puzzles": "tsx scripts/seed-puzzles.ts",
