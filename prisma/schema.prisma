@@ -296,19 +296,41 @@ model ExpenseVote {
 
 model PuzzleEntry {
   id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  completedBy   String
-  completedDate DateTime
+  // "in_progress" | "completed". Null on legacy rows is treated as "completed".
+  status        String?
+  completedAt   DateTime?
+  // Legacy free-text fields, preserved for back-compat with existing rows that
+  // were created before the contributions model existed.
+  completedBy   String?
+  completedDate DateTime?
   notes         String?
   imageUrl      String
   imagePublicId String
   color         String?
   userId        String
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contributions PuzzleContribution[]
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
   @@index([userId])
+  @@index([status])
   @@map("puzzle_entry")
+}
+
+model PuzzleContribution {
+  id        String      @id @default(auto()) @map("_id") @db.ObjectId
+  puzzleId  String      @db.ObjectId
+  puzzle    PuzzleEntry @relation(fields: [puzzleId], references: [id], onDelete: Cascade)
+  userId    String      // user.id of the contributor
+  userName  String      // snapshot of the user's name at the time of joining
+  note      String?
+  createdAt DateTime    @default(now())
+
+  @@unique([puzzleId, userId])
+  @@index([puzzleId])
+  @@index([userId])
+  @@map("puzzle_contribution")
 }
 
 model LoonObservation {

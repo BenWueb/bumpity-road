@@ -3,7 +3,7 @@
 import { PuzzleEntry } from "@/types/puzzle";
 import { usePuzzles } from "@/hooks/use-puzzles";
 import { LogIn, Plus, Puzzle } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { PuzzleCard } from "./PuzzleCard";
 import { PuzzleEditModal } from "./PuzzleEditModal";
@@ -30,6 +30,7 @@ export function PuzzleList({
     createEntry,
     updateEntry,
     deleteEntry,
+    contributeToEntry,
     isOwned,
     canDelete,
   } = usePuzzles({
@@ -43,6 +44,17 @@ export function PuzzleList({
   const [editingEntry, setEditingEntry] = useState<PuzzleEntry | null>(null);
   const [lightboxEntry, setLightboxEntry] = useState<PuzzleEntry | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState(-1);
+  const [contributingId, setContributingId] = useState<string | null>(null);
+
+  const { inProgressEntries, completedEntries } = useMemo(() => {
+    const inProgress: PuzzleEntry[] = [];
+    const completed: PuzzleEntry[] = [];
+    for (const e of entries) {
+      if (e.status === "in_progress") inProgress.push(e);
+      else completed.push(e);
+    }
+    return { inProgressEntries: inProgress, completedEntries: completed };
+  }, [entries]);
 
   function openLightbox(entry: PuzzleEntry, index: number) {
     setLightboxEntry(entry);
@@ -70,11 +82,52 @@ export function PuzzleList({
     }
   }, [lightboxIndex, entries]);
 
+  async function handleContribute(id: string, markComplete: boolean) {
+    if (!isLoggedIn) {
+      openLoginModal();
+      return;
+    }
+    setContributingId(id);
+    try {
+      await contributeToEntry(id, markComplete);
+    } finally {
+      setContributingId(null);
+    }
+  }
+
+  function renderCards(items: PuzzleEntry[]) {
+    return (
+      <div className="columns-1 gap-4 sm:columns-2 lg:columns-3">
+        {items.map((entry) => {
+          const indexInAll = entries.findIndex((e) => e.id === entry.id);
+          return (
+            <PuzzleCard
+              key={entry.id}
+              entry={entry}
+              isOwned={isOwned(entry.id)}
+              canDelete={canDelete(entry.id)}
+              isAdmin={isAdmin}
+              isLoggedIn={isLoggedIn}
+              currentUserId={currentUserId}
+              contributing={contributingId === entry.id}
+              onEdit={() => setEditingEntry(entry)}
+              onDelete={() => deleteEntry(entry.id)}
+              onImageClick={() => openLightbox(entry, indexInAll)}
+              onContribute={(markComplete) =>
+                handleContribute(entry.id, markComplete)
+              }
+            />
+          );
+        })}
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <PageHeader
         title="Puzzles"
-        subtitle="Share your completed puzzles!"
+        subtitle="Start one, finish one, leave it for the next visitor!"
         icon={<Puzzle className="h-5 w-5 md:h-6 md:w-6" />}
         iconWrapperClassName="flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-emerald-500 to-teal-600 text-white shadow-lg md:h-12 md:w-12"
         desktopAction={
@@ -153,24 +206,35 @@ export function PuzzleList({
             <h2 className="text-lg font-medium">No puzzles yet</h2>
             <p className="mt-1 text-sm text-muted-foreground">
               {isLoggedIn
-                ? "Be the first to share a completed puzzle!"
-                : "Sign in to share a completed puzzle."}
+                ? "Be the first to start a puzzle — leave it open for others to finish, or post one you've already completed."
+                : "Sign in to share a puzzle."}
             </p>
           </div>
         ) : (
-          <div className="columns-1 gap-4 sm:columns-2 lg:columns-3">
-            {entries.map((entry, index) => (
-              <PuzzleCard
-                key={entry.id}
-                entry={entry}
-                isOwned={isOwned(entry.id)}
-                canDelete={canDelete(entry.id)}
-                isAdmin={isAdmin}
-                onEdit={() => setEditingEntry(entry)}
-                onDelete={() => deleteEntry(entry.id)}
-                onImageClick={() => openLightbox(entry, index)}
-              />
-            ))}
+          <div className="space-y-8">
+            {inProgressEntries.length > 0 && (
+              <section>
+                <div className="mb-3 flex items-baseline justify-between">
+                  <h2 className="text-lg font-semibold">In Progress</h2>
+                  <span className="text-xs text-muted-foreground">
+                    {inProgressEntries.length} open
+                  </span>
+                </div>
+                {renderCards(inProgressEntries)}
+              </section>
+            )}
+
+            {completedEntries.length > 0 && (
+              <section>
+                <div className="mb-3 flex items-baseline justify-between">
+                  <h2 className="text-lg font-semibold">Completed</h2>
+                  <span className="text-xs text-muted-foreground">
+                    {completedEntries.length} finished
+                  </span>
+                </div>
+                {renderCards(completedEntries)}
+              </section>
+            )}
           </div>
         )}
       </div>

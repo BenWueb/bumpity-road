@@ -3,12 +3,15 @@ import { checkAndAwardTaskBadges } from "@/utils/badges";
 import { prisma } from "@/utils/prisma";
 import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { coerceTodoStatus } from "@/types/todo";
+import { TODOS_CACHE_TAG } from "@/lib/todos-server";
 
 // Helper to revalidate todos cache for affected users
 function revalidateTodosCache() {
-  // Revalidate home page and todos page
+  // Invalidate the shared unstable_cache used by TodoCardServer / todos pages
+  revalidateTag(TODOS_CACHE_TAG, "max");
+  // Also revalidate page routes so any other RSC data on those pages refreshes
   revalidatePath("/");
   revalidatePath("/todos");
   revalidatePath("/account");

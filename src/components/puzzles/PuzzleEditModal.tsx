@@ -4,7 +4,6 @@ import { PuzzleEntry, PuzzleUpdateInput } from "@/types/puzzle";
 import { COLOR_OPTIONS, ColorValue } from "@/lib/guestbook-constants";
 import { useState } from "react";
 import { Modal } from "@/components/ui/Modal";
-import { UserSuggestInput } from "./UserSuggestInput";
 
 type Props = {
   entry: PuzzleEntry;
@@ -13,26 +12,20 @@ type Props = {
 };
 
 export function PuzzleEditModal({ entry, onSave, onClose }: Props) {
-  const [completedBy, setCompletedBy] = useState(entry.completedBy);
-  const [completedDate, setCompletedDate] = useState(
-    entry.completedDate.split("T")[0]
-  );
   const [notes, setNotes] = useState(entry.notes ?? "");
   const [color, setColor] = useState<ColorValue>(
-    (entry.color as ColorValue) ?? "amber"
+    (entry.color as ColorValue) ?? "amber",
   );
   const [saving, setSaving] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!completedBy.trim() || !completedDate || saving) return;
+    if (saving) return;
 
     setSaving(true);
     try {
       const success = await onSave({
         id: entry.id,
-        completedBy: completedBy.trim(),
-        completedDate,
         notes: notes.trim(),
         color,
       });
@@ -55,39 +48,6 @@ export function PuzzleEditModal({ entry, onSave, onClose }: Props) {
       panelClassName="w-full max-w-md rounded-xl border bg-background p-6 shadow-xl"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label
-            htmlFor="editCompletedBy"
-            className="mb-1 block text-sm font-medium"
-          >
-            Completed By
-          </label>
-          <UserSuggestInput
-            id="editCompletedBy"
-            value={completedBy}
-            onChange={setCompletedBy}
-            maxLength={100}
-            required
-          />
-        </div>
-
-        <div>
-          <label
-            htmlFor="editCompletedDate"
-            className="mb-1 block text-sm font-medium"
-          >
-            Date Completed
-          </label>
-          <input
-            id="editCompletedDate"
-            type="date"
-            value={completedDate}
-            onChange={(e) => setCompletedDate(e.target.value)}
-            required
-            className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-        </div>
-
         <div>
           <label htmlFor="editNotes" className="mb-1 block text-sm font-medium">
             Fun Notes
@@ -136,7 +96,7 @@ export function PuzzleEditModal({ entry, onSave, onClose }: Props) {
           </button>
           <button
             type="submit"
-            disabled={saving || !completedBy.trim() || !completedDate}
+            disabled={saving}
             className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
           >
             {saving ? "Saving..." : "Save Changes"}

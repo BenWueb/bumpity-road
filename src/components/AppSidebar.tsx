@@ -249,12 +249,6 @@ export default function AppSidebar() {
       },
 
       {
-        href: "/help",
-        label: "Help",
-        icon: HelpCircle,
-        prefetch: false,
-      },
-      {
         href: "/about",
         label: "About",
         icon: Info,
@@ -395,8 +389,34 @@ export default function AppSidebar() {
             </ul>
           </nav>
 
-          {/* Feedback button */}
-          <div className="shrink-0 border-t px-2 py-2">
+          {/* Help + Feedback buttons */}
+          <div className="shrink-0 space-y-1 border-t px-2 py-2">
+            <Link
+              href="/help"
+              prefetch={false}
+              onClick={() => {
+                if (window.innerWidth < 768) {
+                  setCollapsed(true);
+                }
+              }}
+              className={[
+                "flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
+                isActivePath(pathname, "/help")
+                  ? "bg-accent text-foreground"
+                  : "text-muted-foreground hover:bg-accent hover:text-foreground",
+              ].join(" ")}
+              title={collapsed ? "Help" : undefined}
+            >
+              <HelpCircle className="h-5 w-5 shrink-0" />
+              <span
+                className={[
+                  "truncate font-medium",
+                  collapsed ? "md:hidden" : "",
+                ].join(" ")}
+              >
+                Help
+              </span>
+            </Link>
             <button
               type="button"
               onClick={() => setFeedbackOpen(true)}

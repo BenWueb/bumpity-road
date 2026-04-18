@@ -76,15 +76,22 @@ async function AboutData() {
     updatedAt: null,
   };
 
+  // `unstable_cache` serializes its return value, so Date fields come back
+  // as ISO strings on cache hits. Normalize to a string either way.
+  const toIso = (v: Date | string | null | undefined): string | null => {
+    if (!v) return null;
+    return v instanceof Date ? v.toISOString() : String(v);
+  };
+
   const mergedAbout = {
     title: title?.value || about.title,
     content: content?.value || about.content,
     heroImageUrl: heroUrl?.value || null,
     heroImagePublicId: heroPublicId?.value || null,
     updatedAt:
-      content?.updatedAt?.toISOString() ??
-      title?.updatedAt?.toISOString() ??
-      heroUrl?.updatedAt?.toISOString() ??
+      toIso(content?.updatedAt) ??
+      toIso(title?.updatedAt) ??
+      toIso(heroUrl?.updatedAt) ??
       null,
   };
 

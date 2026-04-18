@@ -2,7 +2,22 @@
 
 import { PuzzleEntry } from "@/types/puzzle";
 import { getGradientForColor } from "@/lib/guestbook-constants";
-import { ChevronLeft, ChevronRight, Minus, Plus, RotateCcw, X } from "lucide-react";
+import {
+  formatContributorNames,
+  formatDateTime,
+  getCompletedDate,
+  isInProgress,
+} from "@/lib/puzzle-utils";
+import {
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  Hourglass,
+  Minus,
+  Plus,
+  RotateCcw,
+  X,
+} from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 type Props = {
@@ -14,7 +29,7 @@ type Props = {
   onNext: () => void;
 };
 
-function formatDate(isoDate: string) {
+function formatLongDate(isoDate: string) {
   const d = new Date(isoDate);
   return new Intl.DateTimeFormat(undefined, {
     year: "numeric",
@@ -307,7 +322,11 @@ export function PuzzleLightbox({
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={selectedEntry.imageUrl}
-            alt={`Puzzle completed by ${selectedEntry.completedBy}`}
+            alt={
+              isInProgress(selectedEntry)
+                ? "In-progress puzzle"
+                : `Puzzle completed by ${formatContributorNames(selectedEntry) || "the cabin"}`
+            }
             className="max-h-[55vh] w-full object-contain md:max-h-[70vh]"
             draggable={false}
             style={{
@@ -324,14 +343,37 @@ export function PuzzleLightbox({
               selectedEntry.color
             )}`}
           />
-          <div className="relative p-3 md:p-4">
+          <div className="relative max-h-[35vh] overflow-y-auto p-3 md:max-h-[25vh] md:p-4">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
+                <div className="mb-1 flex items-center gap-2">
+                  {isInProgress(selectedEntry) ? (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/95 px-2 py-0.5 text-[11px] font-medium text-white">
+                      <Hourglass className="h-3 w-3" />
+                      In progress
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600/95 px-2 py-0.5 text-[11px] font-medium text-white">
+                      <CheckCircle2 className="h-3 w-3" />
+                      Completed
+                    </span>
+                  )}
+                </div>
                 <h3 className="text-sm font-semibold md:text-base">
-                  {selectedEntry.completedBy}
+                  {formatContributorNames(selectedEntry) ||
+                    (isInProgress(selectedEntry)
+                      ? "Open puzzle"
+                      : "Completed")}
                 </h3>
                 <p className="text-xs text-muted-foreground md:text-sm">
-                  Completed {formatDate(selectedEntry.completedDate)}
+                  {isInProgress(selectedEntry)
+                    ? `Started ${formatLongDate(selectedEntry.createdAt)}`
+                    : (() => {
+                        const completed = getCompletedDate(selectedEntry);
+                        return completed
+                          ? `Completed ${formatLongDate(completed)}`
+                          : `Added ${formatLongDate(selectedEntry.createdAt)}`;
+                      })()}
                 </p>
               </div>
             </div>
@@ -340,6 +382,29 @@ export function PuzzleLightbox({
               <p className="mt-2 whitespace-pre-wrap text-xs text-muted-foreground md:text-sm">
                 {selectedEntry.notes}
               </p>
+            )}
+
+            {selectedEntry.contributions.length > 0 && (
+              <div className="mt-3 rounded-md border border-border/60 bg-background/50 p-2">
+                <div className="mb-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                  {selectedEntry.contributions.length === 1
+                    ? "Contributor"
+                    : `${selectedEntry.contributions.length} contributors`}
+                </div>
+                <ul className="space-y-1">
+                  {selectedEntry.contributions.map((c) => (
+                    <li
+                      key={c.id}
+                      className="flex items-center justify-between gap-2 text-xs"
+                    >
+                      <span className="truncate font-medium">{c.userName}</span>
+                      <span className="shrink-0 text-[11px] text-muted-foreground">
+                        {formatDateTime(c.createdAt)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )}
           </div>
         </div>

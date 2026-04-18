@@ -3,7 +3,18 @@ import { checkAndAwardLoonBadges } from "@/utils/badges";
 import { prisma } from "@/utils/prisma";
 import { deleteCloudinaryImage } from "@/utils/cloudinary";
 import { headers } from "next/headers";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
+import { LOON_STATS_CACHE_TAG } from "@/components/LoonDashboardCard";
+
+// Invalidates the LoonDashboardCard stats cache (used on the home page) and
+// refreshes pages that render loon data so updates show up immediately.
+function revalidateLoonsCache() {
+  revalidateTag(LOON_STATS_CACHE_TAG, "max");
+  revalidatePath("/");
+  revalidatePath("/loon");
+  revalidatePath("/account");
+}
 
 const LOON_SELECT = {
   id: true,
@@ -153,6 +164,8 @@ export async function POST(req: NextRequest) {
 
   const newBadges = await checkAndAwardLoonBadges(session.user.id);
 
+  revalidateLoonsCache();
+
   return NextResponse.json({ observation, newBadges });
 }
 
@@ -261,6 +274,8 @@ export async function PATCH(req: NextRequest) {
     select: LOON_SELECT,
   });
 
+  revalidateLoonsCache();
+
   return NextResponse.json({ observation });
 }
 
@@ -306,5 +321,8 @@ export async function DELETE(req: NextRequest) {
   }
 
   await prisma.loonObservation.delete({ where: { id } });
+
+  revalidateLoonsCache();
+
   return NextResponse.json({ success: true });
 }

@@ -30,12 +30,17 @@ async function fetchAllTodos(): Promise<Todo[]> {
   }));
 }
 
-// Cached version - shared for all users
+export const TODOS_CACHE_TAG = "todos-all";
+
+// Cached version - shared for all users. Invalidated explicitly by
+// `revalidateTag(TODOS_CACHE_TAG)` from the /api/todos mutation handlers,
+// with a 60-second time-based fallback.
 const getCachedTodos = unstable_cache(
   () => fetchAllTodos(),
   ["todos-all"],
   {
-    revalidate: 60, // Revalidate every 60 seconds
+    tags: [TODOS_CACHE_TAG],
+    revalidate: 60,
   }
 );
 

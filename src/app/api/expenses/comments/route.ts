@@ -2,9 +2,11 @@ import { auth } from "@/utils/auth";
 import { prisma } from "@/utils/prisma";
 import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
+import { EXPENSES_CACHE_TAG } from "@/lib/expenses-server";
 
 function revalidateExpensesCache() {
+  revalidateTag(EXPENSES_CACHE_TAG, "max");
   revalidatePath("/expenses");
 }
 

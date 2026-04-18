@@ -1,11 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { Puzzle } from "lucide-react";
+import { Hourglass, Puzzle } from "lucide-react";
 import { AccountCard } from "./AccountCard";
 import { CARD_GRADIENTS } from "@/lib/ui-gradients";
 import { useEffect, useState } from "react";
 import type { PuzzleEntry } from "@/types/puzzle";
+import {
+  formatContributorNames,
+  getCompletedDate,
+  isInProgress,
+} from "@/lib/puzzle-utils";
 
 function formatDate(isoDate: string) {
   return new Date(isoDate).toLocaleDateString("en-US", {
@@ -30,10 +35,13 @@ export function PuzzlesCard() {
             setLoading(false);
             return;
           }
-          const owned = (data.entries ?? []).filter(
-            (e: PuzzleEntry) => e.userId === currentUserId
+          // Show puzzles the user started OR has contributed to.
+          const involved = (data.entries ?? []).filter(
+            (e: PuzzleEntry) =>
+              e.userId === currentUserId ||
+              e.contributions?.some((c) => c.userId === currentUserId),
           );
-          setPuzzles(owned);
+          setPuzzles(involved);
         }
       } finally {
         setLoading(false);
@@ -85,30 +93,49 @@ export function PuzzlesCard() {
           ) : (
             <>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 md:gap-3">
-                {puzzles.slice(0, 8).map((puzzle) => (
-                  <Link
-                    key={puzzle.id}
-                    href="/puzzles"
-                    className="group overflow-hidden rounded-lg border bg-background shadow-sm transition-shadow hover:shadow-md"
-                  >
-                    <div className="aspect-4/3 overflow-hidden">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={puzzle.imageUrl}
-                        alt={`Puzzle by ${puzzle.completedBy}`}
-                        className="h-full w-full object-cover transition-transform group-hover:scale-105"
-                      />
-                    </div>
-                    <div className="p-2">
-                      <p className="truncate text-xs font-medium">
-                        {puzzle.completedBy}
-                      </p>
-                      <p className="text-[10px] text-muted-foreground">
-                        {formatDate(puzzle.completedDate)}
-                      </p>
-                    </div>
-                  </Link>
-                ))}
+                {puzzles.slice(0, 8).map((puzzle) => {
+                  const inProgress = isInProgress(puzzle);
+                  const contributorNames =
+                    formatContributorNames(puzzle) || "Open puzzle";
+                  const dateLabel = inProgress
+                    ? `Started ${formatDate(puzzle.createdAt)}`
+                    : (() => {
+                        const completed = getCompletedDate(puzzle);
+                        return completed
+                          ? formatDate(completed)
+                          : formatDate(puzzle.createdAt);
+                      })();
+                  return (
+                    <Link
+                      key={puzzle.id}
+                      href="/puzzles"
+                      className="group overflow-hidden rounded-lg border bg-background shadow-sm transition-shadow hover:shadow-md"
+                    >
+                      <div className="relative aspect-4/3 overflow-hidden">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={puzzle.imageUrl}
+                          alt={`Puzzle by ${contributorNames}`}
+                          className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                        />
+                        {inProgress && (
+                          <span className="absolute left-1 top-1 inline-flex items-center gap-1 rounded-full bg-amber-500/95 px-1.5 py-0.5 text-[10px] font-medium text-white">
+                            <Hourglass className="h-2.5 w-2.5" />
+                            Open
+                          </span>
+                        )}
+                      </div>
+                      <div className="p-2">
+                        <p className="truncate text-xs font-medium">
+                          {contributorNames}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground">
+                          {dateLabel}
+                        </p>
+                      </div>
+                    </Link>
+                  );
+                })}
               </div>
               <div className="mt-3 flex justify-center md:mt-4">
                 <Link

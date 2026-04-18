@@ -3,19 +3,7 @@ import { prisma } from "@/utils/prisma";
 import { deleteCloudinaryImage } from "@/utils/cloudinary";
 import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-
-const PUZZLE_SELECT = {
-  id: true,
-  completedBy: true,
-  completedDate: true,
-  notes: true,
-  imageUrl: true,
-  imagePublicId: true,
-  color: true,
-  userId: true,
-  user: { select: { id: true, name: true } },
-  createdAt: true,
-} as const;
+import { PUZZLE_SELECT, serializePuzzle } from "@/lib/puzzle-server";
 
 export async function GET() {
   const entries = await prisma.puzzleEntry.findMany({
@@ -42,7 +30,12 @@ export async function GET() {
     // Not logged in
   }
 
-  return NextResponse.json({ entries, isAdmin, currentUserId });
+  return NextResponse.json({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    entries: (entries as any[]).map(serializePuzzle),
+    isAdmin,
+    currentUserId,
+  });
 }
 
 export async function POST(req: NextRequest) {
@@ -52,48 +45,62 @@ export async function POST(req: NextRequest) {
   });
 
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Sign in to add a puzzle" }, { status: 401 });
+    return NextResponse.json(
+      { error: "Sign in to add a puzzle" },
+      { status: 401 },
+    );
   }
 
   const body = await req.json();
-  const { completedBy, completedDate, notes, imageUrl, imagePublicId, color } =
-    body as {
-      completedBy?: string;
-      completedDate?: string;
-      notes?: string;
-      imageUrl?: string;
-      imagePublicId?: string;
-      color?: string;
-    };
+  const { status, notes, imageUrl, imagePublicId, color } = body as {
+    status?: string;
+    notes?: string;
+    imageUrl?: string;
+    imagePublicId?: string;
+    color?: string;
+  };
 
-  if (!completedBy?.trim() || !imageUrl || !imagePublicId) {
+  if (!imageUrl || !imagePublicId) {
     return NextResponse.json(
-      { error: "Completed by, image URL, and image public ID are required" },
-      { status: 400 }
+      { error: "An image is required" },
+      { status: 400 },
     );
   }
 
-  if (!completedDate) {
-    return NextResponse.json(
-      { error: "Completed date is required" },
-      { status: 400 }
-    );
-  }
+  const normalizedStatus =
+    status === "in_progress" ? "in_progress" : "completed";
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { name: true },
+  });
+  const userName = user?.name ?? "Anonymous";
+
+  const now = new Date();
 
   const entry = await prisma.puzzleEntry.create({
     data: {
-      completedBy: completedBy.trim(),
-      completedDate: new Date(completedDate),
+      status: normalizedStatus,
+      completedAt: normalizedStatus === "completed" ? now : null,
       notes: notes?.trim() || null,
       imageUrl,
       imagePublicId,
       color: color || null,
       userId: session.user.id,
+      contributions: {
+        create: [
+          {
+            userId: session.user.id,
+            userName,
+          },
+        ],
+      },
     },
     select: PUZZLE_SELECT,
   });
 
-  return NextResponse.json({ entry });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return NextResponse.json({ entry: serializePuzzle(entry as any) });
 }
 
 export async function PATCH(req: NextRequest) {
@@ -107,10 +114,8 @@ export async function PATCH(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { id, completedBy, completedDate, notes, color } = body as {
+  const { id, notes, color } = body as {
     id?: string;
-    completedBy?: string;
-    completedDate?: string;
     notes?: string;
     color?: string | null;
   };
@@ -127,22 +132,21 @@ export async function PATCH(req: NextRequest) {
   if (!existing || existing.userId !== session.user.id) {
     return NextResponse.json(
       { error: "Not found or unauthorized" },
-      { status: 404 }
+      { status: 404 },
     );
   }
 
   const entry = await prisma.puzzleEntry.update({
     where: { id },
     data: {
-      ...(completedBy?.trim() ? { completedBy: completedBy.trim() } : {}),
-      ...(completedDate ? { completedDate: new Date(completedDate) } : {}),
       ...(notes !== undefined ? { notes: notes?.trim() || null } : {}),
       ...(color !== undefined ? { color } : {}),
     },
     select: PUZZLE_SELECT,
   });
 
-  return NextResponse.json({ entry });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return NextResponse.json({ entry: serializePuzzle(entry as any) });
 }
 
 export async function DELETE(req: NextRequest) {
@@ -171,7 +175,6 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  // Allow owner or admin to delete
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
     select: { isAdmin: true },

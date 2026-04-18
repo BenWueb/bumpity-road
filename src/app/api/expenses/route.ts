@@ -2,11 +2,16 @@ import { auth } from "@/utils/auth";
 import { prisma } from "@/utils/prisma";
 import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { revalidatePath } from "next/cache";
-import { expenseInclude, transformExpense } from "@/lib/expenses-server";
+import { revalidatePath, revalidateTag } from "next/cache";
+import {
+  EXPENSES_CACHE_TAG,
+  expenseInclude,
+  transformExpense,
+} from "@/lib/expenses-server";
 import { deleteCloudinaryImage } from "@/utils/cloudinary";
 
 function revalidateExpensesCache() {
+  revalidateTag(EXPENSES_CACHE_TAG, "max");
   revalidatePath("/");
   revalidatePath("/expenses");
   revalidatePath("/account");

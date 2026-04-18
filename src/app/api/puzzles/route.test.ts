@@ -15,6 +15,9 @@ jest.mock("@/utils/prisma", () => ({
       update: jest.fn(),
       delete: jest.fn(),
     },
+    puzzleContribution: {
+      upsert: jest.fn(),
+    },
   },
 }));
 jest.mock("@/utils/cloudinary", () => ({
@@ -35,8 +38,25 @@ const db = prisma as unknown as {
     update: jest.Mock;
     delete: jest.Mock;
   };
+  puzzleContribution: { upsert: jest.Mock };
 };
 const deleteCloudinaryImageMock = deleteCloudinaryImage as jest.Mock;
+
+const baseEntry = {
+  id: "p1",
+  status: "completed",
+  completedAt: new Date("2024-01-02T00:00:00Z"),
+  completedBy: null,
+  completedDate: null,
+  notes: null,
+  imageUrl: "u",
+  imagePublicId: "pid",
+  color: null,
+  userId: "u1",
+  user: { id: "u1", name: "Alice" },
+  contributions: [],
+  createdAt: new Date("2024-01-01T00:00:00Z"),
+};
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -44,12 +64,13 @@ beforeEach(() => {
 
 describe("GET /api/puzzles", () => {
   it("returns entries with isAdmin=false and currentUserId=null when not logged in", async () => {
-    db.puzzleEntry.findMany.mockResolvedValue([{ id: "p1" }]);
+    db.puzzleEntry.findMany.mockResolvedValue([baseEntry]);
     setSession(null);
 
     const res = await GET();
     const body = await res.json();
     expect(body.entries).toHaveLength(1);
+    expect(body.entries[0].status).toBe("completed");
     expect(body.isAdmin).toBe(false);
     expect(body.currentUserId).toBeNull();
   });
@@ -64,6 +85,17 @@ describe("GET /api/puzzles", () => {
     expect(body.isAdmin).toBe(true);
     expect(body.currentUserId).toBe("u1");
   });
+
+  it("normalizes legacy entries with null status to 'completed'", async () => {
+    db.puzzleEntry.findMany.mockResolvedValue([
+      { ...baseEntry, status: null },
+    ]);
+    setSession(null);
+
+    const res = await GET();
+    const body = await res.json();
+    expect(body.entries[0].status).toBe("completed");
+  });
 });
 
 describe("POST /api/puzzles", () => {
@@ -72,31 +104,10 @@ describe("POST /api/puzzles", () => {
     const res = await POST(
       makeRequest("/api/puzzles", {
         method: "POST",
-        body: {
-          completedBy: "Alice",
-          completedDate: "2024-01-01",
-          imageUrl: "u",
-          imagePublicId: "p",
-        },
-      })
+        body: { status: "completed", imageUrl: "u", imagePublicId: "p" },
+      }),
     );
     expect(res.status).toBe(401);
-  });
-
-  it("returns 400 when completedBy is blank", async () => {
-    setSession({ user: { id: "u1" } });
-    const res = await POST(
-      makeRequest("/api/puzzles", {
-        method: "POST",
-        body: {
-          completedBy: "  ",
-          completedDate: "2024-01-01",
-          imageUrl: "u",
-          imagePublicId: "p",
-        },
-      })
-    );
-    expect(res.status).toBe(400);
   });
 
   it("returns 400 when imageUrl or imagePublicId is missing", async () => {
@@ -104,47 +115,65 @@ describe("POST /api/puzzles", () => {
     const res = await POST(
       makeRequest("/api/puzzles", {
         method: "POST",
-        body: { completedBy: "Alice", completedDate: "2024-01-01" },
-      })
+        body: { status: "completed" },
+      }),
     );
     expect(res.status).toBe(400);
   });
 
-  it("returns 400 when completedDate is missing", async () => {
+  it("creates a completed entry tied to the session user with creator as first contributor", async () => {
     setSession({ user: { id: "u1" } });
-    const res = await POST(
-      makeRequest("/api/puzzles", {
-        method: "POST",
-        body: { completedBy: "Alice", imageUrl: "u", imagePublicId: "p" },
-      })
-    );
-    expect(res.status).toBe(400);
-  });
-
-  it("creates the entry tied to the session user", async () => {
-    setSession({ user: { id: "u1" } });
-    db.puzzleEntry.create.mockResolvedValue({ id: "p1" });
+    db.user.findUnique.mockResolvedValue({ name: "Alice" });
+    db.puzzleEntry.create.mockResolvedValue(baseEntry);
 
     await POST(
       makeRequest("/api/puzzles", {
         method: "POST",
         body: {
-          completedBy: "  Alice  ",
-          completedDate: "2024-01-01",
+          status: "completed",
           notes: "  fun  ",
           imageUrl: "u",
           imagePublicId: "pid",
           color: "blue",
         },
-      })
+      }),
     );
 
     const data = db.puzzleEntry.create.mock.calls[0][0].data;
-    expect(data.completedBy).toBe("Alice");
+    expect(data.status).toBe("completed");
+    expect(data.completedAt).toBeInstanceOf(Date);
     expect(data.notes).toBe("fun");
     expect(data.userId).toBe("u1");
     expect(data.color).toBe("blue");
-    expect(data.completedDate).toBeInstanceOf(Date);
+    expect(data.contributions.create[0]).toEqual({
+      userId: "u1",
+      userName: "Alice",
+    });
+  });
+
+  it("creates an in-progress entry without completedAt", async () => {
+    setSession({ user: { id: "u1" } });
+    db.user.findUnique.mockResolvedValue({ name: "Alice" });
+    db.puzzleEntry.create.mockResolvedValue({
+      ...baseEntry,
+      status: "in_progress",
+      completedAt: null,
+    });
+
+    await POST(
+      makeRequest("/api/puzzles", {
+        method: "POST",
+        body: {
+          status: "in_progress",
+          imageUrl: "u",
+          imagePublicId: "pid",
+        },
+      }),
+    );
+
+    const data = db.puzzleEntry.create.mock.calls[0][0].data;
+    expect(data.status).toBe("in_progress");
+    expect(data.completedAt).toBeNull();
   });
 });
 
@@ -152,7 +181,7 @@ describe("PATCH /api/puzzles", () => {
   it("returns 401 when not logged in", async () => {
     setSession(null);
     const res = await PATCH(
-      makeRequest("/api/puzzles", { method: "PATCH", body: { id: "p1" } })
+      makeRequest("/api/puzzles", { method: "PATCH", body: { id: "p1" } }),
     );
     expect(res.status).toBe(401);
   });
@@ -160,7 +189,7 @@ describe("PATCH /api/puzzles", () => {
   it("returns 400 when id missing", async () => {
     setSession({ user: { id: "u1" } });
     const res = await PATCH(
-      makeRequest("/api/puzzles", { method: "PATCH", body: {} })
+      makeRequest("/api/puzzles", { method: "PATCH", body: {} }),
     );
     expect(res.status).toBe(400);
   });
@@ -173,45 +202,39 @@ describe("PATCH /api/puzzles", () => {
       makeRequest("/api/puzzles", {
         method: "PATCH",
         body: { id: "p1", notes: "hi" },
-      })
+      }),
     );
     expect(res.status).toBe(404);
     expect(db.puzzleEntry.update).not.toHaveBeenCalled();
   });
 
-  it("updates only provided fields when owner", async () => {
+  it("updates only notes/color for the owner", async () => {
     setSession({ user: { id: "owner" } });
     db.puzzleEntry.findUnique.mockResolvedValue({ userId: "owner" });
-    db.puzzleEntry.update.mockResolvedValue({ id: "p1" });
+    db.puzzleEntry.update.mockResolvedValue(baseEntry);
 
     await PATCH(
       makeRequest("/api/puzzles", {
         method: "PATCH",
-        body: {
-          id: "p1",
-          completedBy: "  Bob  ",
-          notes: "  some notes  ",
-        },
-      })
+        body: { id: "p1", notes: "  some notes  ", color: "rose" },
+      }),
     );
 
     const data = db.puzzleEntry.update.mock.calls[0][0].data;
-    expect(data.completedBy).toBe("Bob");
     expect(data.notes).toBe("some notes");
-    expect(data).not.toHaveProperty("completedDate");
-    expect(data).not.toHaveProperty("color");
+    expect(data.color).toBe("rose");
   });
 
   it("can set notes to null when passed empty string", async () => {
     setSession({ user: { id: "owner" } });
     db.puzzleEntry.findUnique.mockResolvedValue({ userId: "owner" });
-    db.puzzleEntry.update.mockResolvedValue({ id: "p1" });
+    db.puzzleEntry.update.mockResolvedValue(baseEntry);
 
     await PATCH(
       makeRequest("/api/puzzles", {
         method: "PATCH",
         body: { id: "p1", notes: "" },
-      })
+      }),
     );
 
     const data = db.puzzleEntry.update.mock.calls[0][0].data;
@@ -226,7 +249,7 @@ describe("DELETE /api/puzzles", () => {
       makeRequest("/api/puzzles", {
         method: "DELETE",
         searchParams: { id: "p1" },
-      })
+      }),
     );
     expect(res.status).toBe(401);
   });
@@ -234,7 +257,7 @@ describe("DELETE /api/puzzles", () => {
   it("returns 400 when id is missing", async () => {
     setSession({ user: { id: "u1" } });
     const res = await DELETE(
-      makeRequest("/api/puzzles", { method: "DELETE" })
+      makeRequest("/api/puzzles", { method: "DELETE" }),
     );
     expect(res.status).toBe(400);
   });
@@ -247,7 +270,7 @@ describe("DELETE /api/puzzles", () => {
       makeRequest("/api/puzzles", {
         method: "DELETE",
         searchParams: { id: "p1" },
-      })
+      }),
     );
     expect(res.status).toBe(404);
   });
@@ -264,7 +287,7 @@ describe("DELETE /api/puzzles", () => {
       makeRequest("/api/puzzles", {
         method: "DELETE",
         searchParams: { id: "p1" },
-      })
+      }),
     );
     expect(res.status).toBe(403);
     expect(db.puzzleEntry.delete).not.toHaveBeenCalled();
@@ -284,7 +307,7 @@ describe("DELETE /api/puzzles", () => {
       makeRequest("/api/puzzles", {
         method: "DELETE",
         searchParams: { id: "p1" },
-      })
+      }),
     );
     expect(res.status).toBe(200);
     expect(deleteCloudinaryImageMock).toHaveBeenCalledWith("pid");
@@ -304,7 +327,7 @@ describe("DELETE /api/puzzles", () => {
       makeRequest("/api/puzzles", {
         method: "DELETE",
         searchParams: { id: "p1" },
-      })
+      }),
     );
     expect(res.status).toBe(200);
     expect(deleteCloudinaryImageMock).toHaveBeenCalledWith("pid");

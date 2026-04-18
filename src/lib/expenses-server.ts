@@ -77,11 +77,16 @@ async function fetchAllExpenses(): Promise<Expense[]> {
   return expenses.map((e: any) => transformExpense(e));
 }
 
-// Cached version - shared for all users
+export const EXPENSES_CACHE_TAG = "expenses-all";
+
+// Cached version - shared for all users. Invalidated explicitly by
+// `revalidateTag(EXPENSES_CACHE_TAG)` from the /api/expenses* mutation
+// handlers, with a 60-second time-based fallback.
 const getCachedExpenses = unstable_cache(
   () => fetchAllExpenses(),
   ["expenses-all"],
   {
+    tags: [EXPENSES_CACHE_TAG],
     revalidate: 60,
   }
 );

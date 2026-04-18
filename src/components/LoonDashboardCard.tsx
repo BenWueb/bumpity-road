@@ -4,6 +4,8 @@ import { CARD_GRADIENTS } from "@/lib/ui-gradients";
 import { Origami, Baby, Eye, MapPin } from "lucide-react";
 import Link from "next/link";
 
+export const LOON_STATS_CACHE_TAG = "loon-dashboard-stats";
+
 interface LoonStats {
   totalObservations: number;
   uniqueLoonIds: string[];
@@ -99,7 +101,7 @@ const getLoonStats = unstable_cache(
     };
   },
   ["loon-dashboard-stats"],
-  { revalidate: 120 },
+  { tags: [LOON_STATS_CACHE_TAG], revalidate: 120 },
 );
 
 export function LoonDashboardCardSkeleton() {
