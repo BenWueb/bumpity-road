@@ -5,20 +5,24 @@ import { useEffect, useState } from "react";
 import { ArrowRight, HelpCircle, Sparkles, UserPlus, X } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { CARD_GRADIENTS } from "@/lib/ui-gradients";
+import { authClient } from "@/lib/auth-client";
 
 const STORAGE_KEY = "bumpity-road:welcome-seen";
 
 export default function WelcomeModal() {
   const [open, setOpen] = useState(false);
+  const { data: session, isPending } = authClient.useSession();
 
   useEffect(() => {
+    if (isPending) return;
+    if (session?.user) return;
     try {
       const seen = window.localStorage.getItem(STORAGE_KEY);
       if (!seen) setOpen(true);
     } catch {
       // ignore (storage might be unavailable in private modes)
     }
-  }, []);
+  }, [isPending, session?.user]);
 
   function handleClose() {
     try {

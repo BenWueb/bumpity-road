@@ -1,33 +1,17 @@
-import { prisma } from "@/utils/prisma";
+const HEADER_IMAGE = "/cabin.webp";
 
-const DEFAULT_HEADER_IMAGE =
-  "https://images.pexels.com/photos/618833/pexels-photo-618833.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1";
-
-async function getHeaderImage(): Promise<string> {
-  try {
-    const setting = await prisma.siteSetting.findUnique({
-      where: { key: "headerImageUrl" },
-    });
-    return setting?.value || DEFAULT_HEADER_IMAGE;
-  } catch {
-    return DEFAULT_HEADER_IMAGE;
-  }
-}
-
-const HeaderComponent = async () => {
-  const headerImageUrl = await getHeaderImage();
-
+const HeaderComponent = () => {
   return (
     <div className="relative overflow-hidden rounded-xl border bg-card shadow-sm">
       {/* Background image with overlay */}
       <div
         className="absolute inset-0 bg-cover"
         style={{
-          backgroundImage: `url('${headerImageUrl}')`,
+          backgroundImage: `url('${HEADER_IMAGE}')`,
           backgroundPosition: "center 30%",
         }}
       />
-      <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-black/60 to-black/40" />
+      <div className="absolute inset-0 bg-linear-to-r from-black/40 via-black/60 to-black/40" />
 
       {/* Content */}
       <div className="relative flex flex-col h-48 items-center justify-center px-4 sm:h-56 sm:px-6 md:h-64 lg:h-80">
