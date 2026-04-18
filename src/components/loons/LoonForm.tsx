@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { LoonObservation, SavedLocation } from "@/types/loon";
+import type { WeatherCondition, WindCondition } from "@/types/loon";
 import {
   NESTING_ACTIVITIES,
   WEATHER_CONDITIONS,
@@ -10,13 +11,33 @@ import {
   LOON_BEHAVIORS,
 } from "@/types/loon";
 import { CldUploadButton, CldImage } from "next-cloudinary";
-import { ImagePlus, X, Plus } from "lucide-react";
+import { ImagePlus, X, Plus, ChevronDown, ChevronUp } from "lucide-react";
 import { emitBadgesEarned } from "@/utils/badges-client";
 import LocationPickerWrapper from "./LocationPickerWrapper";
+
+function mapWeatherMain(main: string): WeatherCondition | "" {
+  const m = main.toLowerCase();
+  if (m === "clear") return "clear";
+  if (m === "clouds") return "partly_cloudy";
+  if (m === "drizzle") return "light_rain";
+  if (m === "rain" || m === "thunderstorm") return "rain";
+  if (m === "snow") return "snow";
+  if (m === "mist" || m === "fog" || m === "haze" || m === "smoke") return "fog";
+  return "";
+}
+
+function mapWindSpeed(mph: number): WindCondition {
+  if (mph <= 3) return "calm";
+  if (mph <= 7) return "light";
+  if (mph <= 18) return "moderate";
+  if (mph <= 30) return "strong";
+  return "gusty";
+}
 
 interface LoonFormProps {
   observation?: LoonObservation;
   savedLocations: SavedLocation[];
+  knownLoonIds?: string[];
   onCreated?: (observation: LoonObservation) => void;
   onUpdated?: (observation: LoonObservation) => void;
   onCancel: () => void;
@@ -25,11 +46,13 @@ interface LoonFormProps {
 export default function LoonForm({
   observation,
   savedLocations,
+  knownLoonIds = [],
   onCreated,
   onUpdated,
   onCancel,
 }: LoonFormProps) {
   const today = new Date().toISOString().split("T")[0];
+  const nowTime = new Date().toTimeString().slice(0, 5);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [images, setImages] = useState<{ url: string; publicId: string }[]>(
     () => {
@@ -42,6 +65,11 @@ export default function LoonForm({
   );
   const [removedPublicIds, setRemovedPublicIds] = useState<string[]>([]);
   const [loonIdInput, setLoonIdInput] = useState("");
+  const [showLoonIdDropdown, setShowLoonIdDropdown] = useState(false);
+  const [showPairedBreakdown, setShowPairedBreakdown] = useState(
+    () => observation?.pairedAdultsCount != null || observation?.unpairedAdultsCount != null
+  );
+  const loonIdWrapperRef = useRef<HTMLDivElement>(null);
 
   const [latitude, setLatitude] = useState<number | null>(
     observation?.latitude ?? null
@@ -54,12 +82,15 @@ export default function LoonForm({
     date: observation?.date
       ? new Date(observation.date).toISOString().split("T")[0]
       : today,
-    time: observation?.time || "",
+    time: observation?.time ?? (!observation ? nowTime : ""),
     lakeName: observation?.lakeName || "",
     lakeArea: observation?.lakeArea || "",
     adultsCount: observation?.adultsCount?.toString() || "0",
+    pairedAdultsCount: observation?.pairedAdultsCount?.toString() || "",
+    unpairedAdultsCount: observation?.unpairedAdultsCount?.toString() || "",
     chicksCount: observation?.chicksCount?.toString() || "0",
     juvenilesCount: observation?.juvenilesCount?.toString() || "0",
+    duration: observation?.duration?.toString() || "",
     loonIds: observation?.loonIds || ([] as string[]),
     nestingActivity: observation?.nestingActivity || "",
     behaviors: observation?.behaviors || ([] as string[]),
@@ -68,6 +99,43 @@ export default function LoonForm({
     disturbance: observation?.disturbance || "",
     notes: observation?.notes || "",
   });
+
+  useEffect(() => {
+    if (observation) return;
+    fetch("/api/weather")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (!data) return;
+        setFormData((prev) => {
+          const updates: Partial<typeof prev> = {};
+          if (!prev.weather && data.weatherMain) {
+            updates.weather = mapWeatherMain(data.weatherMain);
+          }
+          if (!prev.windCondition && data.windSpeed != null) {
+            updates.windCondition = mapWindSpeed(data.windSpeed);
+          }
+          return Object.keys(updates).length ? { ...prev, ...updates } : prev;
+        });
+      })
+      .catch(() => {});
+  }, [observation]);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (loonIdWrapperRef.current && !loonIdWrapperRef.current.contains(e.target as Node)) {
+        setShowLoonIdDropdown(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const filteredLoonIds = useMemo(() => {
+    const input = loonIdInput.trim().toUpperCase();
+    return knownLoonIds.filter(
+      (id) => !formData.loonIds.includes(id) && (!input || id.toUpperCase().includes(input))
+    );
+  }, [knownLoonIds, loonIdInput, formData.loonIds]);
 
   function addLoonId() {
     const id = loonIdInput.trim().toUpperCase();
@@ -93,9 +161,18 @@ export default function LoonForm({
     }));
   }
 
+  const pairedSum =
+    (parseInt(formData.pairedAdultsCount) || 0) +
+    (parseInt(formData.unpairedAdultsCount) || 0);
+  const adultsTotal = parseInt(formData.adultsCount) || 0;
+  const pairedExceedsAdults =
+    (formData.pairedAdultsCount || formData.unpairedAdultsCount) &&
+    pairedSum > adultsTotal;
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!formData.lakeName.trim() || !formData.date || isSubmitting) return;
+    if (pairedExceedsAdults) return;
 
     setIsSubmitting(true);
     try {
@@ -103,6 +180,9 @@ export default function LoonForm({
       const body = {
         ...(observation ? { id: observation.id } : {}),
         ...formData,
+        pairedAdultsCount: formData.pairedAdultsCount || null,
+        unpairedAdultsCount: formData.unpairedAdultsCount || null,
+        duration: formData.duration || null,
         latitude,
         longitude,
         imageUrls: images.map((img) => img.url),
@@ -165,8 +245,8 @@ export default function LoonForm({
           }
         />
 
-        {/* Date & Time */}
-        <div className="grid grid-cols-2 gap-4">
+        {/* Date, Time & Duration */}
+        <div className="grid grid-cols-3 gap-4">
           <div className="space-y-2">
             <label htmlFor="date" className="text-sm font-medium">
               Date *
@@ -192,6 +272,22 @@ export default function LoonForm({
               value={formData.time}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, time: e.target.value }))
+              }
+              className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="duration" className="text-sm font-medium">
+              Duration (min)
+            </label>
+            <input
+              id="duration"
+              type="number"
+              min="1"
+              placeholder="e.g. 30"
+              value={formData.duration}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, duration: e.target.value }))
               }
               className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             />
@@ -256,23 +352,126 @@ export default function LoonForm({
           </div>
         </div>
 
+        {/* Paired / Unpaired Breakdown */}
+        <div>
+          <button
+            type="button"
+            onClick={() => setShowPairedBreakdown((v) => !v)}
+            className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground"
+          >
+            {showPairedBreakdown ? (
+              <ChevronUp className="h-3.5 w-3.5" />
+            ) : (
+              <ChevronDown className="h-3.5 w-3.5" />
+            )}
+            Paired / Unpaired breakdown
+          </button>
+          {showPairedBreakdown && (() => {
+            const adults = parseInt(formData.adultsCount) || 0;
+            const paired = parseInt(formData.pairedAdultsCount) || 0;
+            const unpaired = parseInt(formData.unpairedAdultsCount) || 0;
+            const overTotal = paired + unpaired > adults;
+            return (
+              <div className="mt-2 space-y-1.5">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label htmlFor="pairedAdultsCount" className="text-sm font-medium">
+                      Paired Adults
+                    </label>
+                    <input
+                      id="pairedAdultsCount"
+                      type="number"
+                      min="0"
+                      max={adults}
+                      placeholder="0"
+                      value={formData.pairedAdultsCount}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          pairedAdultsCount: e.target.value,
+                        }))
+                      }
+                      className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label htmlFor="unpairedAdultsCount" className="text-sm font-medium">
+                      Unpaired Adults
+                    </label>
+                    <input
+                      id="unpairedAdultsCount"
+                      type="number"
+                      min="0"
+                      max={adults}
+                      placeholder="0"
+                      value={formData.unpairedAdultsCount}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          unpairedAdultsCount: e.target.value,
+                        }))
+                      }
+                      className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                    />
+                  </div>
+                </div>
+                {overTotal && (
+                  <p className="text-xs text-destructive">
+                    Paired ({paired}) + Unpaired ({unpaired}) exceeds total adults ({adults})
+                  </p>
+                )}
+              </div>
+            );
+          })()}
+        </div>
+
         {/* Individual Loon IDs */}
         <div className="space-y-2">
           <label className="text-sm font-medium">Individual Loon IDs</label>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={loonIdInput}
-              onChange={(e) => setLoonIdInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  addLoonId();
-                }
-              }}
-              placeholder="e.g. L1, L2, BANDED-R"
-              className="flex-1 rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-            />
+          <div className="relative flex gap-2" ref={loonIdWrapperRef}>
+            <div className="relative flex-1">
+              <input
+                type="text"
+                value={loonIdInput}
+                onChange={(e) => setLoonIdInput(e.target.value)}
+                onFocus={() => setShowLoonIdDropdown(true)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    addLoonId();
+                  }
+                  if (e.key === "Escape") {
+                    setShowLoonIdDropdown(false);
+                  }
+                }}
+                placeholder="e.g. L1, L2, BANDED-R"
+                className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+              {showLoonIdDropdown && filteredLoonIds.length > 0 && (
+                <ul className="absolute z-20 mt-1 max-h-40 w-full overflow-auto rounded-md border bg-background shadow-lg">
+                  {filteredLoonIds.map((id) => (
+                    <li key={id}>
+                      <button
+                        type="button"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => {
+                          if (!formData.loonIds.includes(id)) {
+                            setFormData((prev) => ({
+                              ...prev,
+                              loonIds: [...prev.loonIds, id],
+                            }));
+                          }
+                          setLoonIdInput("");
+                        }}
+                        className="w-full px-3 py-1.5 text-left text-sm hover:bg-accent"
+                      >
+                        {id}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
             <button
               type="button"
               onClick={addLoonId}
@@ -508,7 +707,7 @@ export default function LoonForm({
           <button
             type="submit"
             disabled={
-              isSubmitting || !formData.lakeName.trim() || !formData.date
+              isSubmitting || !formData.lakeName.trim() || !formData.date || !!pairedExceedsAdults
             }
             className="rounded-md bg-primary px-3 py-2 text-sm text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
           >

@@ -20,6 +20,7 @@ import { getBadgeInfo } from "@/lib/badge-definitions";
 import type {
   AccountAdventure,
   AccountFeedback,
+  AccountFishObservation,
   AccountGalleryImage,
   AccountLoonObservation,
   AccountPost,
@@ -34,6 +35,7 @@ import { AdventuresCard } from "@/components/account/AdventuresCard";
 import { GalleryPhotosCard } from "@/components/account/GalleryPhotosCard";
 import { PuzzlesCard } from "@/components/account/PuzzlesCard";
 import { LoonObservationsCard } from "@/components/account/LoonObservationsCard";
+import { FishObservationsCard } from "@/components/account/FishObservationsCard";
 
 type Props = {
   user: AccountUser;
@@ -42,6 +44,7 @@ type Props = {
   adventures: AccountAdventure[];
   galleryImages: AccountGalleryImage[];
   loonObservations: AccountLoonObservation[];
+  fishObservations: AccountFishObservation[];
   feedback: AccountFeedback[];
   newMembershipBadges?: string[];
 };
@@ -99,6 +102,14 @@ const LOON_BADGE_HIERARCHY = [
   "LOON_WATCHER",
   "LOON_TRACKER",
   "LOON_RANGER",
+];
+
+// Fishing badges in order from lowest to highest
+const FISHING_BADGE_HIERARCHY = [
+  "FISHING_NOVICE",
+  "FISHING_ANGLER",
+  "FISHING_PRO",
+  "FISHING_MASTER",
 ];
 
 // Non-hierarchical badges (always show if earned or as placeholder)
@@ -197,6 +208,27 @@ function getBadgesForDisplay(
     result.push({ badge: LOON_BADGE_HIERARCHY[nextLoonIndex], earned: false });
   }
 
+  // Add fishing badges - show highest earned OR next to earn
+  let highestFishingIndex = -1;
+  for (const badge of FISHING_BADGE_HIERARCHY) {
+    if (earnedSet.has(badge)) {
+      highestFishingIndex = FISHING_BADGE_HIERARCHY.indexOf(badge);
+    }
+  }
+  if (highestFishingIndex >= 0) {
+    result.push({
+      badge: FISHING_BADGE_HIERARCHY[highestFishingIndex],
+      earned: true,
+    });
+  }
+  const nextFishingIndex = highestFishingIndex + 1;
+  if (nextFishingIndex < FISHING_BADGE_HIERARCHY.length) {
+    result.push({
+      badge: FISHING_BADGE_HIERARCHY[nextFishingIndex],
+      earned: false,
+    });
+  }
+
   // Add membership badges - show highest earned OR next to earn
   let highestMembershipIndex = -1;
   for (const badge of MEMBERSHIP_BADGE_HIERARCHY) {
@@ -228,6 +260,7 @@ export function AccountContent({
   adventures,
   galleryImages,
   loonObservations,
+  fishObservations,
   feedback: initialFeedback,
   newMembershipBadges,
 }: Props) {
@@ -413,6 +446,7 @@ export function AccountContent({
             adventuresCount={adventures.length}
             photosCount={galleryImages.length}
             loonObservationsCount={loonObservations.length}
+            fishObservationsCount={fishObservations.length}
             todoCount={todosByStatus.todo.length}
             inProgressCount={todosByStatus.in_progress.length}
             doneCount={todosByStatus.done.length}
@@ -442,6 +476,9 @@ export function AccountContent({
 
         {/* Loon Observations */}
         <LoonObservationsCard loonObservations={loonObservations} />
+
+        {/* Fish Observations */}
+        <FishObservationsCard fishObservations={fishObservations} />
 
         {/* Puzzles */}
         <PuzzlesCard />

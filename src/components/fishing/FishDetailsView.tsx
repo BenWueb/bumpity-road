@@ -1,13 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { LoonObservation, SavedLocation } from "@/types/loon";
+import { FishObservation, SavedLocation } from "@/types/fishing";
 import {
-  formatLoonDate,
-  getNestingLabel,
+  formatFishDate,
   getWeatherIcon,
-  getTotalLoons,
-} from "@/lib/loon-utils";
+  getSpeciesLabel,
+} from "@/lib/fishing-utils";
 import {
   Camera,
   ChevronDown,
@@ -16,8 +15,7 @@ import {
   MapPin,
   Trash2,
   User,
-  Origami,
-  Baby,
+  Fish,
   Calendar,
   Clock,
   FileText,
@@ -25,39 +23,32 @@ import {
 } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
-import { useLoonDelete } from "@/hooks/use-loon-delete";
-import LoonForm from "./LoonForm";
-import LoonPhotoGrid from "./LoonPhotoGrid";
+import { useFishDelete } from "@/hooks/use-fish-delete";
+import FishingForm from "./FishingForm";
+import FishPhotoGrid from "./FishPhotoGrid";
 import {
-  LoonIdPills,
-  BehaviorPills,
+  SpeciesPills,
+  FishBehaviorPills,
+  BaitPills,
   CoordinatesDisplay,
   ConditionsDisplay,
-} from "./LoonObservationDetails";
+} from "./FishObservationDetails";
 
-type SortField =
-  | "date"
-  | "lakeName"
-  | "totalLoons"
-  | "adultsCount"
-  | "chicksCount"
-  | "user";
+type SortField = "date" | "lakeName" | "totalCount" | "user";
 type SortDir = "asc" | "desc";
 
 interface Props {
-  observations: LoonObservation[];
+  observations: FishObservation[];
   savedLocations: SavedLocation[];
-  knownLoonIds?: string[];
   currentUserId?: string | null;
   isAdmin: boolean;
-  onUpdated: (observation: LoonObservation) => void;
+  onUpdated: (observation: FishObservation) => void;
   onDeleted: (id: string) => void;
 }
 
-export default function LoonDetailsView({
+export default function FishDetailsView({
   observations,
   savedLocations,
-  knownLoonIds,
   currentUserId,
   isAdmin,
   onUpdated,
@@ -65,7 +56,7 @@ export default function LoonDetailsView({
 }: Props) {
   const [sortField, setSortField] = useState<SortField>("date");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
-  const [selectedObs, setSelectedObs] = useState<LoonObservation | null>(null);
+  const [selectedObs, setSelectedObs] = useState<FishObservation | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
 
   const {
@@ -74,7 +65,7 @@ export default function LoonDetailsView({
     requestDelete,
     confirmDelete,
     cancelDelete,
-  } = useLoonDelete((id) => {
+  } = useFishDelete((id) => {
     onDeleted(id);
     if (selectedObs?.id === id) setSelectedObs(null);
   });
@@ -95,12 +86,8 @@ export default function LoonDetailsView({
         return (new Date(a.date).getTime() - new Date(b.date).getTime()) * dir;
       case "lakeName":
         return a.lakeName.localeCompare(b.lakeName) * dir;
-      case "totalLoons":
-        return (getTotalLoons(a) - getTotalLoons(b)) * dir;
-      case "adultsCount":
-        return (a.adultsCount - b.adultsCount) * dir;
-      case "chicksCount":
-        return (a.chicksCount - b.chicksCount) * dir;
+      case "totalCount":
+        return (a.totalCount - b.totalCount) * dir;
       case "user":
         return a.user.name.localeCompare(b.user.name) * dir;
       default:
@@ -140,10 +127,9 @@ export default function LoonDetailsView({
     const obs = observations.find((o) => o.id === editingId);
     if (obs) {
       return (
-        <LoonForm
+        <FishingForm
           observation={obs}
           savedLocations={savedLocations}
-          knownLoonIds={knownLoonIds}
           onUpdated={(updated) => {
             onUpdated(updated);
             setEditingId(null);
@@ -157,7 +143,6 @@ export default function LoonDetailsView({
 
   const modalObs = selectedObs;
   const modalIsOwner = modalObs ? currentUserId === modalObs.userId : false;
-  const modalTotal = modalObs ? getTotalLoons(modalObs) : 0;
 
   return (
     <>
@@ -167,23 +152,19 @@ export default function LoonDetailsView({
             <tr>
               <SortHeader field="date" label="Date" />
               <SortHeader field="lakeName" label="Location" />
-              <SortHeader field="totalLoons" label="Total" />
-              <SortHeader
-                field="adultsCount"
-                label="Adults"
-                className="hidden md:table-cell"
-              />
-              <SortHeader
-                field="chicksCount"
-                label="Chicks"
-                className="hidden md:table-cell"
-              />
+              <SortHeader field="totalCount" label="Total" />
+              <th className="hidden px-3 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground md:table-cell">
+                Species
+              </th>
               <th className="hidden px-3 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground lg:table-cell">
-                Nesting
+                Bait
+              </th>
+              <th className="hidden px-3 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground lg:table-cell">
+                Notable
               </th>
               <SortHeader
                 field="user"
-                label="Observer"
+                label="Angler"
                 className="hidden sm:table-cell"
               />
               <th className="px-3 py-2.5 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">
@@ -193,7 +174,6 @@ export default function LoonDetailsView({
           </thead>
           <tbody className="divide-y">
             {sorted.map((obs) => {
-              const total = getTotalLoons(obs);
               const isOwner = currentUserId === obs.userId;
 
               return (
@@ -209,7 +189,7 @@ export default function LoonDetailsView({
                           {getWeatherIcon(obs.weather)}
                         </span>
                       )}
-                      {formatLoonDate(obs.date)}
+                      {formatFishDate(obs.date)}
                       {obs.imageUrls.length > 0 && (
                         <Camera className="ml-0.5 h-4 w-4 text-muted-foreground" />
                       )}
@@ -222,7 +202,7 @@ export default function LoonDetailsView({
                   </td>
                   <td className="px-3 py-2.5">
                     <div className="flex items-center gap-1">
-                      <MapPin className="h-3 w-3 shrink-0 text-sky-500" />
+                      <MapPin className="h-3 w-3 shrink-0 text-cyan-500" />
                       <span className="truncate">{obs.lakeName}</span>
                     </div>
                     {obs.lakeArea && (
@@ -232,30 +212,37 @@ export default function LoonDetailsView({
                     )}
                   </td>
                   <td className="px-3 py-2.5">
-                    <span className="inline-flex items-center rounded-full bg-sky-100 px-2 py-0.5 text-xs font-semibold text-sky-700 dark:bg-sky-900/30 dark:text-sky-300">
-                      {total}
+                    <span className="inline-flex items-center gap-1 rounded-full bg-cyan-100 px-2 py-0.5 text-xs font-semibold text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300">
+                      <Fish className="h-3 w-3" />
+                      {obs.totalCount}
                     </span>
                   </td>
                   <td className="hidden px-3 py-2.5 md:table-cell">
-                    {obs.adultsCount}
-                  </td>
-                  <td className="hidden px-3 py-2.5 md:table-cell">
-                    {obs.chicksCount > 0 ? (
-                      <span className="font-medium text-emerald-600 dark:text-emerald-400">
-                        {obs.chicksCount}
-                      </span>
-                    ) : (
-                      <span className="text-muted-foreground">0</span>
-                    )}
-                  </td>
-                  <td className="hidden px-3 py-2.5 lg:table-cell">
-                    {obs.nestingActivity && obs.nestingActivity !== "none" ? (
+                    {obs.species.length > 0 ? (
                       <span className="text-xs">
-                        {getNestingLabel(obs.nestingActivity)}
+                        {obs.species
+                          .slice(0, 2)
+                          .map(getSpeciesLabel)
+                          .join(", ")}
+                        {obs.species.length > 2 &&
+                          ` +${obs.species.length - 2}`}
                       </span>
                     ) : (
                       <span className="text-muted-foreground">—</span>
                     )}
+                  </td>
+                  <td className="hidden px-3 py-2.5 lg:table-cell">
+                    {obs.baits.length > 0 ? (
+                      <span className="text-xs text-muted-foreground">
+                        {obs.baits.length}{" "}
+                        {obs.baits.length === 1 ? "type" : "types"}
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
+                    )}
+                  </td>
+                  <td className="hidden max-w-[200px] truncate px-3 py-2.5 text-xs text-muted-foreground lg:table-cell">
+                    {obs.notableCatches || "—"}
                   </td>
                   <td className="hidden px-3 py-2.5 sm:table-cell">
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -296,7 +283,7 @@ export default function LoonDetailsView({
         </table>
       </div>
 
-      {/* Observation detail modal */}
+      {/* Detail modal */}
       <Modal
         isOpen={!!modalObs}
         onClose={() => setSelectedObs(null)}
@@ -307,10 +294,10 @@ export default function LoonDetailsView({
             {/* Header */}
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h2 className="text-lg font-semibold">Loon Observation</h2>
+                <h2 className="text-lg font-semibold">Fishing Report</h2>
                 <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
                   <Calendar className="h-3.5 w-3.5" />
-                  {formatLoonDate(modalObs.date)}
+                  {formatFishDate(modalObs.date)}
                   {modalObs.time && (
                     <>
                       <Clock className="ml-1 h-3.5 w-3.5" />
@@ -348,7 +335,7 @@ export default function LoonDetailsView({
             {/* Location */}
             <div className="rounded-lg border bg-muted/30 p-3">
               <div className="flex items-center gap-2 text-sm font-medium">
-                <MapPin className="h-4 w-4 text-sky-500" />
+                <MapPin className="h-4 w-4 text-cyan-500" />
                 {modalObs.lakeName}
                 {modalObs.lakeArea && (
                   <span className="text-muted-foreground">
@@ -366,81 +353,52 @@ export default function LoonDetailsView({
               )}
             </div>
 
-            {/* Loon counts */}
-            <div className="grid grid-cols-3 gap-3">
-              <div className="rounded-lg border bg-muted/30 p-3 text-center">
-                <Origami className="mx-auto mb-1 h-4 w-4 text-sky-500" />
-                <div className="text-xl font-bold">{modalObs.adultsCount}</div>
-                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                  Adults
-                </div>
-                {(modalObs.pairedAdultsCount != null || modalObs.unpairedAdultsCount != null) && (
-                  <div className="mt-0.5 text-[10px] text-muted-foreground">
-                    {modalObs.pairedAdultsCount ?? 0} paired / {modalObs.unpairedAdultsCount ?? 0} unpaired
-                  </div>
-                )}
-              </div>
-              <div className="rounded-lg border bg-muted/30 p-3 text-center">
-                <Baby className="mx-auto mb-1 h-4 w-4 text-emerald-500" />
-                <div className="text-xl font-bold">{modalObs.chicksCount}</div>
-                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                  Chicks
-                </div>
-              </div>
-              <div className="rounded-lg border bg-muted/30 p-3 text-center">
-                <Origami className="mx-auto mb-1 h-4 w-4 text-amber-500" />
-                <div className="text-xl font-bold">
-                  {modalObs.juvenilesCount}
-                </div>
-                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                  Juveniles
-                </div>
+            {/* Total */}
+            <div className="rounded-lg border bg-muted/30 p-3 text-center">
+              <Fish className="mx-auto mb-1 h-5 w-5 text-cyan-500" />
+              <div className="text-2xl font-bold">{modalObs.totalCount}</div>
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                Fish Caught
               </div>
             </div>
 
-            {/* Total + Duration */}
-            <div className="flex items-center justify-center gap-3">
-              <span className="rounded-full bg-sky-100 px-3 py-1 text-sm font-semibold text-sky-700 dark:bg-sky-900/30 dark:text-sky-300">
-                {modalTotal} total loon{modalTotal !== 1 ? "s" : ""}
-              </span>
-              {modalObs.duration != null && (
-                <span className="flex items-center gap-1 rounded-full bg-muted px-3 py-1 text-sm text-muted-foreground">
-                  <Clock className="h-3 w-3" />
-                  {modalObs.duration} min
-                </span>
-              )}
-            </div>
-
-            {/* Loon IDs */}
-            {modalObs.loonIds.length > 0 && (
+            {/* Species */}
+            {modalObs.species.length > 0 && (
               <div className="space-y-1.5">
                 <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                  Loon IDs
+                  Species
                 </div>
-                <LoonIdPills ids={modalObs.loonIds} />
+                <SpeciesPills species={modalObs.species} />
               </div>
             )}
 
-            {/* Nesting */}
-            {modalObs.nestingActivity &&
-              modalObs.nestingActivity !== "none" && (
-                <div className="space-y-1.5">
-                  <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                    Nesting Activity
-                  </div>
-                  <div className="text-sm">
-                    {getNestingLabel(modalObs.nestingActivity)}
-                  </div>
+            {/* Baits */}
+            {modalObs.baits.length > 0 && (
+              <div className="space-y-1.5">
+                <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Bait / Lures
                 </div>
-              )}
+                <BaitPills baits={modalObs.baits} />
+              </div>
+            )}
 
             {/* Behaviors */}
             {modalObs.behaviors.length > 0 && (
               <div className="space-y-1.5">
                 <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                  Behaviors
+                  Fish Activity
                 </div>
-                <BehaviorPills behaviors={modalObs.behaviors} />
+                <FishBehaviorPills behaviors={modalObs.behaviors} />
+              </div>
+            )}
+
+            {/* Notable catches */}
+            {modalObs.notableCatches && (
+              <div className="space-y-1.5">
+                <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Notable Catches
+                </div>
+                <p className="text-sm">{modalObs.notableCatches}</p>
               </div>
             )}
 
@@ -461,12 +419,12 @@ export default function LoonDetailsView({
             )}
 
             {/* Photos */}
-            <LoonPhotoGrid imageUrls={modalObs.imageUrls} />
+            <FishPhotoGrid imageUrls={modalObs.imageUrls} />
 
             {/* Observer */}
             <div className="flex items-center gap-2 border-t pt-3 text-xs text-muted-foreground">
               <User className="h-3.5 w-3.5" />
-              Observed by {modalObs.user.name}
+              Logged by {modalObs.user.name}
             </div>
           </div>
         )}
@@ -476,8 +434,8 @@ export default function LoonDetailsView({
         isOpen={!!deleteTarget}
         onClose={cancelDelete}
         onConfirm={confirmDelete}
-        title="Delete observation"
-        message="Are you sure you want to delete this loon observation? This action cannot be undone."
+        title="Delete fishing report"
+        message="Are you sure you want to delete this fishing report? This action cannot be undone."
         confirmLabel="Delete"
         variant="danger"
         isLoading={isDeleting}

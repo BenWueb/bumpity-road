@@ -35,6 +35,7 @@ model User {
   expenseVotes     ExpenseVote[]
   puzzles          PuzzleEntry[]
   loonObservations LoonObservation[]
+  fishObservations FishObservation[]
 
   @@unique([email])
   @@map("user")
@@ -318,9 +319,12 @@ model LoonObservation {
   lakeArea        String?
   latitude        Float?
   longitude       Float?
-  adultsCount     Int      @default(0)
-  chicksCount     Int      @default(0)
-  juvenilesCount  Int      @default(0)
+  adultsCount         Int      @default(0)
+  pairedAdultsCount   Int?
+  unpairedAdultsCount Int?
+  chicksCount         Int      @default(0)
+  juvenilesCount      Int      @default(0)
+  duration            Int?
   loonIds         String[]
   nestingActivity String?
   behaviors       String[]
@@ -359,4 +363,44 @@ model SopNotice {
   updatedBy String?
 
   @@map("sop_notice")
+}
+
+model GeneralNotice {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  message   String
+  enabled   Boolean  @default(true)
+  updatedAt DateTime @updatedAt
+  updatedBy String?
+
+  @@map("general_notice")
+}
+
+model FishObservation {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  date            DateTime
+  time            String?
+  lakeName        String
+  lakeArea        String?
+  latitude        Float?
+  longitude       Float?
+  species         String[]
+  totalCount      Int      @default(0)
+  notableCatches  String?
+  behaviors       String[]
+  baits           String[]
+  weather         String?
+  windCondition   String?
+  disturbance     String?
+  notes           String?
+  imageUrls       String[]
+  imagePublicIds  String[]
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId])
+  @@index([lakeName])
+  @@index([date])
+  @@map("fish_observation")
 }

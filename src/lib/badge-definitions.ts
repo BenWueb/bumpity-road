@@ -126,6 +126,26 @@ export const BADGE_DEFINITIONS: Record<string, BadgeInfo> = {
     description: "Logged 25 loon observations",
     icon: "🏅",
   },
+  FISHING_NOVICE: {
+    name: "Fishing Novice",
+    description: "Logged your first fishing report",
+    icon: "🎣",
+  },
+  FISHING_ANGLER: {
+    name: "Angler",
+    description: "Logged 5 fishing reports",
+    icon: "🐟",
+  },
+  FISHING_PRO: {
+    name: "Fishing Pro",
+    description: "Logged 10 fishing reports",
+    icon: "🐠",
+  },
+  FISHING_MASTER: {
+    name: "Fishing Master",
+    description: "Logged 25 fishing reports",
+    icon: "🏆",
+  },
 };
 
 export function getBadgeInfo(badge: string): BadgeInfo {

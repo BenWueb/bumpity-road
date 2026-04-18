@@ -6,6 +6,7 @@ import {
   CheckCircle2,
   Circle,
   Clock,
+  Fish,
   ListTodo,
   NotebookPen,
   Puzzle,
@@ -20,6 +21,7 @@ type Props = {
   adventuresCount: number;
   photosCount: number;
   loonObservationsCount: number;
+  fishObservationsCount: number;
   todoCount: number;
   inProgressCount: number;
   doneCount: number;
@@ -30,6 +32,7 @@ export function ActivityOverviewCard({
   adventuresCount,
   photosCount,
   loonObservationsCount,
+  fishObservationsCount,
   todoCount,
   inProgressCount,
   doneCount,
@@ -103,6 +106,15 @@ export function ActivityOverviewCard({
             <div className="mt-0.5 flex items-center justify-center gap-1 text-[10px] text-muted-foreground md:mt-1 md:text-xs">
               <Origami className="h-3 w-3" />
               Loons
+            </div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-cyan-600 dark:text-cyan-400 md:text-3xl">
+              {fishObservationsCount}
+            </div>
+            <div className="mt-0.5 flex items-center justify-center gap-1 text-[10px] text-muted-foreground md:mt-1 md:text-xs">
+              <Fish className="h-3 w-3" />
+              Fish
             </div>
           </div>
           <div className="text-center">

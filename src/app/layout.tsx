@@ -5,7 +5,7 @@ import AppSidebar from "@/components/AppSidebar";
 import BadgeClaimHandler from "@/components/BadgeClaimHandler";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import AnnouncementBar from "@/components/AnnouncementBar";
-import LoonGlobalNoticeServer from "@/components/LoonGlobalNoticeServer";
+import GeneralNoticeBarServer from "@/components/GeneralNoticeBarServer";
 import { LoginModalProvider } from "@/components/LoginModal";
 import { Suspense } from "react";
 
@@ -70,7 +70,7 @@ export default function RootLayout({
           <div className="flex min-h-screen h-screen h-dvh w-full flex-col overflow-hidden">
             <AnnouncementBar />
             <Suspense fallback={null}>
-              <LoonGlobalNoticeServer />
+              <GeneralNoticeBarServer />
             </Suspense>
             <div className="flex min-h-0 flex-1 overflow-hidden">
               <AppSidebar />

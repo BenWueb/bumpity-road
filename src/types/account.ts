@@ -45,8 +45,21 @@ export type AccountLoonObservation = {
   date: string;
   lakeName: string;
   adultsCount: number;
+  pairedAdultsCount: number | null;
+  unpairedAdultsCount: number | null;
   chicksCount: number;
   juvenilesCount: number;
+  duration: number | null;
+  imageUrls: string[];
+  createdAt: string;
+};
+
+export type AccountFishObservation = {
+  id: string;
+  date: string;
+  lakeName: string;
+  species: string[];
+  totalCount: number;
   imageUrls: string[];
   createdAt: string;
 };

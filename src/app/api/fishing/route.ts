@@ -1,11 +1,11 @@
 import { auth } from "@/utils/auth";
-import { checkAndAwardLoonBadges } from "@/utils/badges";
+import { checkAndAwardFishingBadges } from "@/utils/badges";
 import { prisma } from "@/utils/prisma";
 import { deleteCloudinaryImage } from "@/utils/cloudinary";
 import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
-const LOON_SELECT = {
+const FISH_SELECT = {
   id: true,
   date: true,
   time: true,
@@ -13,15 +13,11 @@ const LOON_SELECT = {
   lakeArea: true,
   latitude: true,
   longitude: true,
-  adultsCount: true,
-  pairedAdultsCount: true,
-  unpairedAdultsCount: true,
-  chicksCount: true,
-  juvenilesCount: true,
-  duration: true,
-  loonIds: true,
-  nestingActivity: true,
+  species: true,
+  totalCount: true,
+  notableCatches: true,
   behaviors: true,
+  baits: true,
   weather: true,
   windCondition: true,
   disturbance: true,
@@ -34,9 +30,9 @@ const LOON_SELECT = {
 } as const;
 
 export async function GET() {
-  const observations = await prisma.loonObservation.findMany({
+  const observations = await prisma.fishObservation.findMany({
     orderBy: { date: "desc" },
-    select: LOON_SELECT,
+    select: FISH_SELECT,
   });
 
   let isAdmin = false;
@@ -69,7 +65,7 @@ export async function POST(req: NextRequest) {
 
   if (!session?.user?.id) {
     return NextResponse.json(
-      { error: "Sign in to log an observation" },
+      { error: "Sign in to log a fishing report" },
       { status: 401 }
     );
   }
@@ -82,15 +78,11 @@ export async function POST(req: NextRequest) {
     lakeArea,
     latitude,
     longitude,
-    adultsCount,
-    pairedAdultsCount,
-    unpairedAdultsCount,
-    chicksCount,
-    juvenilesCount,
-    duration,
-    loonIds,
-    nestingActivity,
+    species,
+    totalCount,
+    notableCatches,
     behaviors,
+    baits,
     weather,
     windCondition,
     disturbance,
@@ -108,22 +100,12 @@ export async function POST(req: NextRequest) {
 
   if (!date) {
     return NextResponse.json(
-      { error: "Observation date is required" },
+      { error: "Report date is required" },
       { status: 400 }
     );
   }
 
-  const parsedAdults = parseInt(adultsCount) || 0;
-  const parsedPaired = pairedAdultsCount != null ? parseInt(pairedAdultsCount) || 0 : null;
-  const parsedUnpaired = unpairedAdultsCount != null ? parseInt(unpairedAdultsCount) || 0 : null;
-  if ((parsedPaired ?? 0) + (parsedUnpaired ?? 0) > parsedAdults) {
-    return NextResponse.json(
-      { error: "Paired + unpaired cannot exceed total adults" },
-      { status: 400 }
-    );
-  }
-
-  const observation = await prisma.loonObservation.create({
+  const observation = await prisma.fishObservation.create({
     data: {
       date: new Date(date),
       time: time?.trim() || null,
@@ -131,27 +113,25 @@ export async function POST(req: NextRequest) {
       lakeArea: lakeArea?.trim() || null,
       latitude: latitude != null ? parseFloat(latitude) : null,
       longitude: longitude != null ? parseFloat(longitude) : null,
-      adultsCount: parsedAdults,
-      pairedAdultsCount: parsedPaired,
-      unpairedAdultsCount: parsedUnpaired,
-      chicksCount: parseInt(chicksCount) || 0,
-      juvenilesCount: parseInt(juvenilesCount) || 0,
-      duration: duration != null ? parseInt(duration) || null : null,
-      loonIds: Array.isArray(loonIds) ? loonIds.filter(Boolean) : [],
-      nestingActivity: nestingActivity || null,
+      species: Array.isArray(species) ? species.filter(Boolean) : [],
+      totalCount: parseInt(totalCount) || 0,
+      notableCatches: notableCatches?.trim() || null,
       behaviors: Array.isArray(behaviors) ? behaviors : [],
+      baits: Array.isArray(baits) ? baits : [],
       weather: weather || null,
       windCondition: windCondition || null,
       disturbance: disturbance || null,
       notes: notes?.trim() || null,
       imageUrls: Array.isArray(imageUrls) ? imageUrls.filter(Boolean) : [],
-      imagePublicIds: Array.isArray(imagePublicIds) ? imagePublicIds.filter(Boolean) : [],
+      imagePublicIds: Array.isArray(imagePublicIds)
+        ? imagePublicIds.filter(Boolean)
+        : [],
       userId: session.user.id,
     },
-    select: LOON_SELECT,
+    select: FISH_SELECT,
   });
 
-  const newBadges = await checkAndAwardLoonBadges(session.user.id);
+  const newBadges = await checkAndAwardFishingBadges(session.user.id);
 
   return NextResponse.json({ observation, newBadges });
 }
@@ -173,14 +153,11 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "ID is required" }, { status: 400 });
   }
 
-  const existing = await prisma.loonObservation.findUnique({
+  const existing = await prisma.fishObservation.findUnique({
     where: { id },
     select: {
       userId: true,
       imagePublicIds: true,
-      adultsCount: true,
-      pairedAdultsCount: true,
-      unpairedAdultsCount: true,
     },
   });
 
@@ -210,26 +187,18 @@ export async function PATCH(req: NextRequest) {
     data.latitude = updates.latitude != null ? parseFloat(updates.latitude) : null;
   if (updates.longitude !== undefined)
     data.longitude = updates.longitude != null ? parseFloat(updates.longitude) : null;
-  if (updates.adultsCount !== undefined)
-    data.adultsCount = parseInt(updates.adultsCount) || 0;
-  if (updates.pairedAdultsCount !== undefined)
-    data.pairedAdultsCount = updates.pairedAdultsCount != null ? parseInt(updates.pairedAdultsCount) || 0 : null;
-  if (updates.unpairedAdultsCount !== undefined)
-    data.unpairedAdultsCount = updates.unpairedAdultsCount != null ? parseInt(updates.unpairedAdultsCount) || 0 : null;
-  if (updates.chicksCount !== undefined)
-    data.chicksCount = parseInt(updates.chicksCount) || 0;
-  if (updates.juvenilesCount !== undefined)
-    data.juvenilesCount = parseInt(updates.juvenilesCount) || 0;
-  if (updates.duration !== undefined)
-    data.duration = updates.duration != null ? parseInt(updates.duration) || null : null;
-  if (updates.loonIds !== undefined)
-    data.loonIds = Array.isArray(updates.loonIds)
-      ? updates.loonIds.filter(Boolean)
+  if (updates.species !== undefined)
+    data.species = Array.isArray(updates.species)
+      ? updates.species.filter(Boolean)
       : [];
-  if (updates.nestingActivity !== undefined)
-    data.nestingActivity = updates.nestingActivity || null;
+  if (updates.totalCount !== undefined)
+    data.totalCount = parseInt(updates.totalCount) || 0;
+  if (updates.notableCatches !== undefined)
+    data.notableCatches = updates.notableCatches?.trim() || null;
   if (updates.behaviors !== undefined)
     data.behaviors = Array.isArray(updates.behaviors) ? updates.behaviors : [];
+  if (updates.baits !== undefined)
+    data.baits = Array.isArray(updates.baits) ? updates.baits : [];
   if (updates.weather !== undefined) data.weather = updates.weather || null;
   if (updates.windCondition !== undefined)
     data.windCondition = updates.windCondition || null;
@@ -237,28 +206,18 @@ export async function PATCH(req: NextRequest) {
     data.disturbance = updates.disturbance || null;
   if (updates.notes !== undefined) data.notes = updates.notes?.trim() || null;
   if (updates.imageUrls !== undefined)
-    data.imageUrls = Array.isArray(updates.imageUrls) ? updates.imageUrls.filter(Boolean) : [];
+    data.imageUrls = Array.isArray(updates.imageUrls)
+      ? updates.imageUrls.filter(Boolean)
+      : [];
   if (updates.imagePublicIds !== undefined)
-    data.imagePublicIds = Array.isArray(updates.imagePublicIds) ? updates.imagePublicIds.filter(Boolean) : [];
+    data.imagePublicIds = Array.isArray(updates.imagePublicIds)
+      ? updates.imagePublicIds.filter(Boolean)
+      : [];
 
-  const finalAdults = (data.adultsCount as number | undefined) ?? existing.adultsCount;
-  const finalPaired = data.pairedAdultsCount !== undefined
-    ? (data.pairedAdultsCount as number | null)
-    : existing.pairedAdultsCount;
-  const finalUnpaired = data.unpairedAdultsCount !== undefined
-    ? (data.unpairedAdultsCount as number | null)
-    : existing.unpairedAdultsCount;
-  if ((finalPaired ?? 0) + (finalUnpaired ?? 0) > finalAdults) {
-    return NextResponse.json(
-      { error: "Paired + unpaired cannot exceed total adults" },
-      { status: 400 }
-    );
-  }
-
-  const observation = await prisma.loonObservation.update({
+  const observation = await prisma.fishObservation.update({
     where: { id },
     data,
-    select: LOON_SELECT,
+    select: FISH_SELECT,
   });
 
   return NextResponse.json({ observation });
@@ -281,7 +240,7 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: "ID is required" }, { status: 400 });
   }
 
-  const existing = await prisma.loonObservation.findUnique({
+  const existing = await prisma.fishObservation.findUnique({
     where: { id },
     select: { userId: true, imagePublicIds: true },
   });
@@ -305,6 +264,6 @@ export async function DELETE(req: NextRequest) {
     if (publicId) await deleteCloudinaryImage(publicId);
   }
 
-  await prisma.loonObservation.delete({ where: { id } });
+  await prisma.fishObservation.delete({ where: { id } });
   return NextResponse.json({ success: true });
 }

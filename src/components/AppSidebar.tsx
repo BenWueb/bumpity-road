@@ -10,6 +10,7 @@ import {
   BookOpen,
   CalendarDays,
   CheckSquare,
+  HelpCircle,
   Home,
   Images,
   Info,
@@ -20,6 +21,7 @@ import {
   NotebookText,
   TentTree,
   Binoculars,
+  Fish,
   Panda,
   Puzzle,
   Wrench,
@@ -206,7 +208,18 @@ export default function AppSidebar() {
         icon: Binoculars,
         pill: SIDEBAR_PILL_STYLES.NEW,
       },
+      {
+        href: "/fishing",
+        label: "Fishing",
+        icon: Fish,
+        pill: SIDEBAR_PILL_STYLES.NEW,
+      },
 
+      {
+        href: "/help",
+        label: "Help",
+        icon: HelpCircle,
+      },
       {
         href: "/about",
         label: "About",

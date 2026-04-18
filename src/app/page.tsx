@@ -5,6 +5,7 @@ import LoonDashboardCard, { LoonDashboardCardSkeleton } from "@/components/LoonD
 import { TodoCardSkeleton } from "@/components/TodoCard";
 import { TodoCardServer } from "@/components/TodoCardServer";
 import { GuestbookCarousel, GuestbookCarouselSkeleton } from "@/components/GuestbookCarousel";
+import WelcomeModal from "@/components/WelcomeModal";
 import { Suspense } from "react";
 import Link from "next/link";
 import { CARD_GRADIENTS } from "@/lib/ui-gradients";
@@ -19,6 +20,7 @@ import {
 export default function Home() {
   return (
     <div className="p-4 sm:p-6 md:p-8">
+      <WelcomeModal />
       <div className="flex flex-col gap-4 sm:gap-6">
         <HeaderComponent />
 

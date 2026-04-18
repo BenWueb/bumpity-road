@@ -1,14 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { LoonObservation } from "@/types/loon";
+import { FishObservation } from "@/types/fishing";
 import {
-  formatLoonDate,
-  getNestingLabel,
+  formatFishDate,
   getWeatherIcon,
-  getNestingGradient,
-  getTotalLoons,
-} from "@/lib/loon-utils";
+  getSpeciesGradient,
+  getSpeciesLabel,
+} from "@/lib/fishing-utils";
 import {
   Camera,
   ChevronDown,
@@ -18,45 +17,47 @@ import {
   MapPin,
   User,
   Clock,
+  Fish,
 } from "lucide-react";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
-import { useLoonDelete } from "@/hooks/use-loon-delete";
-import LoonPhotoGrid from "./LoonPhotoGrid";
+import { useFishDelete } from "@/hooks/use-fish-delete";
+import FishPhotoGrid from "./FishPhotoGrid";
 import {
-  LoonIdPills,
-  BehaviorPills,
+  SpeciesPills,
+  FishBehaviorPills,
+  BaitPills,
   CoordinatesDisplay,
   ConditionsDisplay,
-} from "./LoonObservationDetails";
+} from "./FishObservationDetails";
 
-interface LoonCardProps {
-  observation: LoonObservation;
+interface FishCardProps {
+  observation: FishObservation;
   isOwner: boolean;
   isAdmin: boolean;
   onEdit: () => void;
   onDeleted: (id: string) => void;
 }
 
-export default function LoonCard({
+export default function FishCard({
   observation,
   isOwner,
   isAdmin,
   onEdit,
   onDeleted,
-}: LoonCardProps) {
+}: FishCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const { deleteTarget, isDeleting, requestDelete, confirmDelete, cancelDelete } =
-    useLoonDelete(onDeleted);
+    useFishDelete(onDeleted);
 
-  const totalLoons = getTotalLoons(observation);
   const canEdit = isOwner;
   const canDelete = isOwner || isAdmin;
+  const topSpecies = observation.species[0];
 
   return (
     <div className="w-full rounded-lg border shadow-sm">
       {/* Collapsed view */}
       <div
-        className={`cursor-pointer rounded-lg p-3 transition-colors hover:bg-muted/50 bg-linear-to-br ${getNestingGradient(observation.nestingActivity)}`}
+        className={`cursor-pointer rounded-lg p-3 transition-colors hover:bg-muted/50 bg-linear-to-br ${getSpeciesGradient(observation.species)}`}
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <div className="flex items-start gap-2">
@@ -75,7 +76,7 @@ export default function LoonCard({
           </button>
           <div className="min-w-0 flex-1 space-y-1">
             <div className="flex items-center gap-1.5">
-              <MapPin className="h-3.5 w-3.5 shrink-0 text-sky-500" />
+              <MapPin className="h-3.5 w-3.5 shrink-0 text-cyan-500" />
               <h4 className="truncate text-sm font-medium text-foreground">
                 {observation.lakeName}
                 {observation.lakeArea && (
@@ -89,7 +90,7 @@ export default function LoonCard({
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
                 {observation.weather && getWeatherIcon(observation.weather)}
-                {formatLoonDate(observation.date)}
+                {formatFishDate(observation.date)}
               </span>
               {observation.time && (
                 <span className="flex items-center gap-0.5">
@@ -102,21 +103,17 @@ export default function LoonCard({
               )}
             </div>
             <div className="flex flex-wrap items-center gap-2 text-[10px]">
-              <span className="inline-flex items-center gap-1 rounded-full bg-sky-100 px-2 py-0.5 font-semibold text-sky-700 dark:bg-sky-900/30 dark:text-sky-300">
-                {totalLoons} loon{totalLoons !== 1 ? "s" : ""}
+              <span className="inline-flex items-center gap-1 rounded-full bg-cyan-100 px-2 py-0.5 font-semibold text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300">
+                <Fish className="h-3 w-3" />
+                {observation.totalCount} fish
               </span>
-              {observation.chicksCount > 0 && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 font-semibold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
-                  {observation.chicksCount} chick
-                  {observation.chicksCount !== 1 ? "s" : ""}
+              {topSpecies && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-teal-100 px-2 py-0.5 font-semibold text-teal-700 dark:bg-teal-900/30 dark:text-teal-300">
+                  {getSpeciesLabel(topSpecies)}
+                  {observation.species.length > 1 &&
+                    ` +${observation.species.length - 1}`}
                 </span>
               )}
-              {observation.nestingActivity &&
-                observation.nestingActivity !== "none" && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 font-semibold text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
-                    {getNestingLabel(observation.nestingActivity)}
-                  </span>
-                )}
             </div>
           </div>
         </div>
@@ -125,54 +122,33 @@ export default function LoonCard({
       {/* Expanded view */}
       {isExpanded && (
         <div className="space-y-3 border-t p-4">
-          {/* Counts breakdown */}
-          <div className="grid grid-cols-3 gap-2">
-            <div className="rounded-md bg-muted/50 p-2 text-center">
-              <div className="text-lg font-bold text-foreground">
-                {observation.adultsCount}
-              </div>
-              <div className="text-[10px] font-medium text-muted-foreground">
-                Adults
-              </div>
-              {(observation.pairedAdultsCount != null || observation.unpairedAdultsCount != null) && (
-                <div className="mt-0.5 text-[10px] text-muted-foreground">
-                  {observation.pairedAdultsCount ?? 0}p / {observation.unpairedAdultsCount ?? 0}u
-                </div>
-              )}
+          {/* Total */}
+          <div className="rounded-md bg-muted/50 p-3 text-center">
+            <div className="text-2xl font-bold text-foreground">
+              {observation.totalCount}
             </div>
-            <div className="rounded-md bg-muted/50 p-2 text-center">
-              <div className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
-                {observation.chicksCount}
-              </div>
-              <div className="text-[10px] font-medium text-muted-foreground">
-                Chicks
-              </div>
-            </div>
-            <div className="rounded-md bg-muted/50 p-2 text-center">
-              <div className="text-lg font-bold text-foreground">
-                {observation.juvenilesCount}
-              </div>
-              <div className="text-[10px] font-medium text-muted-foreground">
-                Juveniles
-              </div>
+            <div className="text-[10px] font-medium text-muted-foreground">
+              Fish Caught
             </div>
           </div>
 
-          {/* Duration */}
-          {observation.duration != null && (
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Clock className="h-3 w-3" />
-              <span>{observation.duration} min survey</span>
+          {/* Species */}
+          {observation.species.length > 0 && (
+            <div className="space-y-1">
+              <span className="text-xs font-medium text-muted-foreground">
+                Species
+              </span>
+              <SpeciesPills species={observation.species} />
             </div>
           )}
 
-          {/* Loon IDs */}
-          {observation.loonIds.length > 0 && (
+          {/* Baits */}
+          {observation.baits.length > 0 && (
             <div className="space-y-1">
               <span className="text-xs font-medium text-muted-foreground">
-                Individual IDs
+                Bait / Lures
               </span>
-              <LoonIdPills ids={observation.loonIds} />
+              <BaitPills baits={observation.baits} />
             </div>
           )}
 
@@ -180,9 +156,21 @@ export default function LoonCard({
           {observation.behaviors.length > 0 && (
             <div className="space-y-1">
               <span className="text-xs font-medium text-muted-foreground">
-                Behaviors
+                Fish Activity
               </span>
-              <BehaviorPills behaviors={observation.behaviors} />
+              <FishBehaviorPills behaviors={observation.behaviors} />
+            </div>
+          )}
+
+          {/* Notable catches */}
+          {observation.notableCatches && (
+            <div className="space-y-1">
+              <span className="text-xs font-medium text-muted-foreground">
+                Notable Catches
+              </span>
+              <p className="text-sm text-foreground">
+                {observation.notableCatches}
+              </p>
             </div>
           )}
 
@@ -193,7 +181,7 @@ export default function LoonCard({
 
           <ConditionsDisplay observation={observation} />
 
-          <LoonPhotoGrid imageUrls={observation.imageUrls} />
+          <FishPhotoGrid imageUrls={observation.imageUrls} />
 
           {/* Notes */}
           {observation.notes && (
@@ -242,8 +230,8 @@ export default function LoonCard({
         isOpen={!!deleteTarget}
         onClose={cancelDelete}
         onConfirm={confirmDelete}
-        title="Delete observation"
-        message="Are you sure you want to delete this loon observation? This action cannot be undone."
+        title="Delete fishing report"
+        message="Are you sure you want to delete this fishing report? This action cannot be undone."
         confirmLabel="Delete"
         variant="danger"
         isLoading={isDeleting}

@@ -2,26 +2,25 @@
 
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { LoonObservation, SavedLocation } from "@/types/loon";
+import { FishObservation, SavedLocation } from "@/types/fishing";
 import { PageHeader } from "@/components/PageHeader";
 import { ToggleGroup } from "@/components/ui/ToggleGroup";
 import { Modal } from "@/components/ui/Modal";
-import { type Notice } from "@/components/ui/NoticeBar";
-import LoonForm from "./LoonForm";
-import LoonCard from "./LoonCard";
-import LoonDetailsView from "./LoonDetailsView";
-import LoonNoticeBar from "./LoonNoticeBar";
+import FishingForm from "./FishingForm";
+import FishCard from "./FishCard";
+import FishDetailsView from "./FishDetailsView";
 import ObservationMapWrapper from "./ObservationMapWrapper";
 import { useLoginModal } from "@/components/LoginModal";
 import {
-  LoonIdPills,
-  BehaviorPills,
+  SpeciesPills,
+  FishBehaviorPills,
+  BaitPills,
   CoordinatesDisplay,
   ConditionsDisplay,
-} from "./LoonObservationDetails";
-import LoonPhotoGrid from "./LoonPhotoGrid";
+} from "./FishObservationDetails";
+import FishPhotoGrid from "./FishPhotoGrid";
 import {
-  Binoculars,
+  Fish,
   Filter,
   X,
   ChevronDown,
@@ -34,11 +33,6 @@ import {
   Download,
   ImageDown,
   MapPin,
-  Tag,
-  Origami,
-  Baby,
-  Egg,
-  Eye,
   FileText,
   User,
   Plus,
@@ -48,43 +42,39 @@ import { SuggestionPicker } from "@/components/ui/SuggestionPicker";
 import * as XLSX from "xlsx";
 import JSZip from "jszip";
 import {
-  formatLoonDate,
-  getBehaviorLabel,
+  formatFishDate,
+  getFishBehaviorLabel,
+  getBaitLabel,
+  getSpeciesLabel,
   getDisturbanceLabel,
-  getNestingLabel,
   getWeatherLabel,
   getWindLabel,
-  getTotalLoons,
   sanitizeFilename,
   deriveSavedLocations,
-} from "@/lib/loon-utils";
+} from "@/lib/fishing-utils";
 
 type ViewMode = "cards" | "details";
 
-interface LoonsContentProps {
-  initialObservations: LoonObservation[];
+interface FishingContentProps {
+  initialObservations: FishObservation[];
   initialSavedLocations: SavedLocation[];
   currentUserId: string | null;
   isAdmin: boolean;
-  isLoonAdmin: boolean;
-  initialNotice: Notice;
 }
 
-export default function LoonsContent({
+export default function FishingContent({
   initialObservations,
   initialSavedLocations,
   currentUserId,
   isAdmin,
-  isLoonAdmin,
-  initialNotice,
-}: LoonsContentProps) {
+}: FishingContentProps) {
   const { openLoginModal } = useLoginModal();
   const searchParams = useSearchParams();
   const router = useRouter();
 
   // --- Core data state ---
   const [observations, setObservations] =
-    useState<LoonObservation[]>(initialObservations);
+    useState<FishObservation[]>(initialObservations);
   const [savedLocations, setSavedLocations] = useState<SavedLocation[]>(
     initialSavedLocations,
   );
@@ -96,7 +86,7 @@ export default function LoonsContent({
   const [showFilters, setShowFilters] = useState(false);
   const [isDownloadingPhotos, setIsDownloadingPhotos] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [highlightedObs, setHighlightedObs] = useState<LoonObservation | null>(
+  const [highlightedObs, setHighlightedObs] = useState<FishObservation | null>(
     null,
   );
 
@@ -106,7 +96,7 @@ export default function LoonsContent({
     if (obsId) {
       const found = observations.find((o) => o.id === obsId);
       if (found) setHighlightedObs(found);
-      router.replace("/loon", { scroll: false });
+      router.replace("/fishing", { scroll: false });
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -115,8 +105,8 @@ export default function LoonsContent({
   const [filterLakeArea, setFilterLakeArea] = useState<string | null>(null);
   const [filterDateFrom, setFilterDateFrom] = useState("");
   const [filterDateTo, setFilterDateTo] = useState("");
-  const [filterLoonId, setFilterLoonId] = useState("");
-  const [filterHasChicks, setFilterHasChicks] = useState(false);
+  const [filterSpecies, setFilterSpecies] = useState<string | null>(null);
+  const [filterBait, setFilterBait] = useState<string | null>(null);
 
   const isLoggedIn = !!currentUserId;
 
@@ -140,8 +130,13 @@ export default function LoonsContent({
     [observations, filterLake],
   );
 
-  const uniqueLoonIds = useMemo(
-    () => Array.from(new Set(observations.flatMap((o) => o.loonIds))).sort(),
+  const uniqueSpecies = useMemo(
+    () => Array.from(new Set(observations.flatMap((o) => o.species))).sort(),
+    [observations],
+  );
+
+  const uniqueBaits = useMemo(
+    () => Array.from(new Set(observations.flatMap((o) => o.baits))).sort(),
     [observations],
   );
 
@@ -150,15 +145,15 @@ export default function LoonsContent({
     !!filterLakeArea ||
     !!filterDateFrom ||
     !!filterDateTo ||
-    !!filterLoonId ||
-    filterHasChicks;
+    !!filterSpecies ||
+    !!filterBait;
 
   const activeFilterCount = [
     filterLake,
     filterLakeArea,
     filterDateFrom || filterDateTo ? "date" : null,
-    filterLoonId || null,
-    filterHasChicks ? "chicks" : null,
+    filterSpecies,
+    filterBait,
   ].filter(Boolean).length;
 
   const filteredObservations = useMemo(() => {
@@ -172,12 +167,8 @@ export default function LoonsContent({
         toEnd.setHours(23, 59, 59, 999);
         if (new Date(o.date) > toEnd) return false;
       }
-      if (filterLoonId) {
-        const search = filterLoonId.toUpperCase();
-        if (!o.loonIds.some((id) => id.toUpperCase().includes(search)))
-          return false;
-      }
-      if (filterHasChicks && o.chicksCount === 0) return false;
+      if (filterSpecies && !o.species.includes(filterSpecies)) return false;
+      if (filterBait && !o.baits.includes(filterBait)) return false;
       return true;
     });
   }, [
@@ -186,8 +177,8 @@ export default function LoonsContent({
     filterLakeArea,
     filterDateFrom,
     filterDateTo,
-    filterLoonId,
-    filterHasChicks,
+    filterSpecies,
+    filterBait,
   ]);
 
   const sortedObservations = useMemo(
@@ -198,40 +189,17 @@ export default function LoonsContent({
     [filteredObservations],
   );
 
-  const totalLoons = useMemo(() => {
-    const latest = new Map<string, LoonObservation>();
-    for (const obs of observations) {
-      const existing = latest.get(obs.lakeName);
-      if (!existing || new Date(obs.date) > new Date(existing.date)) {
-        latest.set(obs.lakeName, obs);
-      }
-    }
-    return Array.from(latest.values()).reduce(
-      (sum, o) => sum + getTotalLoons(o),
-      0,
-    );
+  const totalFish = useMemo(
+    () => observations.reduce((sum, o) => sum + o.totalCount, 0),
+    [observations],
+  );
+
+  const uniqueSpeciesCount = uniqueSpecies.length;
+
+  const biggestReport = useMemo(() => {
+    if (observations.length === 0) return 0;
+    return Math.max(...observations.map((o) => o.totalCount));
   }, [observations]);
-
-  const totalChicks = useMemo(
-    () => observations.reduce((sum, o) => sum + o.chicksCount, 0),
-    [observations],
-  );
-
-  const uniqueLoonCount = useMemo(
-    () => new Set(observations.flatMap((o) => o.loonIds)).size,
-    [observations],
-  );
-
-  const activeNestingCount = useMemo(
-    () =>
-      observations.filter(
-        (o) =>
-          o.nestingActivity &&
-          o.nestingActivity !== "none" &&
-          o.nestingActivity !== "failed",
-      ).length,
-    [observations],
-  );
 
   const filteredPhotoCount = useMemo(
     () => sortedObservations.reduce((sum, o) => sum + o.imageUrls.length, 0),
@@ -239,7 +207,7 @@ export default function LoonsContent({
   );
 
   const observationsByMonth = useMemo(() => {
-    const grouped: Record<string, LoonObservation[]> = {};
+    const grouped: Record<string, FishObservation[]> = {};
     for (const obs of sortedObservations) {
       const d = new Date(obs.date);
       const key = `${d.getFullYear()}-${d.getMonth()}`;
@@ -276,21 +244,21 @@ export default function LoonsContent({
     setFilterLakeArea(null);
     setFilterDateFrom("");
     setFilterDateTo("");
-    setFilterLoonId("");
-    setFilterHasChicks(false);
+    setFilterSpecies(null);
+    setFilterBait(null);
   }
 
-  function updateObservations(next: LoonObservation[]) {
+  function updateObservations(next: FishObservation[]) {
     setObservations(next);
     setSavedLocations(deriveSavedLocations(next));
   }
 
-  function handleCreated(obs: LoonObservation) {
+  function handleCreated(obs: FishObservation) {
     updateObservations([obs, ...observations]);
     setShowForm(false);
   }
 
-  function handleUpdated(obs: LoonObservation) {
+  function handleUpdated(obs: FishObservation) {
     updateObservations(observations.map((o) => (o.id === obs.id ? obs : o)));
   }
 
@@ -300,26 +268,22 @@ export default function LoonsContent({
 
   const handleExportExcel = useCallback(() => {
     const rows = sortedObservations.map((o) => ({
-      Date: formatLoonDate(o.date),
+      Date: formatFishDate(o.date),
       Time: o.time || "",
-      "Duration (min)": o.duration ?? "",
       Lake: o.lakeName,
       Area: o.lakeArea || "",
       Latitude: o.latitude ?? "",
       Longitude: o.longitude ?? "",
-      Adults: o.adultsCount,
-      "Paired Adults": o.pairedAdultsCount ?? "",
-      "Unpaired Adults": o.unpairedAdultsCount ?? "",
-      Chicks: o.chicksCount,
-      Juveniles: o.juvenilesCount,
-      "Loon IDs": o.loonIds.join(", "),
-      Nesting: getNestingLabel(o.nestingActivity),
-      Behaviors: o.behaviors.map(getBehaviorLabel).join(", "),
+      "Total Fish": o.totalCount,
+      Species: o.species.map(getSpeciesLabel).join(", "),
+      "Bait / Lures": o.baits.map(getBaitLabel).join(", "),
+      "Fish Activity": o.behaviors.map(getFishBehaviorLabel).join(", "),
+      "Notable Catches": o.notableCatches || "",
       Weather: getWeatherLabel(o.weather),
       Wind: getWindLabel(o.windCondition),
       Disturbance: getDisturbanceLabel(o.disturbance),
       Notes: o.notes || "",
-      Observer: o.user.name,
+      Angler: o.user.name,
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(rows);
@@ -335,10 +299,10 @@ export default function LoonsContent({
     worksheet["!cols"] = colWidths;
 
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Loon Observations");
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Fishing Reports");
     XLSX.writeFile(
       workbook,
-      `loon-observations-${new Date().toISOString().slice(0, 10)}.xlsx`,
+      `fishing-reports-${new Date().toISOString().slice(0, 10)}.xlsx`,
     );
   }, [sortedObservations]);
 
@@ -348,12 +312,13 @@ export default function LoonsContent({
       if (obs.imageUrls.length === 0) continue;
       const dateStr = new Date(obs.date).toISOString().slice(0, 10);
       const area = obs.lakeArea ? sanitizeFilename(obs.lakeArea) : "unknown";
-      const loonTag = obs.loonIds.length > 0 ? `_${obs.loonIds.join("-")}` : "";
+      const speciesTag =
+        obs.species.length > 0 ? `_${obs.species[0]}` : "";
       for (let i = 0; i < obs.imageUrls.length; i++) {
         const suffix = obs.imageUrls.length > 1 ? `_${i + 1}` : "";
         photos.push({
           url: obs.imageUrls[i],
-          name: `${dateStr}_${area}${loonTag}${suffix}.jpg`,
+          name: `${dateStr}_${area}${speciesTag}${suffix}.jpg`,
         });
       }
     }
@@ -382,9 +347,9 @@ export default function LoonsContent({
       const a = document.createElement("a");
       a.href = url;
 
-      let label = "loon-photos";
+      let label = "fishing-photos";
       if (filterLakeArea) label = sanitizeFilename(filterLakeArea);
-      else if (filterLoonId) label = `loon-${filterLoonId}`;
+      else if (filterSpecies) label = `fish-${filterSpecies}`;
       else if (filterLake) label = sanitizeFilename(filterLake);
       a.download = `${label}-${new Date().toISOString().slice(0, 10)}.zip`;
 
@@ -397,7 +362,7 @@ export default function LoonsContent({
     } finally {
       setIsDownloadingPhotos(false);
     }
-  }, [sortedObservations, filterLake, filterLakeArea, filterLoonId]);
+  }, [sortedObservations, filterLake, filterLakeArea, filterSpecies]);
 
   // --- Render helpers ---
   function getMonthLabel(key: string) {
@@ -415,10 +380,10 @@ export default function LoonsContent({
         className="flex-1 overflow-x-hidden overflow-y-scroll"
       >
         <PageHeader
-          icon={<Binoculars className="h-6 w-6" />}
-          title="Loon Observations"
-          subtitle={`Tracking loons across ${uniqueLakes.length} lake${uniqueLakes.length !== 1 ? "s" : ""}`}
-          iconWrapperClassName="flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-sky-500 to-blue-600 text-white shadow-lg md:h-12 md:w-12"
+          icon={<Fish className="h-6 w-6" />}
+          title="Fishing Reports"
+          subtitle={`Tracking catches across ${uniqueLakes.length} lake${uniqueLakes.length !== 1 ? "s" : ""}`}
+          iconWrapperClassName="flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-cyan-500 to-teal-600 text-white shadow-lg md:h-12 md:w-12"
           innerClassName="mx-auto max-w-6xl px-4 py-4 md:px-6 md:py-6"
           mobileActionClassName="sticky top-0 z-10 border-b bg-card/80 px-4 py-3 backdrop-blur-sm md:hidden"
           desktopAction={
@@ -427,7 +392,7 @@ export default function LoonsContent({
                 <button
                   onClick={handleDownloadPhotos}
                   disabled={isDownloadingPhotos}
-                  className="flex items-center gap-2 rounded-md bg-linear-to-br from-sky-500 to-blue-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:from-sky-600 hover:to-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex items-center gap-2 rounded-md bg-linear-to-br from-cyan-500 to-teal-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:from-cyan-600 hover:to-teal-700 disabled:cursor-not-allowed disabled:opacity-50"
                   title={`Download ${filteredPhotoCount} photo${filteredPhotoCount !== 1 ? "s" : ""} as ZIP`}
                 >
                   <ImageDown className="h-4 w-4" />
@@ -451,7 +416,7 @@ export default function LoonsContent({
                   className="hidden items-center gap-2 rounded-lg bg-linear-to-r from-emerald-500 to-teal-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:from-emerald-600 hover:to-teal-600 md:flex"
                 >
                   <Plus className="h-4 w-4" />
-                  {showForm ? "Cancel" : "Log Observation"}
+                  {showForm ? "Cancel" : "Log Report"}
                 </button>
               ) : (
                 <button
@@ -471,7 +436,7 @@ export default function LoonsContent({
                 <button
                   onClick={handleDownloadPhotos}
                   disabled={isDownloadingPhotos}
-                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-linear-to-br from-sky-500 to-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:from-sky-600 hover:to-blue-700 disabled:opacity-50"
+                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-linear-to-br from-cyan-500 to-teal-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:from-cyan-600 hover:to-teal-700 disabled:opacity-50"
                 >
                   <ImageDown className="h-4 w-4" />
                   {isDownloadingPhotos
@@ -485,7 +450,7 @@ export default function LoonsContent({
                   className="flex w-full items-center justify-center gap-2 rounded-lg bg-linear-to-r from-emerald-500 to-teal-500 px-3 py-2 text-sm font-medium text-white shadow-sm"
                 >
                   <Plus className="h-4 w-4" />
-                  {showForm ? "Cancel" : "Log Observation"}
+                  {showForm ? "Cancel" : "Log Report"}
                 </button>
               ) : (
                 <button
@@ -504,66 +469,42 @@ export default function LoonsContent({
         <div className="mx-auto max-w-6xl p-4 md:p-6">
           {showForm && (
             <div className="mb-6">
-              <LoonForm
+              <FishingForm
                 savedLocations={savedLocations}
-                knownLoonIds={uniqueLoonIds}
                 onCreated={handleCreated}
                 onCancel={() => setShowForm(false)}
               />
             </div>
           )}
 
-          {/* Notice bar */}
-          <div className="mb-6">
-            <LoonNoticeBar
-              notice={initialNotice}
-              isLoonAdmin={isLoonAdmin || isAdmin}
-            />
-          </div>
-
           {/* Summary stats */}
           <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
             <div className="rounded-lg border bg-card p-3 shadow-sm">
               <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sky-100 dark:bg-sky-900/30">
-                  <Eye className="h-4 w-4 text-sky-600 dark:text-sky-400" />
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-cyan-100 dark:bg-cyan-900/30">
+                  <FileText className="h-4 w-4 text-cyan-600 dark:text-cyan-400" />
                 </div>
                 <div>
                   <div className="text-xl font-bold tabular-nums">
                     {observations.length}
                   </div>
                   <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                    Observations
+                    Reports
                   </div>
                 </div>
               </div>
             </div>
             <div className="rounded-lg border bg-card p-3 shadow-sm">
               <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/30">
-                  <Origami className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-100 dark:bg-teal-900/30">
+                  <Fish className="h-4 w-4 text-teal-600 dark:text-teal-400" />
                 </div>
                 <div>
                   <div className="text-xl font-bold tabular-nums">
-                    {uniqueLoonCount > 0 ? uniqueLoonCount : `~${totalLoons}`}
+                    {totalFish}
                   </div>
                   <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                    {uniqueLoonCount > 0 ? "Loons Tracked" : "Loons (latest)"}
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="rounded-lg border bg-card p-3 shadow-sm">
-              <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
-                  <Baby className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                </div>
-                <div>
-                  <div className="text-xl font-bold tabular-nums">
-                    {totalChicks}
-                  </div>
-                  <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                    Chick Sightings
+                    Total Fish
                   </div>
                 </div>
               </div>
@@ -571,14 +512,29 @@ export default function LoonsContent({
             <div className="rounded-lg border bg-card p-3 shadow-sm">
               <div className="flex items-center gap-2">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900/30">
-                  <Egg className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                  <Fish className="h-4 w-4 text-amber-600 dark:text-amber-400" />
                 </div>
                 <div>
                   <div className="text-xl font-bold tabular-nums">
-                    {activeNestingCount}
+                    {uniqueSpeciesCount}
                   </div>
                   <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                    Nesting Reports
+                    Species
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="rounded-lg border bg-card p-3 shadow-sm">
+              <div className="flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
+                  <Fish className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                </div>
+                <div>
+                  <div className="text-xl font-bold tabular-nums">
+                    {biggestReport}
+                  </div>
+                  <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                    Best Trip
                   </div>
                 </div>
               </div>
@@ -713,79 +669,66 @@ export default function LoonsContent({
                   </div>
                 )}
 
-                {/* Has chicks toggle */}
-                <div className="space-y-2">
-                  <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                    Chick sightings
-                  </label>
-                  <div className="flex gap-1.5">
-                    <button
-                      onClick={() => setFilterHasChicks(false)}
-                      className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
-                        !filterHasChicks
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
-                      }`}
-                    >
-                      All
-                    </button>
-                    <button
-                      onClick={() => setFilterHasChicks(true)}
-                      className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
-                        filterHasChicks
-                          ? "bg-emerald-500 text-white"
-                          : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
-                      }`}
-                    >
-                      With chicks only
-                    </button>
-                  </div>
-                </div>
-
                 <div className="grid gap-4 sm:grid-cols-2">
-                  {/* Date range */}
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                      <Calendar className="h-3.5 w-3.5" />
-                      Date range
-                    </label>
-                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                      <input
-                        type="date"
-                        value={filterDateFrom}
-                        onChange={(e) => setFilterDateFrom(e.target.value)}
-                        className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                      />
-                      <span className="hidden text-xs text-muted-foreground sm:inline">
-                        to
-                      </span>
-                      <input
-                        type="date"
-                        value={filterDateTo}
-                        onChange={(e) => setFilterDateTo(e.target.value)}
-                        className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Loon ID filter */}
-                  {uniqueLoonIds.length > 0 && (
+                  {/* Species filter */}
+                  {uniqueSpecies.length > 0 && (
                     <div className="space-y-2">
                       <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                        Loon ID
+                        Species
                       </label>
                       <SuggestionPicker
-                        value={filterLoonId || null}
-                        onChange={(v) => setFilterLoonId(v ?? "")}
-                        suggestions={uniqueLoonIds}
-                        placeholder="Filter by loon ID..."
+                        value={filterSpecies}
+                        onChange={setFilterSpecies}
+                        suggestions={uniqueSpecies.map(getSpeciesLabel)}
+                        placeholder="Filter by species..."
                         icon={
-                          <Tag className="h-3.5 w-3.5 shrink-0 opacity-60" />
+                          <Fish className="h-3.5 w-3.5 shrink-0 opacity-60" />
                         }
-                        activeClassName="bg-sky-500 text-white"
+                        activeClassName="bg-cyan-500 text-white"
                       />
                     </div>
                   )}
+
+                  {/* Bait filter */}
+                  {uniqueBaits.length > 0 && (
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                        Bait / Lure
+                      </label>
+                      <SuggestionPicker
+                        value={filterBait}
+                        onChange={setFilterBait}
+                        suggestions={uniqueBaits.map(getBaitLabel)}
+                        placeholder="Filter by bait..."
+                        activeClassName="bg-amber-500 text-white"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* Date range */}
+                <div className="space-y-2">
+                  <label className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                    <Calendar className="h-3.5 w-3.5" />
+                    Date range
+                  </label>
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                    <input
+                      type="date"
+                      value={filterDateFrom}
+                      onChange={(e) => setFilterDateFrom(e.target.value)}
+                      className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                    />
+                    <span className="hidden text-xs text-muted-foreground sm:inline">
+                      to
+                    </span>
+                    <input
+                      type="date"
+                      value={filterDateTo}
+                      onChange={(e) => setFilterDateTo(e.target.value)}
+                      className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                    />
+                  </div>
                 </div>
               </div>
             )}
@@ -803,7 +746,7 @@ export default function LoonsContent({
                 <span className="font-semibold text-foreground">
                   {observations.length}
                 </span>{" "}
-                observation{observations.length !== 1 ? "s" : ""}
+                report{observations.length !== 1 ? "s" : ""}
               </span>
               <button
                 onClick={clearAllFilters}
@@ -818,11 +761,11 @@ export default function LoonsContent({
           {/* Content */}
           {sortedObservations.length === 0 ? (
             <div className="rounded-lg border border-dashed border-muted-foreground/25 p-12 text-center">
-              <Binoculars className="mx-auto mb-3 h-12 w-12 text-muted-foreground/50" />
+              <Fish className="mx-auto mb-3 h-12 w-12 text-muted-foreground/50" />
               <p className="text-sm text-muted-foreground">
                 {hasActiveFilters
-                  ? "No observations match your filters."
-                  : "No loon observations yet. Log your first sighting!"}
+                  ? "No reports match your filters."
+                  : "No fishing reports yet. Log your first catch!"}
               </p>
               {hasActiveFilters && (
                 <button
@@ -834,10 +777,9 @@ export default function LoonsContent({
               )}
             </div>
           ) : viewMode === "details" ? (
-            <LoonDetailsView
+            <FishDetailsView
               observations={sortedObservations}
               savedLocations={savedLocations}
-              knownLoonIds={uniqueLoonIds}
               currentUserId={currentUserId}
               isAdmin={isAdmin}
               onUpdated={handleUpdated}
@@ -848,10 +790,9 @@ export default function LoonsContent({
               const obs = observations.find((o) => o.id === editingCardId);
               if (!obs) return null;
               return (
-                <LoonForm
+                <FishingForm
                   observation={obs}
                   savedLocations={savedLocations}
-                  knownLoonIds={uniqueLoonIds}
                   onUpdated={(updated) => {
                     handleUpdated(updated);
                     setEditingCardId(null);
@@ -865,7 +806,7 @@ export default function LoonsContent({
               {sortedMonthKeys.map((key) => {
                 const monthObs = observationsByMonth[key];
                 const monthTotal = monthObs.reduce(
-                  (sum, o) => sum + getTotalLoons(o),
+                  (sum, o) => sum + o.totalCount,
                   0,
                 );
 
@@ -876,13 +817,13 @@ export default function LoonsContent({
                         {getMonthLabel(key)}
                       </h3>
                       <span className="text-sm text-muted-foreground">
-                        {monthObs.length} obs · {monthTotal} loon
-                        {monthTotal !== 1 ? "s" : ""}
+                        {monthObs.length} report
+                        {monthObs.length !== 1 ? "s" : ""} · {monthTotal} fish
                       </span>
                     </div>
                     <div className="grid grid-cols-1 items-start gap-2 sm:grid-cols-2 lg:grid-cols-3">
                       {monthObs.map((obs) => (
-                        <LoonCard
+                        <FishCard
                           key={obs.id}
                           observation={obs}
                           isOwner={currentUserId === obs.userId}
@@ -900,7 +841,7 @@ export default function LoonsContent({
         </div>
       </div>
 
-      {/* Observation detail modal (opened via ?obs= param from homepage) */}
+      {/* Observation detail modal (opened via ?obs= param) */}
       <Modal
         isOpen={!!highlightedObs}
         onClose={() => setHighlightedObs(null)}
@@ -917,17 +858,15 @@ export default function LoonsContent({
 function HighlightedObservationModal({
   observation,
 }: {
-  observation: LoonObservation;
+  observation: FishObservation;
 }) {
-  const total = getTotalLoons(observation);
-
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-lg font-semibold">Loon Observation</h2>
+        <h2 className="text-lg font-semibold">Fishing Report</h2>
         <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
           <Calendar className="h-3.5 w-3.5" />
-          {formatLoonDate(observation.date)}
+          {formatFishDate(observation.date)}
           {observation.time && (
             <>
               <Clock className="ml-1 h-3.5 w-3.5" />
@@ -939,7 +878,7 @@ function HighlightedObservationModal({
 
       <div className="rounded-lg border bg-muted/30 p-3">
         <div className="flex items-center gap-2 text-sm font-medium">
-          <MapPin className="h-4 w-4 text-sky-500" />
+          <MapPin className="h-4 w-4 text-cyan-500" />
           {observation.lakeName}
           {observation.lakeArea && (
             <span className="text-muted-foreground">
@@ -957,74 +896,47 @@ function HighlightedObservationModal({
         )}
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
-        <div className="rounded-lg border bg-muted/30 p-3 text-center">
-          <Origami className="mx-auto mb-1 h-4 w-4 text-sky-500" />
-          <div className="text-xl font-bold">{observation.adultsCount}</div>
-          <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
-            Adults
-          </div>
-          {(observation.pairedAdultsCount != null || observation.unpairedAdultsCount != null) && (
-            <div className="mt-0.5 text-[10px] text-muted-foreground">
-              {observation.pairedAdultsCount ?? 0} paired / {observation.unpairedAdultsCount ?? 0} unpaired
-            </div>
-          )}
-        </div>
-        <div className="rounded-lg border bg-muted/30 p-3 text-center">
-          <Baby className="mx-auto mb-1 h-4 w-4 text-emerald-500" />
-          <div className="text-xl font-bold">{observation.chicksCount}</div>
-          <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
-            Chicks
-          </div>
-        </div>
-        <div className="rounded-lg border bg-muted/30 p-3 text-center">
-          <Origami className="mx-auto mb-1 h-4 w-4 text-amber-500" />
-          <div className="text-xl font-bold">{observation.juvenilesCount}</div>
-          <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
-            Juveniles
-          </div>
+      <div className="rounded-lg border bg-muted/30 p-3 text-center">
+        <Fish className="mx-auto mb-1 h-5 w-5 text-cyan-500" />
+        <div className="text-2xl font-bold">{observation.totalCount}</div>
+        <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+          Fish Caught
         </div>
       </div>
 
-      <div className="flex items-center justify-center gap-3">
-        <span className="rounded-full bg-sky-100 px-3 py-1 text-sm font-semibold text-sky-700 dark:bg-sky-900/30 dark:text-sky-300">
-          {total} total loon{total !== 1 ? "s" : ""}
-        </span>
-        {observation.duration != null && (
-          <span className="flex items-center gap-1 rounded-full bg-muted px-3 py-1 text-sm text-muted-foreground">
-            <Clock className="h-3 w-3" />
-            {observation.duration} min
-          </span>
-        )}
-      </div>
-
-      {observation.loonIds.length > 0 && (
+      {observation.species.length > 0 && (
         <div className="space-y-1.5">
           <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            Loon IDs
+            Species
           </div>
-          <LoonIdPills ids={observation.loonIds} />
+          <SpeciesPills species={observation.species} />
         </div>
       )}
 
-      {observation.nestingActivity &&
-        observation.nestingActivity !== "none" && (
-          <div className="space-y-1.5">
-            <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Nesting Activity
-            </div>
-            <div className="text-sm">
-              {getNestingLabel(observation.nestingActivity)}
-            </div>
+      {observation.baits.length > 0 && (
+        <div className="space-y-1.5">
+          <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            Bait / Lures
           </div>
-        )}
+          <BaitPills baits={observation.baits} />
+        </div>
+      )}
 
       {observation.behaviors.length > 0 && (
         <div className="space-y-1.5">
           <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            Behaviors
+            Fish Activity
           </div>
-          <BehaviorPills behaviors={observation.behaviors} />
+          <FishBehaviorPills behaviors={observation.behaviors} />
+        </div>
+      )}
+
+      {observation.notableCatches && (
+        <div className="space-y-1.5">
+          <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            Notable Catches
+          </div>
+          <p className="text-sm">{observation.notableCatches}</p>
         </div>
       )}
 
@@ -1042,12 +954,12 @@ function HighlightedObservationModal({
         </div>
       )}
 
-      <LoonPhotoGrid imageUrls={observation.imageUrls} />
+      <FishPhotoGrid imageUrls={observation.imageUrls} />
 
       {observation.user?.name && (
         <div className="flex items-center gap-2 border-t pt-3 text-xs text-muted-foreground">
           <User className="h-3.5 w-3.5" />
-          Observed by {observation.user.name}
+          Logged by {observation.user.name}
         </div>
       )}
     </div>

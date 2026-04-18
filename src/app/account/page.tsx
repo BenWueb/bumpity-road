@@ -46,8 +46,8 @@ async function getAccountData() {
     updatedBadges = [...user.badges, ...newMembershipBadges];
   }
 
-  // Fetch todos, posts, adventures, gallery images, and loon observations in parallel
-  const [todos, posts, adventures, galleryImages, loonObservations] = await Promise.all([
+  // Fetch todos, posts, adventures, gallery images, loon + fish observations in parallel
+  const [todos, posts, adventures, galleryImages, loonObservations, fishObservations] = await Promise.all([
     prisma.todo.findMany({
       where: {
         OR: [{ userId: session.user.id }, { assignedToId: session.user.id }],
@@ -106,8 +106,24 @@ async function getAccountData() {
         date: true,
         lakeName: true,
         adultsCount: true,
+        pairedAdultsCount: true,
+        unpairedAdultsCount: true,
         chicksCount: true,
         juvenilesCount: true,
+        duration: true,
+        imageUrls: true,
+        createdAt: true,
+      },
+    }),
+    prisma.fishObservation.findMany({
+      where: { userId: session.user.id },
+      orderBy: { date: "desc" },
+      select: {
+        id: true,
+        date: true,
+        lakeName: true,
+        species: true,
+        totalCount: true,
         imageUrls: true,
         createdAt: true,
       },
@@ -165,8 +181,21 @@ async function getAccountData() {
     date: obs.date.toISOString(),
     lakeName: obs.lakeName,
     adultsCount: obs.adultsCount,
+    pairedAdultsCount: obs.pairedAdultsCount,
+    unpairedAdultsCount: obs.unpairedAdultsCount,
     chicksCount: obs.chicksCount,
     juvenilesCount: obs.juvenilesCount,
+    duration: obs.duration,
+    imageUrls: obs.imageUrls,
+    createdAt: obs.createdAt.toISOString(),
+  }));
+
+  const formattedFishObservations = fishObservations.map((obs) => ({
+    id: obs.id,
+    date: obs.date.toISOString(),
+    lakeName: obs.lakeName,
+    species: obs.species,
+    totalCount: obs.totalCount,
     imageUrls: obs.imageUrls,
     createdAt: obs.createdAt.toISOString(),
   }));
@@ -212,6 +241,7 @@ async function getAccountData() {
     adventures: formattedAdventures,
     galleryImages: formattedGalleryImages,
     loonObservations: formattedLoonObservations,
+    fishObservations: formattedFishObservations,
     feedback: formattedFeedback,
     newMembershipBadges,
   };
@@ -245,6 +275,7 @@ async function AccountData() {
       adventures={data.adventures}
       galleryImages={data.galleryImages}
       loonObservations={data.loonObservations}
+      fishObservations={data.fishObservations}
       feedback={data.feedback}
       newMembershipBadges={data.newMembershipBadges}
     />
