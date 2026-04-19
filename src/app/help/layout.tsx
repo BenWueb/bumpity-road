@@ -1,7 +1,11 @@
 import { getAllDocs } from "@/lib/help-server";
 import HelpSidebar from "@/components/help/HelpSidebar";
 
-export default function HelpLayout({ children }: { children: React.ReactNode }) {
+export default function HelpLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const docs = getAllDocs();
 
   return (
