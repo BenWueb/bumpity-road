@@ -46,21 +46,23 @@ export default async function SopDocPage({ params }: Props) {
     currentIdx < categoryDocs.length - 1 ? categoryDocs[currentIdx + 1] : null;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-full bg-background">
       <div className="mx-auto max-w-5xl px-4 py-6 md:px-8 md:py-10">
         {/* Breadcrumb */}
-        <div className="mb-6 flex items-center gap-2 text-sm text-muted-foreground">
-          <Link href="/sop" className="hover:text-foreground">
+        <div className="mb-6 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
+          <Link href="/sop" className="whitespace-nowrap hover:text-foreground">
             SOP
           </Link>
           <span>/</span>
           {catMeta && (
             <>
-              <span>{catMeta.label}</span>
+              <span className="whitespace-nowrap">{catMeta.label}</span>
               <span>/</span>
             </>
           )}
-          <span className="text-foreground">{doc.title}</span>
+          <span className="min-w-0 max-w-full truncate text-foreground">
+            {doc.title}
+          </span>
         </div>
 
         {/* Header */}

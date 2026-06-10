@@ -55,7 +55,7 @@ export default async function HelpPage() {
   const conceptsDocs = docs.filter((d) => d.category === "concepts");
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-full bg-background">
       <PageHeader
         title="Help & Guide"
         subtitle="How to use Bumpity Road"

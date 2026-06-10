@@ -30,7 +30,7 @@ const getCachedAboutSettings = unstable_cache(
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-full bg-background">
       <PageHeader
         title="About"
         subtitle="Details about Bumpity Road"

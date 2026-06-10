@@ -221,7 +221,6 @@ export default function AppSidebar() {
         href: "/calendar",
         label: "Calendar",
         icon: CalendarDays,
-        pill: SIDEBAR_PILL_STYLES.BUILDING,
       },
       {
         href: "/todos",

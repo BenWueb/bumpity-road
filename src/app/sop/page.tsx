@@ -58,7 +58,7 @@ export default function SopPage() {
     .slice(0, 5);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-full bg-background">
       <PageHeader
         title="Standard Operating Procedures"
         subtitle="Cabin guides, checklists, and reference documents"

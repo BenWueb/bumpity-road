@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { connection } from "next/server";
 import {
   Droplets,
   Eye,
@@ -257,19 +258,24 @@ export default async function WeatherCard() {
     );
   }
 
+  // Defer to request time so the weather isn't fetched during the build (which
+  // can time out on the build server and bake a failed state into the page).
+  // The fetches stay cached via `revalidate`, so requests still share data.
+  await connection();
+
   try {
     const [weatherRes, locationRes, forecastRes] = await Promise.all([
       fetch(
         `https://api.openweathermap.org/data/2.5/weather?lat=46.987414&lon=-94.2226322&units=imperial&appid=${apiKey}`,
-        { next: { revalidate: 600 } }
+        { next: { revalidate: 600 }, signal: AbortSignal.timeout(8000) }
       ),
       fetch(
         `https://api.openweathermap.org/geo/1.0/reverse?lat=46.987414&lon=-94.2226322&appid=${apiKey}`,
-        { next: { revalidate: 600 } }
+        { next: { revalidate: 600 }, signal: AbortSignal.timeout(8000) }
       ),
       fetch(
         `https://api.openweathermap.org/data/2.5/forecast?lat=46.987414&lon=-94.2226322&units=imperial&appid=${apiKey}`,
-        { next: { revalidate: 600 } }
+        { next: { revalidate: 600 }, signal: AbortSignal.timeout(8000) }
       ).catch(() => null),
     ]);
 

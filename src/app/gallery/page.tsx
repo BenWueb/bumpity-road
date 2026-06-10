@@ -229,7 +229,7 @@ export default function GalleryPage() {
   const isLoggedIn = !!session?.user;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-full bg-background">
       <PageHeader
         title="Gallery"
         subtitle={`${images.length} photo${images.length !== 1 ? "s" : ""}`}

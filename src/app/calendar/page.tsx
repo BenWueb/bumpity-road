@@ -4,7 +4,7 @@ import CalendarView from "@/components/calendar/CalendarViewClient";
 
 export default function CalendarPage() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-full bg-background">
       <PageHeader
         title="Calendar"
         subtitle="View and browse all upcoming events"

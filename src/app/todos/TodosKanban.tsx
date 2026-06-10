@@ -153,7 +153,7 @@ export default function TodosKanban({ initialTodos }: Props) {
   const showLoading = isLoading && !initialTodos?.length;
 
   return (
-    <div className="min-h-screen w-full bg-background">
+    <div className="min-h-full w-full bg-background">
       <PageHeader
         title="Tasks"
         subtitle={<span className="hidden md:inline">Manage your to-do list</span>}

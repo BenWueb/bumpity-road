@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import "./globals.css";
 import AppSidebar from "@/components/AppSidebar";
+import MainScroll from "@/components/MainScroll";
 import BadgeClaimHandler from "@/components/BadgeClaimHandler";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import AnnouncementBar from "@/components/AnnouncementBar";
@@ -74,7 +75,7 @@ export default function RootLayout({
             </Suspense>
             <div className="flex min-h-0 flex-1 overflow-hidden">
               <AppSidebar />
-              <main className="min-w-0 flex-1 overflow-y-auto pb-20 md:pb-0">{children}</main>
+              <MainScroll>{children}</MainScroll>
             </div>
           </div>
           <BadgeClaimHandler />

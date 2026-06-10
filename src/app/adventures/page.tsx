@@ -379,7 +379,7 @@ export default function AdventuresPage() {
   });
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-full bg-background">
       <PageHeader
         title="Adventures"
         subtitle="Activites for up north"
