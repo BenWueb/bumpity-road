@@ -1,12 +1,17 @@
-import { getAllDocs } from "@/lib/help-server";
+import {
+  getAllDocs,
+  filterDocsByAccess,
+  isCurrentUserAdmin,
+} from "@/lib/help-server";
 import HelpSidebar from "@/components/help/HelpSidebar";
 
-export default function HelpLayout({
+export default async function HelpLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const docs = getAllDocs();
+  const isAdmin = await isCurrentUserAdmin();
+  const docs = filterDocsByAccess(getAllDocs(), isAdmin);
 
   return (
     <div className="flex h-full min-h-0">

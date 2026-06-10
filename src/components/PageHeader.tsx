@@ -1,6 +1,10 @@
 "use client";
 
 import { ReactNode } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { HelpCircle } from "lucide-react";
+import { getHelpHrefForPath } from "@/lib/help-links";
 
 type Props = {
   title: ReactNode;
@@ -20,6 +24,12 @@ type Props = {
   mobileAction?: ReactNode;
 
   /**
+   * Contextual "Need help?" link. Defaults to the help doc that matches the
+   * current route. Pass an explicit href to override, or `null` to hide it.
+   */
+  helpHref?: string | null;
+
+  /**
    * Custom styling hooks to match existing pages without forcing a redesign.
    */
   headerClassName?: string;
@@ -34,11 +44,16 @@ export function PageHeader({
   icon,
   desktopAction,
   mobileAction,
+  helpHref,
   headerClassName,
   innerClassName,
   iconWrapperClassName,
   mobileActionClassName,
 }: Props) {
+  const pathname = usePathname();
+  const resolvedHelpHref =
+    helpHref === undefined ? getHelpHrefForPath(pathname) : helpHref;
+
   return (
     <>
       <div className={headerClassName ?? "border-b bg-card/50"}>
@@ -68,7 +83,19 @@ export function PageHeader({
               </div>
             </div>
 
-            {desktopAction}
+            <div className="flex shrink-0 items-center gap-2">
+              {resolvedHelpHref && (
+                <Link
+                  href={resolvedHelpHref}
+                  className="inline-flex items-center gap-2 rounded-lg border bg-background/60 px-3 py-2 text-sm font-medium text-muted-foreground shadow-sm transition-colors hover:bg-accent hover:text-foreground"
+                  title="Need help?"
+                >
+                  <HelpCircle className="h-4 w-4" />
+                  <span className="hidden sm:inline">Need help?</span>
+                </Link>
+              )}
+              {desktopAction}
+            </div>
           </div>
         </div>
       </div>

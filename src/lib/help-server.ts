@@ -1,8 +1,11 @@
 import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
+import { headers } from "next/headers";
+import { auth } from "@/utils/auth";
+import { prisma } from "@/utils/prisma";
 
-export type HelpAccess = "public" | "loggedin";
+export type HelpAccess = "public" | "loggedin" | "admin";
 
 export type HelpDocMeta = {
   slug: string;
@@ -103,4 +106,36 @@ export function getDocBySlug(slug: string): HelpDoc | null {
 
 export function getDocsByCategory(category: string): HelpDocMeta[] {
   return getAllDocs().filter((doc) => doc.category === category);
+}
+
+/**
+ * Whether the current request is from a logged-in admin. Reads the session,
+ * so calling this opts the rendering into dynamic mode.
+ */
+export async function isCurrentUserAdmin(): Promise<boolean> {
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+      asResponse: false,
+    });
+    if (!session?.user?.id) return false;
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { isAdmin: true },
+    });
+    return user?.isAdmin ?? false;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Filter out admin-only docs for non-admin viewers.
+ */
+export function filterDocsByAccess<T extends { access?: HelpAccess }>(
+  docs: T[],
+  isAdmin: boolean,
+): T[] {
+  if (isAdmin) return docs;
+  return docs.filter((doc) => doc.access !== "admin");
 }

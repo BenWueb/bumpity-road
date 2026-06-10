@@ -178,6 +178,9 @@ export default function CalendarView() {
             minute: "2-digit",
             meridiem: "short",
           }}
+          views={{
+            dayGridMonth: { displayEventTime: false },
+          }}
         />
       </div>
     </div>

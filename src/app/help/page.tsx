@@ -1,7 +1,6 @@
 import Link from "next/link";
 import {
   ArrowRight,
-  Clock,
   ExternalLink,
   FileText,
   HelpCircle,
@@ -12,8 +11,12 @@ import {
 } from "lucide-react";
 import FeedbackTrigger from "@/components/help/FeedbackTrigger";
 import { PageHeader } from "@/components/PageHeader";
-import { getAllDocs } from "@/lib/help-server";
-import { HELP_CATEGORIES, getCategoryMeta } from "@/content/help/_categories";
+import {
+  getAllDocs,
+  filterDocsByAccess,
+  isCurrentUserAdmin,
+} from "@/lib/help-server";
+import { HELP_CATEGORIES } from "@/content/help/_categories";
 import { CARD_GRADIENTS } from "@/lib/ui-gradients";
 import { AccessPill } from "@/components/help/help-mdx-components";
 import { getBadgeInfo } from "@/lib/badge-definitions";
@@ -26,8 +29,10 @@ const FEATURE_ROUTES: Record<string, string> = {
   "features/blog": "/blog",
   "features/adventures": "/adventures",
   "features/loons": "/loon",
+  "features/fishing": "/fishing",
   "features/tasks": "/todos",
   "features/account-and-badges": "/account",
+  "features/expenses": "/expenses",
 };
 
 const BADGE_TEASER_IDS = [
@@ -39,19 +44,15 @@ const BADGE_TEASER_IDS = [
   "ADVENTURER_FIRST",
 ];
 
-export default function HelpPage() {
-  const docs = getAllDocs();
+export default async function HelpPage() {
+  const isAdmin = await isCurrentUserAdmin();
+  const docs = filterDocsByAccess(getAllDocs(), isAdmin);
 
   const featureDocs = docs.filter((d) => d.category === "features");
   const gettingStartedDocs = docs.filter(
     (d) => d.category === "getting-started",
   );
   const conceptsDocs = docs.filter((d) => d.category === "concepts");
-
-  const recentDocs = [...docs]
-    .filter((d) => d.updatedAt)
-    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
-    .slice(0, 5);
 
   return (
     <div className="min-h-screen bg-background">
@@ -120,6 +121,56 @@ export default function HelpPage() {
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
+        </div>
+
+        {/* Getting Started + Concepts compact */}
+        <div className="mb-6 grid gap-4 sm:grid-cols-2">
+          {[
+            {
+              cat: HELP_CATEGORIES.find((c) => c.id === "getting-started"),
+              catDocs: gettingStartedDocs,
+              gradient: CARD_GRADIENTS.emerald,
+            },
+            {
+              cat: HELP_CATEGORIES.find((c) => c.id === "concepts"),
+              catDocs: conceptsDocs,
+              gradient: CARD_GRADIENTS.violet,
+            },
+          ].map(({ cat, catDocs, gradient }) => {
+            if (!cat || catDocs.length === 0) return null;
+            const Icon = cat.icon;
+            return (
+              <div
+                key={cat.id}
+                className="relative overflow-hidden rounded-xl border bg-card shadow-sm"
+              >
+                <div
+                  className={`pointer-events-none absolute inset-0 ${gradient}`}
+                />
+                <div className="relative p-5">
+                  <div className="mb-3 flex items-center gap-3">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-background/80 shadow-sm">
+                      <Icon className="h-5 w-5 text-foreground" />
+                    </div>
+                    <h2 className="font-semibold">{cat.label}</h2>
+                  </div>
+                  <ul className="space-y-1">
+                    {catDocs.map((doc) => (
+                      <li key={doc.slug}>
+                        <Link
+                          href={`/help/${doc.slug}`}
+                          className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                        >
+                          <FileText className="h-3.5 w-3.5 shrink-0" />
+                          <span className="truncate">{doc.title}</span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            );
+          })}
         </div>
 
         {/* Features grid */}
@@ -241,92 +292,6 @@ export default function HelpPage() {
           </div>
         </div>
 
-        {/* Getting Started + Concepts compact */}
-        <div className="mb-8 grid gap-4 sm:grid-cols-2">
-          {[
-            {
-              cat: HELP_CATEGORIES.find((c) => c.id === "getting-started"),
-              catDocs: gettingStartedDocs,
-              gradient: CARD_GRADIENTS.emerald,
-            },
-            {
-              cat: HELP_CATEGORIES.find((c) => c.id === "concepts"),
-              catDocs: conceptsDocs,
-              gradient: CARD_GRADIENTS.violet,
-            },
-          ].map(({ cat, catDocs, gradient }) => {
-            if (!cat || catDocs.length === 0) return null;
-            const Icon = cat.icon;
-            return (
-              <div
-                key={cat.id}
-                className="relative overflow-hidden rounded-xl border bg-card shadow-sm"
-              >
-                <div
-                  className={`pointer-events-none absolute inset-0 ${gradient}`}
-                />
-                <div className="relative p-5">
-                  <div className="mb-3 flex items-center gap-3">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-background/80 shadow-sm">
-                      <Icon className="h-5 w-5 text-foreground" />
-                    </div>
-                    <h2 className="font-semibold">{cat.label}</h2>
-                  </div>
-                  <ul className="space-y-1">
-                    {catDocs.map((doc) => (
-                      <li key={doc.slug}>
-                        <Link
-                          href={`/help/${doc.slug}`}
-                          className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-                        >
-                          <FileText className="h-3.5 w-3.5 shrink-0" />
-                          <span className="truncate">{doc.title}</span>
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Recently updated */}
-        {recentDocs.length > 0 && (
-          <div className="mt-8">
-            <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-muted-foreground">
-              <Clock className="h-4 w-4" />
-              Recently Updated
-            </h2>
-            <div className="space-y-1">
-              {recentDocs.map((doc) => {
-                const catMeta = getCategoryMeta(doc.category);
-                return (
-                  <Link
-                    key={doc.slug}
-                    href={`/help/${doc.slug}`}
-                    className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-accent"
-                  >
-                    <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
-                    <span className="min-w-0 flex-1 truncate font-medium">
-                      {doc.title}
-                    </span>
-                    {catMeta && (
-                      <span className="shrink-0 rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
-                        {catMeta.label}
-                      </span>
-                    )}
-                    {doc.updatedAt && (
-                      <span className="shrink-0 text-xs text-muted-foreground">
-                        {doc.updatedAt}
-                      </span>
-                    )}
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

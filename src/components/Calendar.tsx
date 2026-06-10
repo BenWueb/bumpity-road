@@ -23,20 +23,11 @@ function formatWhen(isoOrDate: string | null) {
 
   if (Number.isNaN(d.getTime())) return "—";
 
-  if (isAllDay) {
-    return new Intl.DateTimeFormat(undefined, {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-    }).format(d);
-  }
-
+  // Show date only — event times are intentionally omitted on the home card.
   return new Intl.DateTimeFormat(undefined, {
     weekday: "short",
     month: "short",
     day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
   }).format(d);
 }
 

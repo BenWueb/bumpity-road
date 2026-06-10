@@ -56,7 +56,6 @@ export default function NoticeBar({
   }
 
   function handleSave() {
-    if (!draft.trim()) return;
     save(draft, true);
   }
 
@@ -100,7 +99,7 @@ export default function NoticeBar({
                 </button>
                 <button
                   onClick={handleSave}
-                  disabled={isSaving || !draft.trim()}
+                  disabled={isSaving}
                   className="flex items-center gap-1 rounded-md bg-amber-500 px-2.5 py-1.5 text-xs font-medium text-white transition-colors hover:bg-amber-600 disabled:opacity-50"
                 >
                   <Check className="h-3 w-3" />

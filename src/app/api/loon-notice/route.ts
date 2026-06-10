@@ -37,8 +37,11 @@ export async function POST(req: NextRequest) {
 
   const { message, enabled } = await req.json();
 
-  if (!message?.trim()) {
-    return NextResponse.json({ error: "Message is required" }, { status: 400 });
+  if (typeof message !== "string") {
+    return NextResponse.json(
+      { error: "Message must be a string" },
+      { status: 400 },
+    );
   }
 
   const existing = await prisma.loonNotice.findFirst();

@@ -2,13 +2,13 @@
 title: "Tasks"
 category: "features"
 access: "loggedin"
-description: "A shared to-do board for cabin chores"
-tags: ["tasks", "todos", "kanban"]
+description: "A shared kanban board for cabin chores and projects"
+tags: ["tasks", "todos", "kanban", "chores"]
 order: 8
-updatedAt: "2026-04-18"
+updatedAt: "2026-06-10"
 ---
 
-Tasks is a shared to-do list for cabin chores and projects. Three columns: **To Do**, **Doing**, **Done**.
+Tasks is a shared kanban board for cabin chores and projects. Everyone signed in sees the same board, so it's easy to split up work and see what's left to do.
 
 <LinkCard
   href="/todos"
@@ -16,19 +16,55 @@ Tasks is a shared to-do list for cabin chores and projects. Three columns: **To 
   description="See the board"
 />
 
-## How to use it
+## The three columns
+
+Tasks move left to right across three columns:
+
+- **To Do** — not started yet.
+- **In Progress** — someone's working on it.
+- **Done** — finished.
+
+Each column header shows a count of how many tasks are in it.
+
+## Adding a task
 
 <Steps>
-  <Step title="Add a task">
-    Tap **Add Task**. Write a short title and any details.
+  <Step title="Open the form">
+    Tap **Add Task** at the top, or the **+** on any column header to start a task in that column.
   </Step>
-  <Step title="Move it along">
-    When you start working on something, move it to **Doing**. When it's finished, move it to **Done**.
+  <Step title="Give it a title">
+    A short, clear title is all that's required (e.g. "Refill propane").
   </Step>
-  <Step title="Drag to reorder">
-    Drag cards up and down to prioritize, or drag between columns.
+  <Step title="Add details (optional)">
+    Use the details field for anything extra — steps, links, or context.
+  </Step>
+  <Step title="Assign it (optional)">
+    Assign the task to a person so it's clear who's responsible.
+  </Step>
+  <Step title="Set a repeat (optional)">
+    Make it **recurring** — daily, weekly, monthly, or yearly — for chores that come back around. Leave it on **No repeat** for one-offs.
+  </Step>
+  <Step title="Choose a column">
+    Pick which column it starts in, then save.
   </Step>
 </Steps>
+
+## Moving tasks along
+
+- **Drag and drop** a card into another column to change its status. On desktop, drop zones appear in each column while you drag.
+- On a **phone**, columns stack and can be **collapsed/expanded** by tapping the header to keep things tidy; use the card's controls to move it.
+
+<Callout type="info" title="Who can move a task">
+  You can move tasks you created or that are assigned to you. Anyone signed in can add new tasks.
+</Callout>
+
+## Editing, assigning, and deleting
+
+Open a card to **edit** it — change the title, details, assignee, recurring schedule, or column. You can also **delete** a task from the card when it's no longer needed.
+
+## Recurring chores
+
+Marking a task as recurring (daily / weekly / monthly / yearly) is handy for routine upkeep — think water testing, trash runs, or seasonal checks — so the same chores keep showing up instead of being forgotten.
 
 <Callout type="info" title="Sign in required">
   The board needs an [account](/help/getting-started/accounts-and-login).

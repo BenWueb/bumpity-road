@@ -2,7 +2,11 @@ import { notFound } from "next/navigation";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import { ArrowLeft, Calendar, Tag } from "lucide-react";
 import Link from "next/link";
-import { getDocBySlug, getAllDocs } from "@/lib/help-server";
+import {
+  getDocBySlug,
+  getAllDocs,
+  isCurrentUserAdmin,
+} from "@/lib/help-server";
 import { getCategoryMeta } from "@/content/help/_categories";
 import {
   AccessPill,
@@ -15,15 +19,23 @@ type Props = {
 
 export async function generateStaticParams() {
   const docs = getAllDocs();
-  return docs.map((doc) => ({
-    slug: doc.slug.split("/"),
-  }));
+  // Admin-only docs are rendered on demand (after an auth check), so keep them
+  // out of the statically generated set.
+  return docs
+    .filter((doc) => doc.access !== "admin")
+    .map((doc) => ({
+      slug: doc.slug.split("/"),
+    }));
 }
 
 export async function generateMetadata({ params }: Props) {
   const { slug } = await params;
   const doc = getDocBySlug(slug.join("/"));
   if (!doc) return { title: "Not Found" };
+
+  if (doc.access === "admin" && !(await isCurrentUserAdmin())) {
+    return { title: "Not Found" };
+  }
 
   return {
     title: doc.title,
@@ -37,6 +49,12 @@ export default async function HelpDocPage({ params }: Props) {
   const doc = getDocBySlug(slugStr);
 
   if (!doc) notFound();
+
+  // Admin-only docs require an admin session. Calling the auth check only for
+  // these docs keeps the rest of the help section statically renderable.
+  if (doc.access === "admin" && !(await isCurrentUserAdmin())) {
+    notFound();
+  }
 
   const catMeta = getCategoryMeta(doc.category);
 

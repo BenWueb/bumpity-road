@@ -24,8 +24,6 @@ function StaticCheckItem({ children }: { children: ReactNode }) {
 }
 
 export function AccessPill({ access }: { access?: HelpAccess }) {
-  if (access !== "public" && access !== "loggedin") return null;
-
   if (access === "public") {
     return (
       <span className="inline-flex items-center rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-300">
@@ -34,11 +32,23 @@ export function AccessPill({ access }: { access?: HelpAccess }) {
     );
   }
 
-  return (
-    <span className="inline-flex items-center rounded-full bg-sky-500/15 px-2 py-0.5 text-[10px] font-semibold text-sky-700 dark:text-sky-300">
-      Login required
-    </span>
-  );
+  if (access === "loggedin") {
+    return (
+      <span className="inline-flex items-center rounded-full bg-sky-500/15 px-2 py-0.5 text-[10px] font-semibold text-sky-700 dark:text-sky-300">
+        Login required
+      </span>
+    );
+  }
+
+  if (access === "admin") {
+    return (
+      <span className="inline-flex items-center rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold text-amber-700 dark:text-amber-300">
+        Admin only
+      </span>
+    );
+  }
+
+  return null;
 }
 
 function BadgeShowcase({ ids }: { ids?: string[] | string }) {

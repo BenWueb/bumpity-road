@@ -1,9 +1,4 @@
-import {
-  Refrigerator,
-  SprayCan,
-  TreePine,
-  Wrench,
-} from "lucide-react";
+import { BookOpen, DoorOpen, Refrigerator, Snowflake, Wrench } from "lucide-react";
 import type { ComponentType } from "react";
 
 export type SopCategory = {
@@ -14,10 +9,11 @@ export type SopCategory = {
 };
 
 export const SOP_CATEGORIES: SopCategory[] = [
-  { id: "appliances", label: "Appliances", icon: Refrigerator, order: 1 },
-  { id: "cleaning", label: "Cleaning", icon: SprayCan, order: 2 },
-  { id: "seasonal", label: "Seasonal", icon: TreePine, order: 3 },
-  { id: "systems", label: "Systems & Maintenance", icon: Wrench, order: 4 },
+  { id: "reference", label: "Reference & Contacts", icon: BookOpen, order: 1 },
+  { id: "visits", label: "Arrival & Departure", icon: DoorOpen, order: 2 },
+  { id: "systems", label: "Systems & Heating", icon: Wrench, order: 3 },
+  { id: "appliances", label: "Appliances", icon: Refrigerator, order: 4 },
+  { id: "seasonal", label: "Seasonal & Winter", icon: Snowflake, order: 5 },
 ];
 
 export function getCategoryMeta(id: string) {

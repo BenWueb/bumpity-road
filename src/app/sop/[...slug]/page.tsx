@@ -5,6 +5,7 @@ import Link from "next/link";
 import { getDocBySlug, getAllDocs } from "@/lib/sop-server";
 import { getCategoryMeta } from "@/content/sop/_categories";
 import { mdxComponents } from "@/components/sop/mdx-components";
+import HighlightedArticle from "@/components/sop/HighlightedArticle";
 
 type Props = {
   params: Promise<{ slug: string[] }>;
@@ -87,9 +88,9 @@ export default async function SopDocPage({ params }: Props) {
         </header>
 
         {/* MDX Content */}
-        <article className="prose-custom">
+        <HighlightedArticle>
           <MDXRemote source={doc.source} components={mdxComponents} />
-        </article>
+        </HighlightedArticle>
 
         {/* Prev/Next navigation */}
         <div className="mt-12 flex items-stretch gap-4 border-t pt-6">

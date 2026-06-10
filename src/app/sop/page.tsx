@@ -11,10 +11,11 @@ import { prisma } from "@/utils/prisma";
 import NoticeBar from "@/components/ui/NoticeBar";
 
 const CATEGORY_GRADIENTS: Record<string, string> = {
-  appliances: CARD_GRADIENTS.amber,
-  cleaning: CARD_GRADIENTS.sky,
-  seasonal: CARD_GRADIENTS.emerald,
+  reference: CARD_GRADIENTS.violet,
+  visits: CARD_GRADIENTS.emerald,
   systems: CARD_GRADIENTS.slate,
+  appliances: CARD_GRADIENTS.amber,
+  seasonal: CARD_GRADIENTS.sky,
 };
 
 async function SopNotice() {

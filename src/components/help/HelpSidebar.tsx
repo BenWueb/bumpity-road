@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import Fuse from "fuse.js";
+import { useDocSearch } from "@/hooks/use-doc-search";
 import {
   ChevronDown,
   ChevronRight,
@@ -32,36 +32,11 @@ export default function HelpSidebar({ docs }: Props) {
   const searchRef = useRef<HTMLInputElement>(null);
   const navRef = useRef<HTMLElement>(null);
 
-  useEffect(() => {
-    const saved = window.localStorage.getItem("help-sidebar:collapsed");
-    if (saved === "1") setCollapsed(true);
-  }, []);
+  // The docs sidebar defaults to open whenever you navigate into the help
+  // section. It stays mounted while moving between docs, so a manual collapse
+  // still sticks for the rest of the session.
 
-  useEffect(() => {
-    window.localStorage.setItem("help-sidebar:collapsed", collapsed ? "1" : "0");
-  }, [collapsed]);
-
-  const fuse = useMemo(
-    () =>
-      new Fuse(docs, {
-        keys: [
-          { name: "title", weight: 3 },
-          { name: "description", weight: 2 },
-          { name: "tags", weight: 2 },
-          { name: "plainText", weight: 1 },
-        ],
-        threshold: 0.35,
-        includeMatches: true,
-        ignoreLocation: true,
-        minMatchCharLength: 2,
-      }),
-    [docs],
-  );
-
-  const searchResults = useMemo(() => {
-    if (!query.trim()) return null;
-    return fuse.search(query.trim(), { limit: 20 });
-  }, [fuse, query]);
+  const searchResults = useDocSearch(docs, query);
 
   const docsByCategory = useMemo(() => {
     const map = new Map<string, HelpDocMeta[]>();
@@ -162,18 +137,34 @@ export default function HelpSidebar({ docs }: Props) {
   }
 
   function renderAccessDot(doc: HelpDocMeta) {
-    if (doc.access !== "public" && doc.access !== "loggedin") return null;
-    const label = doc.access === "public" ? "Public" : "Login required";
-    const classes =
+    const meta =
       doc.access === "public"
-        ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
-        : "bg-sky-500/15 text-sky-700 dark:text-sky-300";
+        ? {
+            label: "Public",
+            short: "Pub",
+            classes: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300",
+          }
+        : doc.access === "loggedin"
+          ? {
+              label: "Login required",
+              short: "Login",
+              classes: "bg-sky-500/15 text-sky-700 dark:text-sky-300",
+            }
+          : doc.access === "admin"
+            ? {
+                label: "Admin only",
+                short: "Admin",
+                classes:
+                  "bg-amber-500/15 text-amber-700 dark:text-amber-300",
+              }
+            : null;
+    if (!meta) return null;
     return (
       <span
-        title={label}
-        className={`ml-auto shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-semibold ${classes}`}
+        title={meta.label}
+        className={`ml-auto shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-semibold ${meta.classes}`}
       >
-        {doc.access === "public" ? "Pub" : "Login"}
+        {meta.short}
       </span>
     );
   }

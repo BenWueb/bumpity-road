@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import Fuse from "fuse.js";
+import { useDocSearch } from "@/hooks/use-doc-search";
 import {
   ChevronDown,
   ChevronRight,
@@ -32,36 +32,11 @@ export default function SopSidebar({ docs }: Props) {
   const searchRef = useRef<HTMLInputElement>(null);
   const navRef = useRef<HTMLElement>(null);
 
-  useEffect(() => {
-    const saved = window.localStorage.getItem("sop-sidebar:collapsed");
-    if (saved === "1") setCollapsed(true);
-  }, []);
+  // The docs sidebar defaults to open whenever you navigate into the SOP
+  // section. It stays mounted while moving between docs, so a manual collapse
+  // still sticks for the rest of the session.
 
-  useEffect(() => {
-    window.localStorage.setItem("sop-sidebar:collapsed", collapsed ? "1" : "0");
-  }, [collapsed]);
-
-  const fuse = useMemo(
-    () =>
-      new Fuse(docs, {
-        keys: [
-          { name: "title", weight: 3 },
-          { name: "description", weight: 2 },
-          { name: "tags", weight: 2 },
-          { name: "plainText", weight: 1 },
-        ],
-        threshold: 0.35,
-        includeMatches: true,
-        ignoreLocation: true,
-        minMatchCharLength: 2,
-      }),
-    [docs],
-  );
-
-  const searchResults = useMemo(() => {
-    if (!query.trim()) return null;
-    return fuse.search(query.trim(), { limit: 20 });
-  }, [fuse, query]);
+  const searchResults = useDocSearch(docs, query);
 
   const docsByCategory = useMemo(() => {
     const map = new Map<string, SopDocMeta[]>();
@@ -114,7 +89,14 @@ export default function SopSidebar({ docs }: Props) {
       } else if (e.key === "Enter" && focusedIndex >= 0) {
         e.preventDefault();
         const slug = visibleSlugs[focusedIndex];
-        if (slug) router.push(`/sop/${slug}`);
+        if (slug) {
+          const trimmed = query.trim();
+          router.push(
+            searchResults && trimmed
+              ? `/sop/${slug}?q=${encodeURIComponent(trimmed)}`
+              : `/sop/${slug}`,
+          );
+        }
       } else if (e.key === "Escape") {
         if (query) {
           setQuery("");
@@ -123,7 +105,7 @@ export default function SopSidebar({ docs }: Props) {
         }
       }
     },
-    [visibleSlugs, focusedIndex, router, query],
+    [visibleSlugs, focusedIndex, router, query, searchResults],
   );
 
   // Cmd+K / Ctrl+K shortcut
@@ -233,7 +215,11 @@ export default function SopSidebar({ docs }: Props) {
                   <li key={item.slug}>
                     <button
                       data-slug={item.slug}
-                      onClick={() => router.push(`/sop/${item.slug}`)}
+                      onClick={() =>
+                        router.push(
+                          `/sop/${item.slug}?q=${encodeURIComponent(query.trim())}`,
+                        )
+                      }
                       className={`w-full rounded-md px-3 py-2 text-left transition-colors hover:bg-accent ${
                         isFocused
                           ? "bg-accent ring-2 ring-ring"

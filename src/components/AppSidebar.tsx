@@ -5,7 +5,7 @@ import { authClient } from "@/lib/auth-client";
 import FeedbackModal from "@/components/FeedbackModal";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   BookOpen,
   CalendarDays,
@@ -90,6 +90,15 @@ export default function AppSidebar() {
   const [isAdmin, setIsAdmin] = useState(false);
   const { data: session } = authClient.useSession();
 
+  // Routes that get their own dedicated docs sidebar. While in these sections
+  // we default the site sidebar to collapsed so the two rails don't compete
+  // for space, then restore the user's preference when they navigate away.
+  const inDocsSection =
+    pathname.startsWith("/sop") || pathname.startsWith("/help");
+  const userPrefRef = useRef(true); // desktop collapsed preference (non-docs)
+  const wasInDocsRef = useRef<boolean | null>(null);
+  const hydratedRef = useRef(false);
+
   // Check if user is admin. Cached in sessionStorage so we avoid hitting
   // /api/users on every page load. TTL is short enough that admin role
   // changes propagate within a single browsing session.
@@ -139,17 +148,36 @@ export default function AppSidebar() {
     checkAdmin();
   }, [checkAdmin]);
 
-  // Load saved state (only applies to desktop behavior)
+  // Load saved state on mount (desktop). On docs routes we start collapsed
+  // regardless of the saved preference.
   useEffect(() => {
     const saved = window.localStorage.getItem("sidebar:collapsed");
-    if (saved === "1") setCollapsed(true);
-    else if (saved === "0") setCollapsed(false);
+    userPrefRef.current = saved !== "0"; // default collapsed unless explicitly expanded
+    if (window.innerWidth >= 768) {
+      setCollapsed(inDocsSection ? true : userPrefRef.current);
+    }
+    wasInDocsRef.current = inDocsSection;
+    hydratedRef.current = true;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Save state
+  // Desktop: collapse the site sidebar when entering a docs section and restore
+  // the saved preference when leaving it.
   useEffect(() => {
-    window.localStorage.setItem("sidebar:collapsed", collapsed ? "1" : "0");
-  }, [collapsed]);
+    if (!hydratedRef.current) return;
+    if (window.innerWidth < 768) {
+      wasInDocsRef.current = inDocsSection;
+      return;
+    }
+    const was = wasInDocsRef.current;
+    if (inDocsSection && was === false) {
+      setCollapsed(true);
+    } else if (!inDocsSection && was === true) {
+      setCollapsed(userPrefRef.current);
+    }
+    wasInDocsRef.current = inDocsSection;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inDocsSection]);
 
   // Close sidebar on route change (mobile)
   useEffect(() => {
@@ -158,6 +186,24 @@ export default function AppSidebar() {
       setCollapsed(true);
     }
   }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // User-initiated collapse toggle. Persist the choice as the desktop
+  // preference only outside docs sections, so the docs auto-collapse stays
+  // transient and doesn't overwrite the saved preference.
+  const toggleCollapsed = useCallback(() => {
+    setCollapsed((v) => {
+      const next = !v;
+      if (
+        !inDocsSection &&
+        typeof window !== "undefined" &&
+        window.innerWidth >= 768
+      ) {
+        userPrefRef.current = next;
+        window.localStorage.setItem("sidebar:collapsed", next ? "1" : "0");
+      }
+      return next;
+    });
+  }, [inDocsSection]);
 
   // Allow global UI elements (e.g. announcement bar) to open the feedback modal.
   useEffect(() => {
@@ -303,7 +349,7 @@ export default function AppSidebar() {
           <div className="flex items-center justify-between gap-2 border-b px-3 py-3">
             <button
               type="button"
-              onClick={() => setCollapsed((v) => !v)}
+              onClick={toggleCollapsed}
               className="inline-flex h-9 w-9 items-center justify-center rounded-md border bg-background text-foreground shadow-sm transition-colors hover:bg-accent"
               aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
             >
