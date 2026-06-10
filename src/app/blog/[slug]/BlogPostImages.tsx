@@ -40,6 +40,19 @@ export default function BlogPostImages({ images, title, author, date, headerActi
   const headerImage = images[0];
   const galleryImages = images.slice(1);
 
+  // Preload the neighbouring full-size images so navigating in the lightbox is
+  // instant instead of fetching each one on demand (which made the first pass
+  // through the photos feel slow).
+  const neighborIndices =
+    lightboxIndex !== null && images.length > 1
+      ? Array.from(
+          new Set([
+            (lightboxIndex + 1) % images.length,
+            (lightboxIndex - 1 + images.length) % images.length,
+          ])
+        ).filter((i) => i !== lightboxIndex)
+      : [];
+
   return (
     <>
       {/* Header Image with Title Overlay */}
@@ -57,7 +70,7 @@ export default function BlogPostImages({ images, title, author, date, headerActi
           className="h-full w-full object-cover transition-transform hover:scale-105"
         />
         {/* Gradient overlay for text contrast */}
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+        <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/80 via-black/30 to-transparent" />
         
         {/* Title and meta overlay */}
         <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8">
@@ -149,12 +162,31 @@ export default function BlogPostImages({ images, title, author, date, headerActi
           {/* Image */}
           <div onClick={(e) => e.stopPropagation()} className="max-h-[85vh] max-w-[90vw]">
             <CldImage
+              key={images[lightboxIndex].publicId}
               src={images[lightboxIndex].publicId}
               width={images[lightboxIndex].width ?? 1200}
               height={images[lightboxIndex].height ?? 900}
               alt={`${title} image ${lightboxIndex + 1}`}
+              priority
               className="max-h-[85vh] max-w-[90vw] rounded-lg object-contain"
             />
+          </div>
+
+          {/* Preload adjacent images (hidden) for instant navigation */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute h-0 w-0 overflow-hidden opacity-0"
+          >
+            {neighborIndices.map((i) => (
+              <CldImage
+                key={images[i].publicId}
+                src={images[i].publicId}
+                width={images[i].width ?? 1200}
+                height={images[i].height ?? 900}
+                alt=""
+                loading="eager"
+              />
+            ))}
           </div>
 
           {/* Counter */}

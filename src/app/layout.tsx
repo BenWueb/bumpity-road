@@ -64,11 +64,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${poppins.className} antialiased min-h-screen h-screen h-dvh overflow-hidden`}
+        className={`${poppins.className} antialiased h-dvh overflow-hidden`}
       >
         <GoogleAnalytics />
         <LoginModalProvider>
-          <div className="flex min-h-screen h-screen h-dvh w-full flex-col overflow-hidden">
+          <div className="flex h-dvh w-full flex-col overflow-hidden">
             <AnnouncementBar />
             <Suspense fallback={null}>
               <GeneralNoticeBarServer />

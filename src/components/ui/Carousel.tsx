@@ -39,6 +39,40 @@ export function Carousel({
   const next = useCallback(() => goTo(current + 1), [current, goTo]);
   const prev = useCallback(() => goTo(current - 1), [current, goTo]);
 
+  // Touch swipe handling (mobile). Track the initial touch point and, on
+  // release, advance/rewind when the gesture is a clear horizontal swipe.
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const SWIPE_THRESHOLD = 40; // px
+
+  const onTouchStart = useCallback(
+    (e: React.TouchEvent) => {
+      const t = e.touches[0];
+      touchStartRef.current = { x: t.clientX, y: t.clientY };
+      setPaused(true);
+    },
+    []
+  );
+
+  const onTouchEnd = useCallback(
+    (e: React.TouchEvent) => {
+      const start = touchStartRef.current;
+      touchStartRef.current = null;
+      // Always resume after a touch: mobile has no mouseleave to unpause.
+      setPaused(false);
+      if (!start || count <= 1) return;
+      const t = e.changedTouches[0];
+      const dx = t.clientX - start.x;
+      const dy = t.clientY - start.y;
+      // Only treat as a swipe when it's mostly horizontal and past the threshold,
+      // so vertical page scrolling isn't hijacked.
+      if (Math.abs(dx) > SWIPE_THRESHOLD && Math.abs(dx) > Math.abs(dy)) {
+        if (dx < 0) next();
+        else prev();
+      }
+    },
+    [count, next, prev]
+  );
+
   useEffect(() => {
     if (interval <= 0 || paused || count <= 1) return;
     timerRef.current = setInterval(next, interval);
@@ -51,9 +85,11 @@ export function Carousel({
 
   return (
     <div
-      className={`group/carousel relative overflow-hidden ${className}`}
+      className={`group/carousel relative touch-pan-y overflow-hidden ${className}`}
       onMouseEnter={pauseOnHover ? () => setPaused(true) : undefined}
       onMouseLeave={pauseOnHover ? () => setPaused(false) : undefined}
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
     >
       <div className="relative min-h-px">
         {children.map((child, i) => (
