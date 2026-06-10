@@ -348,7 +348,7 @@ export default function ExpensesContent({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex-1 overflow-x-hidden overflow-y-scroll">
+      <div className="flex-1 overflow-x-hidden overflow-y-scroll pb-20 md:pb-0">
       <PageHeader
         icon={<Wrench className="h-6 w-6" />}
         title="Expenses"
