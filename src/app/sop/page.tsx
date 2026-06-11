@@ -1,10 +1,18 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { NotebookText, FileText, Clock } from "lucide-react";
+import {
+  NotebookText,
+  FileText,
+  BookText,
+  Download,
+  Info,
+  MessageSquarePlus,
+} from "lucide-react";
+import FeedbackTrigger from "@/components/help/FeedbackTrigger";
 import { headers } from "next/headers";
 import { PageHeader } from "@/components/PageHeader";
 import { getAllDocs } from "@/lib/sop-server";
-import { SOP_CATEGORIES, getCategoryMeta } from "@/content/sop/_categories";
+import { SOP_CATEGORIES } from "@/content/sop/_categories";
 import { CARD_GRADIENTS } from "@/lib/ui-gradients";
 import { auth } from "@/utils/auth";
 import { prisma } from "@/utils/prisma";
@@ -17,6 +25,44 @@ const CATEGORY_GRADIENTS: Record<string, string> = {
   appliances: CARD_GRADIENTS.amber,
   seasonal: CARD_GRADIENTS.sky,
 };
+
+const OWNERS_MANUALS: { label: string; model: string; href: string }[] = [
+  {
+    label: "Bosch Dishwasher",
+    model: "SHP65CM5N",
+    href: "/manuals/bosch-dishwasher-shp65cm5n.pdf",
+  },
+  {
+    label: "GE Gas Range",
+    model: "PGS930YP8FS",
+    href: "/manuals/ge-oven-pgs930yp8fs.pdf",
+  },
+  {
+    label: "GE Refrigerator",
+    model: "GSL25JGDELS",
+    href: "/manuals/ge-refrigerator-gsl25jgdels.pdf",
+  },
+  {
+    label: "Whirlpool Washer",
+    model: "WTW5057LW1",
+    href: "/manuals/whirlpool-washer-wtw5057lw1.pdf",
+  },
+  {
+    label: "Weber Grill",
+    model: "E-325",
+    href: "/manuals/weber-grill-e-325.pdf",
+  },
+  {
+    label: "Big Green Egg",
+    model: "Charcoal grill / smoker",
+    href: "/manuals/big-green-egg.pdf",
+  },
+  {
+    label: "Amtrol Well Tank",
+    model: "WX-202",
+    href: "/manuals/amtrol-well-tank-wx-202.pdf",
+  },
+];
 
 async function SopNotice() {
   const session = await auth.api.getSession({
@@ -52,11 +98,6 @@ async function SopNotice() {
 export default function SopPage() {
   const docs = getAllDocs();
 
-  const recentDocs = [...docs]
-    .filter((d) => d.updatedAt)
-    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
-    .slice(0, 5);
-
   return (
     <div className="min-h-full bg-background">
       <PageHeader
@@ -67,6 +108,48 @@ export default function SopPage() {
       />
 
       <div className="mx-auto max-w-5xl p-4 md:p-6">
+        {/* If something needs attention */}
+        <div className="mb-6 rounded-lg border border-sky-200 bg-sky-50 p-4 dark:border-sky-900 dark:bg-sky-950/40">
+          <div className="flex items-start gap-3">
+            <Info className="mt-0.5 h-5 w-5 shrink-0 text-sky-600 dark:text-sky-400" />
+            <div className="min-w-0 flex-1">
+              <p className="mb-1 text-sm font-semibold text-sky-800 dark:text-sky-300">
+                If something needs attention
+              </p>
+              <p className="text-sm text-foreground">
+                If something is broken or needs attention, please make a note and
+                call{" "}
+                <Link
+                  href="/sop/reference/contacts#family"
+                  className="font-medium text-primary underline underline-offset-2 hover:text-primary/80"
+                >
+                  Jenny, Scott, or Teri
+                </Link>
+                .
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Submit a ticket for updates */}
+        <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-900 dark:bg-amber-950/40">
+          <div className="flex items-start gap-3">
+            <MessageSquarePlus className="mt-0.5 h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" />
+            <div className="min-w-0 flex-1">
+              <p className="mb-1 text-sm font-semibold text-amber-800 dark:text-amber-300">
+                See something out of date?
+              </p>
+              <p className="text-sm text-foreground">
+                If any guide or info here needs updating,{" "}
+                <FeedbackTrigger className="font-medium text-primary underline underline-offset-2 hover:text-primary/80">
+                  submit a ticket
+                </FeedbackTrigger>{" "}
+                and we&apos;ll get it fixed.
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Announcement */}
         <div className="mb-6">
           <Suspense fallback={null}>
@@ -121,42 +204,49 @@ export default function SopPage() {
           })}
         </div>
 
-        {/* Recently updated */}
-        {recentDocs.length > 0 && (
-          <div className="mt-8">
-            <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-muted-foreground">
-              <Clock className="h-4 w-4" />
-              Recently Updated
-            </h2>
-            <div className="space-y-1">
-              {recentDocs.map((doc) => {
-                const catMeta = getCategoryMeta(doc.category);
-                return (
-                  <Link
-                    key={doc.slug}
-                    href={`/sop/${doc.slug}`}
-                    className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-accent"
-                  >
-                    <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
-                    <span className="min-w-0 flex-1 truncate font-medium">
-                      {doc.title}
-                    </span>
-                    {catMeta && (
-                      <span className="shrink-0 rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
-                        {catMeta.label}
+        {/* Owner's manuals */}
+        <div className="mt-4">
+          <div className="group relative overflow-hidden rounded-xl border bg-card shadow-sm">
+            <div
+              className={`pointer-events-none absolute inset-0 ${CARD_GRADIENTS.rose}`}
+            />
+            <div className="relative p-5">
+              <div className="mb-3 flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-background/80 shadow-sm">
+                  <BookText className="h-5 w-5 text-foreground" />
+                </div>
+                <div>
+                  <h2 className="font-semibold">Owner&apos;s Manuals</h2>
+                  <p className="text-xs text-muted-foreground">
+                    {OWNERS_MANUALS.length} PDF manuals
+                  </p>
+                </div>
+              </div>
+              <ul className="grid gap-1 sm:grid-cols-2">
+                {OWNERS_MANUALS.map((manual) => (
+                  <li key={manual.href}>
+                    <a
+                      href={manual.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                    >
+                      <FileText className="h-3.5 w-3.5 shrink-0" />
+                      <span className="min-w-0 flex-1 truncate">
+                        {manual.label}
+                        <span className="ml-1 text-xs text-muted-foreground/80">
+                          {manual.model}
+                        </span>
                       </span>
-                    )}
-                    {doc.updatedAt && (
-                      <span className="shrink-0 text-xs text-muted-foreground">
-                        {doc.updatedAt}
-                      </span>
-                    )}
-                  </Link>
-                );
-              })}
+                      <Download className="h-3.5 w-3.5 shrink-0 opacity-0 transition-opacity group-hover:opacity-60" />
+                    </a>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
-        )}
+        </div>
+
       </div>
     </div>
   );

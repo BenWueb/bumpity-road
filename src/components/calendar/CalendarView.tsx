@@ -26,10 +26,14 @@ type ApiEvent = {
   htmlLink: string | null;
 };
 
-type ViewType = "dayGridMonth" | "timeGridWeek" | "timeGridDay" | "listYear";
+type ViewType =
+  | "dayGridMonth"
+  | "timeGridWeek"
+  | "timeGridDay"
+  | "listUpcoming";
 
 const VIEW_OPTIONS: { value: ViewType; label: string; icon: React.ReactNode }[] = [
-  { value: "listYear", label: "All", icon: <List className="h-4 w-4" /> },
+  { value: "listUpcoming", label: "All", icon: <List className="h-4 w-4" /> },
   { value: "dayGridMonth", label: "Month", icon: <LayoutGrid className="h-4 w-4" /> },
   { value: "timeGridWeek", label: "Week", icon: <CalendarIcon className="h-4 w-4" /> },
   { value: "timeGridDay", label: "Day", icon: <Clock className="h-4 w-4" /> },
@@ -38,7 +42,7 @@ const VIEW_OPTIONS: { value: ViewType; label: string; icon: React.ReactNode }[] 
 export default function CalendarView() {
   const calendarRef = useRef<FullCalendar>(null);
   const [currentTitle, setCurrentTitle] = useState("");
-  const [activeView, setActiveView] = useState<ViewType>("listYear");
+  const [activeView, setActiveView] = useState<ViewType>("listUpcoming");
   const eventCache = useRef<Map<string, EventInput[]>>(new Map());
 
   const fetchEvents = useCallback(
@@ -164,7 +168,7 @@ export default function CalendarView() {
         <FullCalendar
           ref={calendarRef}
           plugins={[dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin]}
-          initialView="listYear"
+          initialView="listUpcoming"
           headerToolbar={false}
           events={fetchEvents}
           datesSet={handleDatesSet}
@@ -180,6 +184,12 @@ export default function CalendarView() {
           }}
           views={{
             dayGridMonth: { displayEventTime: false },
+            listUpcoming: {
+              type: "list",
+              duration: { years: 2 },
+              dateAlignment: "day",
+              buttonText: "All",
+            },
           }}
         />
       </div>

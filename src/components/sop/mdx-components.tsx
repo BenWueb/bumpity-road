@@ -45,9 +45,41 @@ import {
   LayoutGrid,
   Rocket,
   ExternalLink,
+  Battery,
+  Monitor,
+  Keyboard,
+  Thermometer,
+  PowerOff,
+  Home,
+  Plug,
+  Building2,
+  Wifi,
+  Split,
+  ShoppingBag,
 } from "lucide-react";
+import { headers } from "next/headers";
 import { ChecklistItem } from "./ChecklistItem";
 import { CARD_GRADIENTS } from "@/lib/ui-gradients";
+import { auth } from "@/utils/auth";
+import { prisma } from "@/utils/prisma";
+
+async function AdminOnly({ children }: { children: ReactNode }) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+    asResponse: false,
+  });
+
+  if (!session?.user?.id) return null;
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { isAdmin: true },
+  });
+
+  if (!user?.isAdmin) return null;
+
+  return <>{children}</>;
+}
 
 function slugify(text: string) {
   return text
@@ -85,6 +117,24 @@ const HEADING_ICON_RULES: { match: RegExp; value: HeadingIcon }[] = [
   { match: /why|useful|benefit/i, value: { icon: Lightbulb, color: "text-amber-500 dark:text-amber-400" } },
   { match: /everything/i, value: { icon: PackageOpen, color: "text-teal-500 dark:text-teal-400" } },
 
+  // SOP equipment & section vocabulary (specific matches first)
+  { match: /thermostat/i, value: { icon: Thermometer, color: "text-rose-500 dark:text-rose-400" } },
+  { match: /\bheat(?:ing)?\b/i, value: { icon: Thermometer, color: "text-orange-500 dark:text-orange-400" } },
+  { match: /batter|component/i, value: { icon: Battery, color: "text-lime-500 dark:text-lime-400" } },
+  { match: /display|\blcd\b|screen|monitor/i, value: { icon: Monitor, color: "text-slate-500 dark:text-slate-400" } },
+  { match: /\bkeys?\b|\bbuttons?\b/i, value: { icon: Keyboard, color: "text-slate-500 dark:text-slate-400" } },
+  { match: /turn(?:ing)?\s+(?:it\s+)?off|power off|switch off/i, value: { icon: PowerOff, color: "text-slate-500 dark:text-slate-400" } },
+  { match: /wi-?fi|network|internet/i, value: { icon: Wifi, color: "text-sky-500 dark:text-sky-400" } },
+  { match: /landline|phone/i, value: { icon: Phone, color: "text-emerald-500 dark:text-emerald-400" } },
+  { match: /\bfamil/i, value: { icon: Users, color: "text-fuchsia-500 dark:text-fuchsia-400" } },
+  { match: /neighbor/i, value: { icon: Home, color: "text-emerald-500 dark:text-emerald-400" } },
+  { match: /utilit/i, value: { icon: Plug, color: "text-amber-500 dark:text-amber-400" } },
+  { match: /\blocal\b|town/i, value: { icon: Building2, color: "text-indigo-500 dark:text-indigo-400" } },
+  { match: /practice|guideline/i, value: { icon: Lightbulb, color: "text-amber-500 dark:text-amber-400" } },
+  { match: /\bsort|separat|stream/i, value: { icon: Split, color: "text-violet-500 dark:text-violet-400" } },
+  { match: /plastic|\bbags?\b/i, value: { icon: ShoppingBag, color: "text-cyan-500 dark:text-cyan-400" } },
+  { match: /drop.?off|\bsites?\b/i, value: { icon: MapPin, color: "text-rose-500 dark:text-rose-400" } },
+
   // SOP domain vocabulary
   { match: /troublesh/i, value: { icon: Wrench, color: "text-amber-500 dark:text-amber-400" } },
   { match: /safety|caution|hazard/i, value: { icon: ShieldAlert, color: "text-rose-500 dark:text-rose-400" } },
@@ -93,13 +143,14 @@ const HEADING_ICON_RULES: { match: RegExp; value: HeadingIcon }[] = [
   { match: /light|fire|flame|putting it out|put it out/i, value: { icon: Flame, color: "text-orange-500 dark:text-orange-400" } },
   { match: /upcoming|due|schedul|recurring/i, value: { icon: CalendarClock, color: "text-amber-500 dark:text-amber-400" } },
   { match: /history|record/i, value: { icon: History, color: "text-indigo-500 dark:text-indigo-400" } },
+  { match: /servic/i, value: { icon: Wrench, color: "text-slate-500 dark:text-slate-400" } },
   { match: /load|suppl|rack/i, value: { icon: PackageOpen, color: "text-teal-500 dark:text-teal-400" } },
   { match: /arriv/i, value: { icon: DoorOpen, color: "text-emerald-500 dark:text-emerald-400" } },
   { match: /leav|clos|depart|shut/i, value: { icon: DoorClosed, color: "text-slate-500 dark:text-slate-400" } },
   { match: /water|pressure|tank|well|softener|heater|plumb/i, value: { icon: Droplets, color: "text-sky-500 dark:text-sky-400" } },
   { match: /contact|who|number/i, value: { icon: Users, color: "text-fuchsia-500 dark:text-fuchsia-400" } },
   { match: /recycl|garbage|trash|waste/i, value: { icon: Recycle, color: "text-green-500 dark:text-green-400" } },
-  { match: /snow|ice|winter|season|cold/i, value: { icon: Snowflake, color: "text-cyan-500 dark:text-cyan-400" } },
+  { match: /snow|ice|winter|season|cold|freez/i, value: { icon: Snowflake, color: "text-cyan-500 dark:text-cyan-400" } },
   { match: /start|operation|basic|control|cycle|using|run|step/i, value: { icon: Settings2, color: "text-indigo-500 dark:text-indigo-400" } },
 
   // Generic guide fallbacks
@@ -405,6 +456,26 @@ const FIELD_ICONS: Record<string, ComponentType<{ className?: string }>> = {
   calendar: Calendar,
 };
 
+const EMAIL_RE = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i;
+const EMAIL_SPLIT_RE = /([A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,})/gi;
+
+function linkifyEmails(children: ReactNode): ReactNode {
+  if (typeof children !== "string") return children;
+  return children.split(EMAIL_SPLIT_RE).map((part, i) =>
+    EMAIL_RE.test(part) ? (
+      <a
+        key={i}
+        href={`mailto:${part}`}
+        className="text-primary underline underline-offset-2 hover:text-primary/80"
+      >
+        {part}
+      </a>
+    ) : (
+      part
+    ),
+  );
+}
+
 function Field({
   icon,
   label,
@@ -415,12 +486,13 @@ function Field({
   children: ReactNode;
 }) {
   const Icon = icon ? FIELD_ICONS[icon] : null;
+  const content = icon === "email" ? linkifyEmails(children) : children;
   return (
     <div className="flex items-start gap-2 text-sm text-foreground">
       {Icon && <Icon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />}
       <span className="min-w-0 wrap-break-word [&>p]:m-0">
         {label && <span className="text-muted-foreground">{label}: </span>}
-        {children}
+        {content}
       </span>
     </div>
   );
@@ -517,6 +589,7 @@ export const mdxComponents = {
   td: (props: React.ComponentProps<"td">) => (
     <td className="border-b px-4 py-2 text-foreground" {...props} />
   ),
+  AdminOnly,
   Callout,
   Checklist,
   ChecklistItem,
