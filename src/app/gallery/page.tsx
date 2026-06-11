@@ -3,7 +3,6 @@
 import { authClient } from "@/lib/auth-client";
 import { CldImage } from "next-cloudinary";
 import { LazyCldUploadButton as CldUploadButton } from "@/components/cloudinary/LazyUpload";
-import { getActivityLabel, getSeasonIcon, SEASONS } from "@/lib/gallery-constants";
 import {
   ImagePlus,
   Plus,
@@ -336,43 +335,6 @@ export default function GalleryPage() {
                 sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
                 className="object-cover transition-transform group-hover:scale-105"
               />
-
-              {/* Gradient overlay - always visible */}
-              <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent" />
-
-              {/* Photo info overlay */}
-              <div className="absolute inset-x-0 bottom-0 p-2 text-white">
-                {/* Photographer name */}
-                {image.photographerName && (
-                  <p className="truncate text-xs font-medium drop-shadow-md">
-                    {image.photographerName}
-                  </p>
-                )}
-
-                {/* Description */}
-                {image.description && (
-                  <p className="mt-0.5 line-clamp-2 text-[10px] leading-tight text-white/90 drop-shadow-sm">
-                    {image.description}
-                  </p>
-                )}
-
-                {/* Tags row */}
-                <div className="mt-1 flex flex-wrap items-center gap-1">
-                  {image.season && (
-                    <span className="flex items-center gap-0.5 rounded bg-white/20 px-1.5 py-0.5 text-[10px] backdrop-blur-sm">
-                      {getSeasonIcon(image.season)}
-                      <span className="hidden sm:inline">
-                        {SEASONS.find((s) => s.value === image.season)?.label}
-                      </span>
-                    </span>
-                  )}
-                  {image.activity && (
-                    <span className="rounded bg-white/20 px-1.5 py-0.5 text-[10px] backdrop-blur-sm">
-                      {getActivityLabel(image.activity)}
-                    </span>
-                  )}
-                </div>
-              </div>
             </button>
           ))}
         </div>

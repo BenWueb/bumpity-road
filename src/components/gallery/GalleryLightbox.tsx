@@ -143,85 +143,99 @@ export function GalleryLightbox({
             height={selectedImage.height || 800}
             className="max-h-[55vh] w-full object-contain md:max-h-[70vh] md:w-auto"
           />
-        </div>
 
-        <div className="shrink-0 border-t bg-background p-3 md:p-4">
-          {/* Tags */}
-          <div className="mb-2 flex flex-wrap items-center gap-1.5 md:gap-2">
-            {selectedImage.season && (
-              <span className="flex items-center gap-0.5 rounded-full border px-2 py-0.5 text-[10px] font-medium md:gap-1 md:px-2.5 md:py-1 md:text-xs">
-                {getSeasonIcon(selectedImage.season)}
-                {SEASONS.find((s) => s.value === selectedImage.season)?.label}
-              </span>
-            )}
-            {selectedImage.activity && (
-              <span className="rounded-full border bg-accent px-2 py-0.5 text-[10px] font-medium md:px-2.5 md:py-1 md:text-xs">
-                {getActivityLabel(selectedImage.activity)}
-              </span>
-            )}
-          </div>
+          {/* Dark gradient overlay for text legibility — only at the bottom */}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-linear-to-t from-black/85 to-transparent" />
 
-          {/* Description */}
-          {selectedImage.description && (
-            <p className="mb-2 line-clamp-3 text-xs md:line-clamp-none md:text-sm">
-              {selectedImage.description}
-            </p>
-          )}
-
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div className="min-w-0 flex-1">
-              <p className="text-xs text-muted-foreground md:text-sm">
-                {selectedImage.photographerName ? (
-                  <>
-                    Photo by{" "}
-                    <span className="font-medium text-foreground">
-                      {selectedImage.photographerName}
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    Uploaded by{" "}
-                    <span className="font-medium text-foreground">
-                      {selectedImage.user.name}
-                    </span>
-                  </>
+          {/* Info overlaid on the photo */}
+          <div className="absolute inset-x-0 bottom-0 p-3 text-white md:p-4">
+            {/* Tags */}
+            {(selectedImage.season || selectedImage.activity) && (
+              <div className="mb-2 flex flex-wrap items-center gap-1.5 md:gap-2">
+                {selectedImage.season && (
+                  <span className="flex items-center gap-0.5 rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-medium backdrop-blur-sm md:gap-1 md:px-2.5 md:py-1 md:text-xs">
+                    {getSeasonIcon(selectedImage.season)}
+                    {SEASONS.find((s) => s.value === selectedImage.season)?.label}
+                  </span>
                 )}
-              </p>
-            </div>
+                {selectedImage.activity && (
+                  <span className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-medium backdrop-blur-sm md:px-2.5 md:py-1 md:text-xs">
+                    {getActivityLabel(selectedImage.activity)}
+                  </span>
+                )}
+              </div>
+            )}
 
-            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
-              {/* Set as Header - Admin only */}
-              {isAdmin && (
-                <button
-                  type="button"
-                  onClick={onSetAsHeader}
-                  disabled={settingHeader}
-                  className="flex w-full items-center justify-center gap-2 rounded-md border border-primary/30 bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/20 disabled:opacity-50 sm:w-auto md:text-sm"
-                >
-                  {headerSet ? (
+            {/* Description */}
+            {selectedImage.description && (
+              <p className="mb-2 line-clamp-3 text-xs text-white/90 drop-shadow md:line-clamp-none md:text-sm">
+                {selectedImage.description}
+              </p>
+            )}
+
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div className="min-w-0 flex-1">
+                <p className="text-xs text-white/80 drop-shadow md:text-sm">
+                  {selectedImage.photographerName ? (
                     <>
-                      <Check className="h-3.5 w-3.5 md:h-4 md:w-4" />
-                      Header Set!
+                      Photo by{" "}
+                      <span className="font-medium text-white">
+                        {selectedImage.photographerName}
+                      </span>
                     </>
                   ) : (
                     <>
-                      <ImageUp className="h-3.5 w-3.5 md:h-4 md:w-4" />
-                      {settingHeader ? "Setting..." : "Set as Header"}
+                      Uploaded by{" "}
+                      <span className="font-medium text-white">
+                        {selectedImage.user.name}
+                      </span>
                     </>
                   )}
-                </button>
-              )}
+                  {" · "}
+                  {new Date(selectedImage.createdAt).toLocaleDateString(undefined, {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                  })}
+                </p>
+              </div>
 
-              {/* Delete - Owner only */}
-              {isOwner && (
-                <button
-                  type="button"
-                  onClick={onDelete}
-                  className="flex w-full items-center justify-center gap-2 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-1.5 text-xs font-medium text-destructive transition-colors hover:bg-destructive/20 sm:w-auto md:text-sm"
-                >
-                  <Trash2 className="h-3.5 w-3.5 md:h-4 md:w-4" />
-                  Delete
-                </button>
+              {(isAdmin || isOwner) && (
+                <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+                  {/* Set as Header - Admin only */}
+                  {isAdmin && (
+                    <button
+                      type="button"
+                      onClick={onSetAsHeader}
+                      disabled={settingHeader}
+                      className="flex w-full items-center justify-center gap-2 rounded-md border border-white/30 bg-white/10 px-3 py-1.5 text-xs font-medium text-white backdrop-blur transition-colors hover:bg-white/20 disabled:opacity-50 sm:w-auto md:text-sm"
+                    >
+                      {headerSet ? (
+                        <>
+                          <Check className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                          Header Set!
+                        </>
+                      ) : (
+                        <>
+                          <ImageUp className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                          {settingHeader ? "Setting..." : "Set as Header"}
+                        </>
+                      )}
+                    </button>
+                  )}
+
+                  {/* Delete - Owner only */}
+                  {isOwner && (
+                    <button
+                      type="button"
+                      onClick={onDelete}
+                      className="flex w-full items-center justify-center gap-2 rounded-md border border-red-400/40 bg-red-500/20 px-3 py-1.5 text-xs font-medium text-white backdrop-blur transition-colors hover:bg-red-500/30 sm:w-auto md:text-sm"
+                    >
+                      <Trash2 className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                      Delete
+                    </button>
+                  )}
+                </div>
               )}
             </div>
           </div>
