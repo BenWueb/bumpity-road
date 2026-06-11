@@ -3,8 +3,9 @@
 import { getActivityLabel, getSeasonIcon, SEASONS } from "@/lib/gallery-constants";
 import type { GalleryImage } from "@/types/gallery";
 import { CldImage } from "next-cloudinary";
-import { Check, ChevronLeft, ChevronRight, ImageUp, Trash2, X } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { ChevronLeft, ChevronRight, Trash2, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 
 type Props = {
   images: GalleryImage[];
@@ -13,11 +14,7 @@ type Props = {
   onClose: () => void;
   onPrevious: () => void;
   onNext: () => void;
-  isAdmin: boolean;
   isOwner: boolean;
-  settingHeader: boolean;
-  headerSet: boolean;
-  onSetAsHeader: () => void;
   onDelete: () => void;
 };
 
@@ -28,15 +25,12 @@ export function GalleryLightbox({
   onClose,
   onPrevious,
   onNext,
-  isAdmin,
   isOwner,
-  settingHeader,
-  headerSet,
-  onSetAsHeader,
   onDelete,
 }: Props) {
   const touchStartX = useRef<number>(0);
   const touchEndX = useRef<number>(0);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   // Keyboard navigation
   useEffect(() => {
@@ -58,6 +52,9 @@ export function GalleryLightbox({
 
   function handleTouchStart(e: React.TouchEvent) {
     touchStartX.current = e.touches[0].clientX;
+    // Reset the end position so a plain tap (no touchmove) doesn't reuse a
+    // stale value from a previous swipe and trigger phantom navigation.
+    touchEndX.current = e.touches[0].clientX;
   }
 
   function handleTouchMove(e: React.TouchEvent) {
@@ -80,6 +77,7 @@ export function GalleryLightbox({
   }
 
   return (
+    <>
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-2 md:p-4"
       onClick={onClose}
@@ -200,41 +198,17 @@ export function GalleryLightbox({
                 </p>
               </div>
 
-              {(isAdmin || isOwner) && (
+              {/* Delete - Owner only */}
+              {isOwner && (
                 <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
-                  {/* Set as Header - Admin only */}
-                  {isAdmin && (
-                    <button
-                      type="button"
-                      onClick={onSetAsHeader}
-                      disabled={settingHeader}
-                      className="flex w-full items-center justify-center gap-2 rounded-md border border-white/30 bg-white/10 px-3 py-1.5 text-xs font-medium text-white backdrop-blur transition-colors hover:bg-white/20 disabled:opacity-50 sm:w-auto md:text-sm"
-                    >
-                      {headerSet ? (
-                        <>
-                          <Check className="h-3.5 w-3.5 md:h-4 md:w-4" />
-                          Header Set!
-                        </>
-                      ) : (
-                        <>
-                          <ImageUp className="h-3.5 w-3.5 md:h-4 md:w-4" />
-                          {settingHeader ? "Setting..." : "Set as Header"}
-                        </>
-                      )}
-                    </button>
-                  )}
-
-                  {/* Delete - Owner only */}
-                  {isOwner && (
-                    <button
-                      type="button"
-                      onClick={onDelete}
-                      className="flex w-full items-center justify-center gap-2 rounded-md border border-red-400/40 bg-red-500/20 px-3 py-1.5 text-xs font-medium text-white backdrop-blur transition-colors hover:bg-red-500/30 sm:w-auto md:text-sm"
-                    >
-                      <Trash2 className="h-3.5 w-3.5 md:h-4 md:w-4" />
-                      Delete
-                    </button>
-                  )}
+                  <button
+                    type="button"
+                    onClick={() => setConfirmingDelete(true)}
+                    className="flex w-full items-center justify-center gap-2 rounded-md border border-red-400/40 bg-red-500/20 px-3 py-1.5 text-xs font-medium text-white backdrop-blur transition-colors hover:bg-red-500/30 sm:w-auto md:text-sm"
+                  >
+                    <Trash2 className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                    Delete
+                  </button>
                 </div>
               )}
             </div>
@@ -242,6 +216,18 @@ export function GalleryLightbox({
         </div>
       </div>
     </div>
+
+      <ConfirmModal
+        isOpen={confirmingDelete}
+        onClose={() => setConfirmingDelete(false)}
+        onConfirm={() => {
+          setConfirmingDelete(false);
+          onDelete();
+        }}
+        title="Delete photo?"
+        message="This photo will be permanently removed from the gallery. This can't be undone."
+      />
+    </>
   );
 }
 

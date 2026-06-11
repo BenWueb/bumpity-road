@@ -23,55 +23,6 @@ export default function GalleryPage() {
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null);
   const [selectedIndex, setSelectedIndex] = useState<number>(-1);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [settingHeader, setSettingHeader] = useState(false);
-  const [headerSet, setHeaderSet] = useState(false);
-
-  // Check if user is admin
-  useEffect(() => {
-    async function checkAdmin() {
-      if (!session?.user?.id) {
-        setIsAdmin(false);
-        return;
-      }
-      try {
-        const res = await fetch(`/api/users?id=${session.user.id}`);
-        if (res.ok) {
-          const data = await res.json();
-          setIsAdmin(data.user?.isAdmin ?? false);
-        }
-      } catch {
-        setIsAdmin(false);
-      }
-    }
-    checkAdmin();
-  }, [session?.user?.id]);
-
-  async function setAsHeaderImage(image: GalleryImage) {
-    if (settingHeader) return;
-    setSettingHeader(true);
-    setHeaderSet(false);
-
-    try {
-      const res = await fetch("/api/settings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          key: "headerImageUrl",
-          value: image.url,
-        }),
-      });
-
-      if (res.ok) {
-        setHeaderSet(true);
-        setTimeout(() => setHeaderSet(false), 2000);
-      }
-    } catch {
-      // Silently fail
-    } finally {
-      setSettingHeader(false);
-    }
-  }
 
   // Navigation functions
   const goToPrevious = useCallback(() => {
@@ -349,11 +300,7 @@ export default function GalleryPage() {
           onClose={closeLightbox}
           onPrevious={goToPrevious}
           onNext={goToNext}
-          isAdmin={isAdmin}
           isOwner={session?.user?.id === selectedImage.user.id}
-          settingHeader={settingHeader}
-          headerSet={headerSet}
-          onSetAsHeader={() => setAsHeaderImage(selectedImage)}
           onDelete={() => handleDelete(selectedImage.id)}
         />
       )}
