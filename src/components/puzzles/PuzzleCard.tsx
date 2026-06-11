@@ -52,143 +52,147 @@ export function PuzzleCard({
         )}`}
       />
       <div className="relative">
-        <button
-          type="button"
-          onClick={onImageClick}
-          className="block w-full overflow-hidden rounded-t-lg focus:outline-none focus:ring-2 focus:ring-ring"
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={entry.imageUrl}
-            alt={
-              inProgress
-                ? "In-progress puzzle"
-                : `Puzzle completed by ${contributorNames || "the cabin"}`
-            }
-            className="w-full object-cover transition-transform duration-200 group-hover:scale-[1.02]"
-          />
-        </button>
+        <div className="relative">
+          <button
+            type="button"
+            onClick={onImageClick}
+            className="block w-full overflow-hidden rounded-t-lg focus:outline-none focus:ring-2 focus:ring-ring"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={entry.imageUrl}
+              alt={
+                inProgress
+                  ? "In-progress puzzle"
+                  : `Puzzle completed by ${contributorNames || "the cabin"}`
+              }
+              className="w-full object-cover transition-transform duration-200 group-hover:scale-[1.02]"
+            />
+          </button>
 
-        {/* Status badge */}
-        <div className="absolute left-2 top-2">
-          {inProgress ? (
-            <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/95 px-2 py-0.5 text-[11px] font-medium text-white shadow-sm backdrop-blur">
-              <Hourglass className="h-3 w-3" />
-              In progress
-            </span>
-          ) : (
-            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600/95 px-2 py-0.5 text-[11px] font-medium text-white shadow-sm backdrop-blur">
-              <CheckCircle2 className="h-3 w-3" />
-              Completed
-            </span>
-          )}
-        </div>
+          {/* Dark gradient overlay for text legibility — only at the bottom */}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-linear-to-t from-black/85 to-transparent" />
 
-        <div className="p-4">
-          <div className="mb-2 flex items-start justify-between gap-2">
-            <div className="min-w-0">
-              {inProgress ? (
-                <span className="font-semibold">
-                  {contributorNames
-                    ? `Started by ${contributorNames}`
-                    : "Open puzzle"}
-                </span>
-              ) : (
-                <span className="font-semibold">
-                  {contributorNames
-                    ? `Completed by ${contributorNames}`
-                    : "Completed"}
-                </span>
-              )}
-            </div>
-            <div className="flex items-center gap-1">
-              {isOwned && (
-                <button
-                  type="button"
-                  onClick={onEdit}
-                  className="rounded p-1 text-muted-foreground opacity-0 transition-opacity hover:bg-accent hover:text-foreground group-hover:opacity-100"
-                  title="Edit"
-                >
-                  <Pencil className="h-3.5 w-3.5" />
-                </button>
-              )}
-              {canDelete && (
-                <button
-                  type="button"
-                  onClick={onDelete}
-                  className="rounded p-1 text-muted-foreground opacity-0 transition-opacity hover:bg-accent hover:text-destructive group-hover:opacity-100"
-                  title={isAdmin && !isOwned ? "Delete (Admin)" : "Delete"}
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </button>
-              )}
-            </div>
+          {/* Status badge */}
+          <div className="absolute left-2 top-2">
+            {inProgress ? (
+              <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/95 px-2 py-0.5 text-[11px] font-medium text-white shadow-sm backdrop-blur">
+                <Hourglass className="h-3 w-3" />
+                In progress
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600/95 px-2 py-0.5 text-[11px] font-medium text-white shadow-sm backdrop-blur">
+                <CheckCircle2 className="h-3 w-3" />
+                Completed
+              </span>
+            )}
           </div>
 
-          <span className="text-xs text-muted-foreground">
-            {inProgress
-              ? `Started ${formatDate(entry.createdAt)}`
-              : completedDate
-                ? `Completed ${formatDate(completedDate)}`
-                : `Added ${formatDate(entry.createdAt)}`}
-          </span>
-
-          {entry.notes && (
-            <p className="mt-2 whitespace-pre-wrap text-sm text-muted-foreground">
-              {entry.notes}
-            </p>
-          )}
-
-          {/* Contributors timeline */}
-          {entry.contributions.length > 0 && (
-            <div className="mt-3 rounded-md border border-border/60 bg-background/50 p-2">
-              <div className="mb-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-                {entry.contributions.length === 1
-                  ? "Contributor"
-                  : `${entry.contributions.length} contributors`}
-              </div>
-              <ul className="space-y-1">
-                {entry.contributions.map((c) => (
-                  <li
-                    key={c.id}
-                    className="flex items-center justify-between gap-2 text-xs"
-                  >
-                    <span className="truncate font-medium">{c.userName}</span>
-                    <span className="shrink-0 text-[11px] text-muted-foreground">
-                      {formatDateTime(c.createdAt)}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {/* Action buttons for in-progress puzzles */}
-          {inProgress && isLoggedIn && (
-            <div className="mt-3 flex flex-wrap gap-2">
-              {!hasJoined && (
-                <button
-                  type="button"
-                  onClick={() => onContribute(false)}
-                  disabled={contributing}
-                  className="inline-flex items-center gap-1.5 rounded-md border border-amber-500/60 bg-amber-500/10 px-3 py-1.5 text-xs font-medium text-amber-700 transition-colors hover:bg-amber-500/20 disabled:opacity-50 dark:text-amber-300"
-                >
-                  <UserPlus className="h-3.5 w-3.5" />
-                  I&apos;m working on this
-                </button>
-              )}
+          {/* Edit/Delete buttons */}
+          <div className="absolute right-2 top-2 flex items-center gap-1">
+            {isOwned && (
               <button
                 type="button"
-                onClick={() => onContribute(true)}
-                disabled={contributing}
-                className="inline-flex items-center gap-1.5 rounded-md bg-linear-to-r from-emerald-500 to-teal-500 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition-all hover:from-emerald-600 hover:to-teal-600 disabled:opacity-50"
+                onClick={onEdit}
+                className="rounded bg-black/40 p-1 text-white opacity-0 backdrop-blur transition-opacity hover:bg-black/60 group-hover:opacity-100"
+                title="Edit"
               >
-                <CheckCircle2 className="h-3.5 w-3.5" />
-                {contributing ? "Saving..." : "Mark Complete"}
+                <Pencil className="h-3.5 w-3.5" />
               </button>
-            </div>
-          )}
+            )}
+            {canDelete && (
+              <button
+                type="button"
+                onClick={onDelete}
+                className="rounded bg-black/40 p-1 text-white opacity-0 backdrop-blur transition-opacity hover:bg-black/60 hover:text-red-400 group-hover:opacity-100"
+                title={isAdmin && !isOwned ? "Delete (Admin)" : "Delete"}
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
+
+          {/* Info overlaid on photo */}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 p-4 text-white">
+            <span className="block font-semibold drop-shadow-sm">
+              {inProgress
+                ? contributorNames
+                  ? `Started by ${contributorNames}`
+                  : "Open puzzle"
+                : contributorNames
+                  ? `Completed by ${contributorNames}`
+                  : "Completed"}
+            </span>
+
+            <span className="mt-0.5 block text-xs text-white/80">
+              {inProgress
+                ? `Started ${formatDate(entry.createdAt)}`
+                : completedDate
+                  ? `Completed ${formatDate(completedDate)}`
+                  : `Added ${formatDate(entry.createdAt)}`}
+            </span>
+
+            {entry.notes && (
+              <p className="mt-2 whitespace-pre-wrap text-sm text-white/90">
+                {entry.notes}
+              </p>
+            )}
+          </div>
         </div>
+
+        {(entry.contributions.length > 0 || (inProgress && isLoggedIn)) && (
+          <div className="space-y-3 p-4">
+            {/* Contributors timeline */}
+            {entry.contributions.length > 0 && (
+              <div className="rounded-md border border-border/60 bg-background/50 p-2">
+                <div className="mb-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                  {entry.contributions.length === 1
+                    ? "Contributor"
+                    : `${entry.contributions.length} contributors`}
+                </div>
+                <ul className="space-y-1">
+                  {entry.contributions.map((c) => (
+                    <li
+                      key={c.id}
+                      className="flex items-center justify-between gap-2 text-xs"
+                    >
+                      <span className="truncate font-medium">{c.userName}</span>
+                      <span className="shrink-0 text-[11px] text-muted-foreground">
+                        {formatDateTime(c.createdAt)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Action buttons for in-progress puzzles */}
+            {inProgress && isLoggedIn && (
+              <div className="flex flex-wrap gap-2">
+                {!hasJoined && (
+                  <button
+                    type="button"
+                    onClick={() => onContribute(false)}
+                    disabled={contributing}
+                    className="inline-flex items-center gap-1.5 rounded-md border border-amber-500/60 bg-amber-500/10 px-3 py-1.5 text-xs font-medium text-amber-700 transition-colors hover:bg-amber-500/20 disabled:opacity-50 dark:text-amber-300"
+                  >
+                    <UserPlus className="h-3.5 w-3.5" />
+                    I&apos;m working on this
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => onContribute(true)}
+                  disabled={contributing}
+                  className="inline-flex items-center gap-1.5 rounded-md bg-linear-to-r from-emerald-500 to-teal-500 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition-all hover:from-emerald-600 hover:to-teal-600 disabled:opacity-50"
+                >
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                  {contributing ? "Saving..." : "Mark Complete"}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

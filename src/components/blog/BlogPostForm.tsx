@@ -22,6 +22,10 @@ export function BlogPostForm({ onSubmit, onCancel }: Props) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!title.trim() || !content.trim() || submitting) return;
+    if (images.length === 0) {
+      setError("Please add at least one photo.");
+      return;
+    }
 
     setSubmitting(true);
     setError(null);
@@ -30,7 +34,7 @@ export function BlogPostForm({ onSubmit, onCancel }: Props) {
       await onSubmit({
         title: title.trim(),
         content: content.trim(),
-        images: images.length > 0 ? images : undefined,
+        images,
       });
       // Reset form on success
       setTitle("");
@@ -109,7 +113,9 @@ export function BlogPostForm({ onSubmit, onCancel }: Props) {
 
           {/* Image Upload */}
           <div>
-            <label className="mb-2 block text-sm font-medium">Images (optional)</label>
+            <label className="mb-2 block text-sm font-medium">
+              Photos <span className="text-destructive">*</span>
+            </label>
             <div className="flex flex-wrap gap-3">
               {images.map((img) => (
                 <div key={img.publicId} className="group relative">
@@ -158,7 +164,12 @@ export function BlogPostForm({ onSubmit, onCancel }: Props) {
             </button>
             <button
               type="submit"
-              disabled={submitting || !title.trim() || !content.trim()}
+              disabled={
+                submitting ||
+                !title.trim() ||
+                !content.trim() ||
+                images.length === 0
+              }
               className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
             >
               {submitting ? "Publishing..." : "Publish Post"}

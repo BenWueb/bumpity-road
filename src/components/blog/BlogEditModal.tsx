@@ -21,9 +21,12 @@ export function BlogEditModal({ post, onSave, onClose }: Props) {
   const [newImages, setNewImages] = useState<UploadedImage[]>([]);
   const [saving, setSaving] = useState(false);
 
+  const remainingImages = existingImages.length + newImages.length;
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!title.trim() || !content.trim() || saving) return;
+    if (remainingImages === 0) return;
 
     setSaving(true);
     try {
@@ -114,7 +117,9 @@ export function BlogEditModal({ post, onSave, onClose }: Props) {
 
           {/* Images */}
           <div>
-            <label className="mb-2 block text-sm font-medium">Images</label>
+            <label className="mb-2 block text-sm font-medium">
+              Photos <span className="text-destructive">*</span>
+            </label>
             <div className="flex flex-wrap gap-3">
               {existingImages.map((img) => (
                 <div key={img.id} className="group relative">
@@ -171,6 +176,11 @@ export function BlogEditModal({ post, onSave, onClose }: Props) {
                 {imagesToRemove.length} image(s) will be removed on save
               </p>
             )}
+            {remainingImages === 0 && (
+              <p className="mt-2 text-xs text-destructive">
+                At least one photo is required.
+              </p>
+            )}
           </div>
 
           <div className="flex justify-end gap-2">
@@ -183,7 +193,9 @@ export function BlogEditModal({ post, onSave, onClose }: Props) {
             </button>
             <button
               type="submit"
-              disabled={saving || !title.trim() || !content.trim()}
+              disabled={
+                saving || !title.trim() || !content.trim() || remainingImages === 0
+              }
               className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
             >
               {saving ? "Saving..." : "Save Changes"}
