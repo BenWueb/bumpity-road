@@ -19,11 +19,11 @@ const HeaderComponent = () => {
       <div className="absolute inset-0 bg-linear-to-r from-black/40 via-black/60 to-black/40" />
 
       {/* Content */}
-      <div className="relative flex flex-col h-48 items-center justify-center px-4 sm:h-56 sm:px-6 md:h-64 lg:h-80">
+      <div className="relative flex flex-col h-36 items-center justify-center px-4 sm:h-56 sm:px-6 md:h-64 lg:h-80">
         <h1 className="text-center text-4xl font-bold tracking-wider text-white drop-shadow-lg  md:text-5xl lg:text-7xl xl:text-[100px]">
           Bumpity Road
         </h1>
-        <h2 className="mt-12 text-white text-center text-sm font-bold tracking-wider text-sla drop-shadow-lg  md:text-lg lg:text-2xl ">
+        <h2 className="mt-2 text-white text-center text-sm font-bold tracking-wider text-sla drop-shadow-lg sm:mt-6 md:mt-12 md:text-lg lg:text-2xl ">
           A place for all things Cabin
         </h2>
       </div>
