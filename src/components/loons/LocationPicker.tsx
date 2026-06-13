@@ -12,6 +12,7 @@ import {
   useMapEvents,
   useMap,
 } from "react-leaflet";
+import { LeafletMobileGesture } from "@/components/ui/LeafletMobileGesture";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -249,6 +250,7 @@ export default function LocationPicker({
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
+          <LeafletMobileGesture />
           <ClickHandler onClick={handleMapClick} />
 
           {flyTarget && (

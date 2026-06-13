@@ -3,6 +3,7 @@
 import { useEffect, useMemo } from "react";
 import { FishObservation, SavedLocation } from "@/types/fishing";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import { LeafletMobileGesture } from "@/components/ui/LeafletMobileGesture";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -124,7 +125,13 @@ export default function ObservationMap({
   return (
     <div className="relative z-0 h-[250px] overflow-hidden rounded-lg border shadow-sm md:h-[420px]">
       <div
-        className="pointer-events-none absolute bottom-2 left-2 rounded-md bg-black/50 px-2.5 py-1 text-[11px] text-white backdrop-blur-sm"
+        className="pointer-events-none absolute bottom-2 left-2 rounded-md bg-black/50 px-2.5 py-1 text-[11px] text-white backdrop-blur-sm md:hidden"
+        style={{ zIndex: 1000 }}
+      >
+        Two fingers to pan · Tap marker to filter
+      </div>
+      <div
+        className="pointer-events-none absolute bottom-2 left-2 hidden rounded-md bg-black/50 px-2.5 py-1 text-[11px] text-white backdrop-blur-sm md:block"
         style={{ zIndex: 1000 }}
       >
         Click a marker to filter by location
@@ -139,6 +146,8 @@ export default function ObservationMap({
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+
+        <LeafletMobileGesture />
 
         {focusedLocation && (
           <FlyToLocation
