@@ -11,6 +11,74 @@ export function getSpeciesLabel(value: string): string {
   return FISH_SPECIES.find((s) => s.value === value)?.label ?? value;
 }
 
+export function normalizeSpeciesCounts(
+  speciesCounts: import("@/types/fishing").SpeciesCount[] | undefined | null,
+  species: string[] | undefined | null
+): import("@/types/fishing").SpeciesCount[] {
+  if (speciesCounts && speciesCounts.length > 0) {
+    return speciesCounts.filter((sc) => sc.species && sc.count > 0);
+  }
+  if (species && species.length > 0) {
+    return species.map((s) => ({ species: s, count: 1 }));
+  }
+  return [];
+}
+
+export function getSpeciesKeys(
+  speciesCounts: import("@/types/fishing").SpeciesCount[] | undefined | null,
+  species: string[] | undefined | null
+): string[] {
+  return normalizeSpeciesCounts(speciesCounts, species).map((sc) => sc.species);
+}
+
+export function formatSpeciesCounts(
+  speciesCounts: import("@/types/fishing").SpeciesCount[] | undefined | null,
+  species: string[] | undefined | null
+): string {
+  return normalizeSpeciesCounts(speciesCounts, species)
+    .map((sc) =>
+      sc.count > 1
+        ? `${getSpeciesLabel(sc.species)} (${sc.count})`
+        : getSpeciesLabel(sc.species)
+    )
+    .join(", ");
+}
+
+export function sumSpeciesCounts(
+  speciesCounts: import("@/types/fishing").SpeciesCount[] | undefined | null,
+  species: string[] | undefined | null
+): number {
+  return normalizeSpeciesCounts(speciesCounts, species).reduce(
+    (sum, sc) => sum + sc.count,
+    0
+  );
+}
+
+export function parseSpeciesCountsInput(
+  speciesCounts: unknown,
+  species: unknown
+): import("@/types/fishing").SpeciesCount[] {
+  if (Array.isArray(speciesCounts)) {
+    return speciesCounts
+      .filter(
+        (sc): sc is { species: string; count: unknown } =>
+          !!sc &&
+          typeof sc === "object" &&
+          typeof (sc as { species?: unknown }).species === "string" &&
+          !!(sc as { species: string }).species
+      )
+      .map((sc) => ({
+        species: sc.species,
+        count: Math.max(0, parseInt(String(sc.count)) || 0),
+      }))
+      .filter((sc) => sc.count > 0);
+  }
+  const legacySpecies = Array.isArray(species)
+    ? species.filter((s): s is string => typeof s === "string" && !!s)
+    : [];
+  return legacySpecies.map((s) => ({ species: s, count: 1 }));
+}
+
 export function getFishBehaviorLabel(value: string): string {
   return FISH_BEHAVIORS.find((b) => b.value === value)?.label ?? value;
 }
@@ -32,6 +100,16 @@ export function getWindLabel(value: string | null): string {
 export function getDisturbanceLabel(value: string | null): string {
   if (!value) return "";
   return DISTURBANCES.find((d) => d.value === value)?.label ?? value;
+}
+
+export function formatWeight(weight: number | null): string {
+  if (weight == null) return "";
+  return `${weight} lb${weight === 1 ? "" : "s"}`;
+}
+
+export function formatSize(size: number | null): string {
+  if (size == null) return "";
+  return `${size}"`;
 }
 
 export function formatFishDate(isoDate: string): string {
@@ -94,6 +172,7 @@ export function getSpeciesGradient(species: string[]): string {
     case "bluegill":
     case "crappie":
     case "rock_bass":
+    case "sunfish":
       return "from-orange-500/10 to-amber-500/5";
     default:
       return "from-cyan-500/10 to-teal-500/5";

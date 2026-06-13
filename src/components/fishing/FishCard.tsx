@@ -7,6 +7,9 @@ import {
   getWeatherIcon,
   getSpeciesGradient,
   getSpeciesLabel,
+  formatWeight,
+  formatSize,
+  normalizeSpeciesCounts,
 } from "@/lib/fishing-utils";
 import {
   Camera,
@@ -26,6 +29,7 @@ import {
   SpeciesPills,
   FishBehaviorPills,
   BaitPills,
+  CatchSizeDisplay,
   CoordinatesDisplay,
   ConditionsDisplay,
 } from "./FishObservationDetails";
@@ -51,7 +55,11 @@ export default function FishCard({
 
   const canEdit = isOwner;
   const canDelete = isOwner || isAdmin;
-  const topSpecies = observation.species[0];
+  const speciesItems = normalizeSpeciesCounts(
+    observation.speciesCounts,
+    observation.species
+  );
+  const topSpecies = speciesItems[0];
 
   return (
     <div className="w-full rounded-lg border shadow-sm">
@@ -109,9 +117,20 @@ export default function FishCard({
               </span>
               {topSpecies && (
                 <span className="inline-flex items-center gap-1 rounded-full bg-teal-100 px-2 py-0.5 font-semibold text-teal-700 dark:bg-teal-900/30 dark:text-teal-300">
-                  {getSpeciesLabel(topSpecies)}
-                  {observation.species.length > 1 &&
-                    ` +${observation.species.length - 1}`}
+                  {getSpeciesLabel(topSpecies.species)}
+                  {topSpecies.count > 1 ? ` (${topSpecies.count})` : ""}
+                  {speciesItems.length > 1 &&
+                    ` +${speciesItems.length - 1}`}
+                </span>
+              )}
+              {observation.weight != null && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 font-semibold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+                  {formatWeight(observation.weight)}
+                </span>
+              )}
+              {observation.size != null && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 font-semibold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+                  {formatSize(observation.size)}
                 </span>
               )}
             </div>
@@ -132,13 +151,22 @@ export default function FishCard({
             </div>
           </div>
 
+          {/* Weight & Size */}
+          <CatchSizeDisplay
+            weight={observation.weight}
+            size={observation.size}
+          />
+
           {/* Species */}
-          {observation.species.length > 0 && (
+          {speciesItems.length > 0 && (
             <div className="space-y-1">
               <span className="text-xs font-medium text-muted-foreground">
                 Species
               </span>
-              <SpeciesPills species={observation.species} />
+              <SpeciesPills
+                species={observation.species}
+                speciesCounts={observation.speciesCounts}
+              />
             </div>
           )}
 

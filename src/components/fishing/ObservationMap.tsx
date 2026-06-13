@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { FishObservation, SavedLocation } from "@/types/fishing";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -34,6 +34,31 @@ const cabinIcon = new L.DivIcon({
 
 const CABIN_COORDS: [number, number] = [46.95939881662997, -94.29017871431405];
 
+export type FocusedMapLocation = {
+  latitude: number;
+  longitude: number;
+  lakeArea: string | null;
+};
+
+function FlyToLocation({ lat, lng }: { lat: number; lng: number }) {
+  const map = useMap();
+  useEffect(() => {
+    map.flyTo([lat, lng], Math.max(map.getZoom(), 14), { duration: 0.8 });
+  }, [map, lat, lng]);
+  return null;
+}
+
+function clusterMatchesFocus(
+  cluster: LocationCluster,
+  focus: FocusedMapLocation
+): boolean {
+  if (focus.lakeArea && cluster.lakeArea === focus.lakeArea) return true;
+  return (
+    cluster.latitude.toFixed(4) === focus.latitude.toFixed(4) &&
+    cluster.longitude.toFixed(4) === focus.longitude.toFixed(4)
+  );
+}
+
 type LocationCluster = {
   lakeName: string;
   lakeArea: string | null;
@@ -48,6 +73,7 @@ interface Props {
   savedLocations: SavedLocation[];
   filterLakeArea: string | null;
   onSelectArea: (lakeArea: string | null) => void;
+  focusedLocation?: FocusedMapLocation | null;
 }
 
 export default function ObservationMap({
@@ -55,6 +81,7 @@ export default function ObservationMap({
   savedLocations,
   filterLakeArea,
   onSelectArea,
+  focusedLocation,
 }: Props) {
   const clusters = useMemo(() => {
     const map = new Map<string, LocationCluster>();
@@ -113,6 +140,13 @@ export default function ObservationMap({
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
+        {focusedLocation && (
+          <FlyToLocation
+            lat={focusedLocation.latitude}
+            lng={focusedLocation.longitude}
+          />
+        )}
+
         <Marker position={CABIN_COORDS} icon={cabinIcon}>
           <Popup>
             <div className="text-xs font-semibold">The Cabin</div>
@@ -120,8 +154,12 @@ export default function ObservationMap({
         </Marker>
 
         {clusters.map((cluster, i) => {
+          const isFocused =
+            focusedLocation != null &&
+            clusterMatchesFocus(cluster, focusedLocation);
           const isActive =
-            filterLakeArea != null && cluster.lakeArea === filterLakeArea;
+            isFocused ||
+            (filterLakeArea != null && cluster.lakeArea === filterLakeArea);
 
           return (
             <Marker

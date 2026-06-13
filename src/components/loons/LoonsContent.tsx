@@ -412,7 +412,7 @@ export default function LoonsContent({
     <div className="flex h-full flex-col">
       <div
         ref={scrollRef}
-        className="flex-1 overflow-x-hidden overflow-y-scroll"
+        className="flex-1 overflow-x-hidden overflow-y-scroll pb-20 md:pb-0"
       >
         <PageHeader
           icon={<Binoculars className="h-6 w-6" />}

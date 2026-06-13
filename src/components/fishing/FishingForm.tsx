@@ -15,7 +15,20 @@ import { CldImage } from "next-cloudinary";
 import { LazyCldUploadButton as CldUploadButton } from "@/components/cloudinary/LazyUpload";
 import { ImagePlus, X } from "lucide-react";
 import { emitBadgesEarned } from "@/utils/badges-client";
+import { getSpeciesLabel, normalizeSpeciesCounts } from "@/lib/fishing-utils";
 import LocationPickerWrapper from "./LocationPickerWrapper";
+
+function initSpeciesCounts(
+  observation?: FishObservation
+): Record<string, string> {
+  const normalized = normalizeSpeciesCounts(
+    observation?.speciesCounts,
+    observation?.species
+  );
+  return Object.fromEntries(
+    normalized.map((sc) => [sc.species, sc.count.toString()])
+  );
+}
 
 function mapWeatherMain(main: string): WeatherCondition | "" {
   const m = main.toLowerCase();
@@ -79,8 +92,10 @@ export default function FishingForm({
     time: observation?.time ?? (!observation ? nowTime : ""),
     lakeName: observation?.lakeName || "",
     lakeArea: observation?.lakeArea || "",
-    species: observation?.species || ([] as string[]),
+    speciesCounts: initSpeciesCounts(observation),
     totalCount: observation?.totalCount?.toString() || "0",
+    weight: observation?.weight != null ? observation.weight.toString() : "",
+    size: observation?.size != null ? observation.size.toString() : "",
     notableCatches: observation?.notableCatches || "",
     behaviors: observation?.behaviors || ([] as string[]),
     baits: observation?.baits || ([] as string[]),
@@ -111,12 +126,38 @@ export default function FishingForm({
   }, [observation]);
 
   function toggleSpecies(species: string) {
-    setFormData((prev) => ({
-      ...prev,
-      species: prev.species.includes(species)
-        ? prev.species.filter((s) => s !== species)
-        : [...prev.species, species],
-    }));
+    setFormData((prev) => {
+      const counts = { ...prev.speciesCounts };
+      if (species in counts) {
+        delete counts[species];
+      } else {
+        counts[species] = "1";
+      }
+      const sum = Object.values(counts).reduce(
+        (total, value) => total + (parseInt(value) || 0),
+        0
+      );
+      return {
+        ...prev,
+        speciesCounts: counts,
+        totalCount: sum > 0 ? sum.toString() : prev.totalCount,
+      };
+    });
+  }
+
+  function setSpeciesCount(species: string, count: string) {
+    setFormData((prev) => {
+      const counts = { ...prev.speciesCounts, [species]: count };
+      const sum = Object.values(counts).reduce(
+        (total, value) => total + (parseInt(value) || 0),
+        0
+      );
+      return {
+        ...prev,
+        speciesCounts: counts,
+        totalCount: sum > 0 ? sum.toString() : prev.totalCount,
+      };
+    });
   }
 
   function toggleBehavior(behavior: string) {
@@ -144,9 +185,16 @@ export default function FishingForm({
     setIsSubmitting(true);
     try {
       const method = observation ? "PATCH" : "POST";
+      const { speciesCounts: speciesCountsRecord, ...rest } = formData;
       const body = {
         ...(observation ? { id: observation.id } : {}),
-        ...formData,
+        ...rest,
+        speciesCounts: Object.entries(speciesCountsRecord)
+          .map(([species, count]) => ({
+            species,
+            count: parseInt(count) || 0,
+          }))
+          .filter((sc) => sc.count > 0),
         latitude,
         longitude,
         imageUrls: images.map((img) => img.url),
@@ -270,7 +318,7 @@ export default function FishingForm({
                 type="button"
                 onClick={() => toggleSpecies(s.value)}
                 className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
-                  formData.species.includes(s.value)
+                  s.value in formData.speciesCounts
                     ? "bg-cyan-500 text-white"
                     : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
                 }`}
@@ -279,6 +327,28 @@ export default function FishingForm({
               </button>
             ))}
           </div>
+          {Object.keys(formData.speciesCounts).length > 0 && (
+            <div className="space-y-2 rounded-md border bg-muted/30 p-3">
+              {Object.entries(formData.speciesCounts).map(([species, count]) => (
+                <div
+                  key={species}
+                  className="flex items-center justify-between gap-3"
+                >
+                  <span className="text-sm font-medium">
+                    {getSpeciesLabel(species)}
+                  </span>
+                  <input
+                    type="number"
+                    min="1"
+                    value={count}
+                    onChange={(e) => setSpeciesCount(species, e.target.value)}
+                    className="w-20 rounded-md border bg-background px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                    aria-label={`Count for ${getSpeciesLabel(species)}`}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Baits / Lures */}
@@ -320,6 +390,44 @@ export default function FishingForm({
                 {b.label}
               </button>
             ))}
+          </div>
+        </div>
+
+        {/* Weight & Size */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <label htmlFor="fishWeight" className="text-sm font-medium">
+              Weight (lbs)
+            </label>
+            <input
+              id="fishWeight"
+              type="number"
+              min="0"
+              step="0.1"
+              value={formData.weight}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, weight: e.target.value }))
+              }
+              placeholder="e.g. 3.5"
+              className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="fishSize" className="text-sm font-medium">
+              Size / Length (in)
+            </label>
+            <input
+              id="fishSize"
+              type="number"
+              min="0"
+              step="0.1"
+              value={formData.size}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, size: e.target.value }))
+              }
+              placeholder="e.g. 24"
+              className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            />
           </div>
         </div>
 

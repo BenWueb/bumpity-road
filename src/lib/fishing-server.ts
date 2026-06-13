@@ -20,7 +20,10 @@ const FISH_SELECT = {
   latitude: true,
   longitude: true,
   species: true,
+  speciesCounts: true,
   totalCount: true,
+  weight: true,
+  size: true,
   notableCatches: true,
   behaviors: true,
   baits: true,
@@ -71,6 +74,7 @@ export async function getFishingData(): Promise<FishingServerData> {
   return {
     observations: observations.map((o) => ({
       ...o,
+      speciesCounts: o.speciesCounts ?? [],
       date: o.date.toISOString(),
       createdAt: o.createdAt.toISOString(),
     })),

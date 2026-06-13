@@ -1,3 +1,8 @@
+export type SpeciesCount = {
+  species: string;
+  count: number;
+};
+
 export type FishObservation = {
   id: string;
   date: string;
@@ -7,7 +12,10 @@ export type FishObservation = {
   latitude: number | null;
   longitude: number | null;
   species: string[];
+  speciesCounts: SpeciesCount[];
   totalCount: number;
+  weight: number | null;
+  size: number | null;
   notableCatches: string | null;
   behaviors: string[];
   baits: string[];
@@ -41,6 +49,7 @@ export type FishSpecies =
   | "crappie"
   | "bluegill"
   | "rock_bass"
+  | "sunfish"
   | "whitefish"
   | "other";
 
@@ -102,6 +111,7 @@ export const FISH_SPECIES: { value: FishSpecies; label: string }[] = [
   { value: "crappie", label: "Crappie" },
   { value: "bluegill", label: "Bluegill" },
   { value: "rock_bass", label: "Rock bass" },
+  { value: "sunfish", label: "Sunfish" },
   { value: "whitefish", label: "Whitefish" },
   { value: "other", label: "Other" },
 ];

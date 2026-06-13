@@ -79,7 +79,7 @@ export function GalleryLightbox({
   return (
     <>
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-2 md:p-4"
+      className="fixed inset-0 z-50 flex h-dvh w-full flex-col bg-black md:items-center md:justify-center md:bg-black/80 md:p-4"
       onClick={onClose}
     >
       {/* Previous button - hidden on mobile, positioned outside the modal */}
@@ -113,7 +113,7 @@ export function GalleryLightbox({
       )}
 
       <div
-        className="relative flex max-h-[95vh] w-full max-w-[95vw] flex-col overflow-hidden rounded-lg bg-background shadow-2xl md:max-h-[90vh] md:w-auto md:max-w-[90vw]"
+        className="relative flex h-full w-full flex-col overflow-hidden bg-background md:h-auto md:max-h-[90vh] md:w-auto md:max-w-[90vw] md:rounded-lg md:shadow-2xl"
         onClick={(e) => e.stopPropagation()}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
@@ -133,13 +133,13 @@ export function GalleryLightbox({
           {selectedIndex + 1} / {images.length}
         </div>
 
-        <div className="relative flex-1 overflow-hidden">
+        <div className="relative min-h-0 flex-1 overflow-hidden">
           <CldImage
             src={selectedImage.publicId}
             alt={selectedImage.description || selectedImage.caption || "Gallery image"}
             width={selectedImage.width || 1200}
             height={selectedImage.height || 800}
-            className="max-h-[55vh] w-full object-contain md:max-h-[70vh] md:w-auto"
+            className="h-full w-full object-contain md:max-h-[70vh] md:h-auto md:w-auto"
           />
 
           {/* Dark gradient overlay for text legibility — only at the bottom */}

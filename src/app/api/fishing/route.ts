@@ -2,6 +2,7 @@ import { auth } from "@/utils/auth";
 import { checkAndAwardFishingBadges } from "@/utils/badges";
 import { prisma } from "@/utils/prisma";
 import { deleteCloudinaryImage } from "@/utils/cloudinary";
+import { parseSpeciesCountsInput } from "@/lib/fishing-utils";
 import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -14,7 +15,10 @@ const FISH_SELECT = {
   latitude: true,
   longitude: true,
   species: true,
+  speciesCounts: true,
   totalCount: true,
+  weight: true,
+  size: true,
   notableCatches: true,
   behaviors: true,
   baits: true,
@@ -79,7 +83,10 @@ export async function POST(req: NextRequest) {
     latitude,
     longitude,
     species,
+    speciesCounts,
     totalCount,
+    weight,
+    size,
     notableCatches,
     behaviors,
     baits,
@@ -105,6 +112,8 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  const parsedSpeciesCounts = parseSpeciesCountsInput(speciesCounts, species);
+
   const observation = await prisma.fishObservation.create({
     data: {
       date: new Date(date),
@@ -113,8 +122,17 @@ export async function POST(req: NextRequest) {
       lakeArea: lakeArea?.trim() || null,
       latitude: latitude != null ? parseFloat(latitude) : null,
       longitude: longitude != null ? parseFloat(longitude) : null,
-      species: Array.isArray(species) ? species.filter(Boolean) : [],
+      species: parsedSpeciesCounts.map((sc) => sc.species),
+      speciesCounts: parsedSpeciesCounts,
       totalCount: parseInt(totalCount) || 0,
+      weight:
+        weight != null && weight !== "" && !isNaN(parseFloat(weight))
+          ? parseFloat(weight)
+          : null,
+      size:
+        size != null && size !== "" && !isNaN(parseFloat(size))
+          ? parseFloat(size)
+          : null,
       notableCatches: notableCatches?.trim() || null,
       behaviors: Array.isArray(behaviors) ? behaviors : [],
       baits: Array.isArray(baits) ? baits : [],
@@ -187,12 +205,30 @@ export async function PATCH(req: NextRequest) {
     data.latitude = updates.latitude != null ? parseFloat(updates.latitude) : null;
   if (updates.longitude !== undefined)
     data.longitude = updates.longitude != null ? parseFloat(updates.longitude) : null;
-  if (updates.species !== undefined)
-    data.species = Array.isArray(updates.species)
-      ? updates.species.filter(Boolean)
-      : [];
+  if (updates.speciesCounts !== undefined || updates.species !== undefined) {
+    const parsedSpeciesCounts = parseSpeciesCountsInput(
+      updates.speciesCounts,
+      updates.species
+    );
+    data.species = parsedSpeciesCounts.map((sc) => sc.species);
+    data.speciesCounts = parsedSpeciesCounts;
+  }
   if (updates.totalCount !== undefined)
     data.totalCount = parseInt(updates.totalCount) || 0;
+  if (updates.weight !== undefined)
+    data.weight =
+      updates.weight != null &&
+      updates.weight !== "" &&
+      !isNaN(parseFloat(updates.weight))
+        ? parseFloat(updates.weight)
+        : null;
+  if (updates.size !== undefined)
+    data.size =
+      updates.size != null &&
+      updates.size !== "" &&
+      !isNaN(parseFloat(updates.size))
+        ? parseFloat(updates.size)
+        : null;
   if (updates.notableCatches !== undefined)
     data.notableCatches = updates.notableCatches?.trim() || null;
   if (updates.behaviors !== undefined)

@@ -6,6 +6,9 @@ import {
   formatFishDate,
   getWeatherIcon,
   getSpeciesLabel,
+  formatWeight,
+  formatSize,
+  formatSpeciesCounts,
 } from "@/lib/fishing-utils";
 import {
   Camera,
@@ -30,8 +33,10 @@ import {
   SpeciesPills,
   FishBehaviorPills,
   BaitPills,
+  CatchSizeDisplay,
   CoordinatesDisplay,
   ConditionsDisplay,
+  ViewOnMapButton,
 } from "./FishObservationDetails";
 
 type SortField = "date" | "lakeName" | "totalCount" | "user";
@@ -44,6 +49,7 @@ interface Props {
   isAdmin: boolean;
   onUpdated: (observation: FishObservation) => void;
   onDeleted: (id: string) => void;
+  onViewOnMap?: (observation: FishObservation) => void;
 }
 
 export default function FishDetailsView({
@@ -53,6 +59,7 @@ export default function FishDetailsView({
   isAdmin,
   onUpdated,
   onDeleted,
+  onViewOnMap,
 }: Props) {
   const [sortField, setSortField] = useState<SortField>("date");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
@@ -157,6 +164,9 @@ export default function FishDetailsView({
                 Species
               </th>
               <th className="hidden px-3 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground lg:table-cell">
+                Size
+              </th>
+              <th className="hidden px-3 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground lg:table-cell">
                 Bait
               </th>
               <th className="hidden px-3 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground lg:table-cell">
@@ -218,14 +228,24 @@ export default function FishDetailsView({
                     </span>
                   </td>
                   <td className="hidden px-3 py-2.5 md:table-cell">
-                    {obs.species.length > 0 ? (
+                    {obs.species.length > 0 ||
+                    (obs.speciesCounts && obs.speciesCounts.length > 0) ? (
                       <span className="text-xs">
-                        {obs.species
-                          .slice(0, 2)
-                          .map(getSpeciesLabel)
-                          .join(", ")}
-                        {obs.species.length > 2 &&
-                          ` +${obs.species.length - 2}`}
+                        {formatSpeciesCounts(obs.speciesCounts, obs.species)}
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
+                    )}
+                  </td>
+                  <td className="hidden px-3 py-2.5 text-xs lg:table-cell">
+                    {obs.weight != null || obs.size != null ? (
+                      <span className="text-muted-foreground">
+                        {[
+                          obs.weight != null ? formatWeight(obs.weight) : null,
+                          obs.size != null ? formatSize(obs.size) : null,
+                        ]
+                          .filter(Boolean)
+                          .join(" · ")}
                       </span>
                     ) : (
                       <span className="text-muted-foreground">—</span>
@@ -351,6 +371,18 @@ export default function FishDetailsView({
                   />
                 </div>
               )}
+              {onViewOnMap && (
+                <div className="mt-3">
+                  <ViewOnMapButton
+                    latitude={modalObs.latitude}
+                    longitude={modalObs.longitude}
+                    onClick={() => {
+                      onViewOnMap(modalObs);
+                      setSelectedObs(null);
+                    }}
+                  />
+                </div>
+              )}
             </div>
 
             {/* Total */}
@@ -362,15 +394,22 @@ export default function FishDetailsView({
               </div>
             </div>
 
+            {/* Weight & Size */}
+            <CatchSizeDisplay weight={modalObs.weight} size={modalObs.size} />
+
             {/* Species */}
-            {modalObs.species.length > 0 && (
+            {modalObs.species.length > 0 ||
+            (modalObs.speciesCounts && modalObs.speciesCounts.length > 0) ? (
               <div className="space-y-1.5">
                 <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Species
                 </div>
-                <SpeciesPills species={modalObs.species} />
+                <SpeciesPills
+                  species={modalObs.species}
+                  speciesCounts={modalObs.speciesCounts}
+                />
               </div>
-            )}
+            ) : null}
 
             {/* Baits */}
             {modalObs.baits.length > 0 && (

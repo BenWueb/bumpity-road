@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { FishObservation, SavedLocation } from "@/types/fishing";
+import type { FocusedMapLocation } from "./ObservationMap";
 import { MapPin } from "lucide-react";
 
 const ObservationMap = dynamic(() => import("./ObservationMap"), {
@@ -21,6 +22,7 @@ interface Props {
   savedLocations: SavedLocation[];
   filterLakeArea: string | null;
   onSelectArea: (lakeArea: string | null) => void;
+  focusedLocation?: FocusedMapLocation | null;
 }
 
 export default function ObservationMapWrapper(props: Props) {

@@ -397,6 +397,11 @@ model GeneralNotice {
   @@map("general_notice")
 }
 
+type SpeciesCount {
+  species String
+  count   Int
+}
+
 model FishObservation {
   id              String   @id @default(auto()) @map("_id") @db.ObjectId
   date            DateTime
@@ -406,7 +411,10 @@ model FishObservation {
   latitude        Float?
   longitude       Float?
   species         String[]
+  speciesCounts   SpeciesCount[]
   totalCount      Int      @default(0)
+  weight          Float?   // Weight of the notable catch (lbs)
+  size            Float?   // Length / size of the notable catch (inches)
   notableCatches  String?
   behaviors       String[]
   baits           String[]

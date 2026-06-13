@@ -45,7 +45,7 @@ export default function ExpensesContent({
   );
   const [selectedCategory, setSelectedCategory] =
     useState<ExpenseCategory | null>(null);
-  const [viewMode, setViewMode] = useState<ViewMode>("cards");
+  const [viewMode, setViewMode] = useState<ViewMode>("details");
   const [showFilters, setShowFilters] = useState(false);
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");

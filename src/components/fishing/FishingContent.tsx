@@ -10,13 +10,16 @@ import FishingForm from "./FishingForm";
 import FishCard from "./FishCard";
 import FishDetailsView from "./FishDetailsView";
 import ObservationMapWrapper from "./ObservationMapWrapper";
+import type { FocusedMapLocation } from "./ObservationMap";
 import { useLoginModal } from "@/components/LoginModal";
 import {
   SpeciesPills,
   FishBehaviorPills,
   BaitPills,
+  CatchSizeDisplay,
   CoordinatesDisplay,
   ConditionsDisplay,
+  ViewOnMapButton,
 } from "./FishObservationDetails";
 import FishPhotoGrid from "./FishPhotoGrid";
 import {
@@ -51,6 +54,8 @@ import {
   getWindLabel,
   sanitizeFilename,
   deriveSavedLocations,
+  formatSpeciesCounts,
+  getSpeciesKeys,
 } from "@/lib/fishing-utils";
 
 type ViewMode = "cards" | "details";
@@ -86,9 +91,12 @@ export default function FishingContent({
   const [showFilters, setShowFilters] = useState(false);
   const [isDownloadingPhotos, setIsDownloadingPhotos] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const mapSectionRef = useRef<HTMLDivElement>(null);
   const [highlightedObs, setHighlightedObs] = useState<FishObservation | null>(
     null,
   );
+  const [focusedMapLocation, setFocusedMapLocation] =
+    useState<FocusedMapLocation | null>(null);
 
   // Open observation modal when ?obs=<id> is in the URL
   useEffect(() => {
@@ -131,8 +139,15 @@ export default function FishingContent({
   );
 
   const uniqueSpecies = useMemo(
-    () => Array.from(new Set(observations.flatMap((o) => o.species))).sort(),
-    [observations],
+    () =>
+      Array.from(
+        new Set(
+          observations.flatMap((o) =>
+            getSpeciesKeys(o.speciesCounts, o.species)
+          )
+        )
+      ).sort(),
+    [observations]
   );
 
   const uniqueBaits = useMemo(
@@ -167,7 +182,11 @@ export default function FishingContent({
         toEnd.setHours(23, 59, 59, 999);
         if (new Date(o.date) > toEnd) return false;
       }
-      if (filterSpecies && !o.species.includes(filterSpecies)) return false;
+      if (
+        filterSpecies &&
+        !getSpeciesKeys(o.speciesCounts, o.species).includes(filterSpecies)
+      )
+        return false;
       if (filterBait && !o.baits.includes(filterBait)) return false;
       return true;
     });
@@ -266,6 +285,25 @@ export default function FishingContent({
     updateObservations(observations.filter((o) => o.id !== id));
   }
 
+  const handleViewOnMap = useCallback((obs: FishObservation) => {
+    if (obs.latitude == null || obs.longitude == null) return;
+
+    setHighlightedObs(null);
+    setFocusedMapLocation({
+      latitude: obs.latitude,
+      longitude: obs.longitude,
+      lakeArea: obs.lakeArea,
+    });
+    if (obs.lakeArea) setFilterLakeArea(obs.lakeArea);
+
+    requestAnimationFrame(() => {
+      mapSectionRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    });
+  }, []);
+
   const handleExportExcel = useCallback(() => {
     const rows = sortedObservations.map((o) => ({
       Date: formatFishDate(o.date),
@@ -275,7 +313,9 @@ export default function FishingContent({
       Latitude: o.latitude ?? "",
       Longitude: o.longitude ?? "",
       "Total Fish": o.totalCount,
-      Species: o.species.map(getSpeciesLabel).join(", "),
+      "Weight (lbs)": o.weight ?? "",
+      "Size (in)": o.size ?? "",
+      Species: formatSpeciesCounts(o.speciesCounts, o.species),
       "Bait / Lures": o.baits.map(getBaitLabel).join(", "),
       "Fish Activity": o.behaviors.map(getFishBehaviorLabel).join(", "),
       "Notable Catches": o.notableCatches || "",
@@ -313,7 +353,9 @@ export default function FishingContent({
       const dateStr = new Date(obs.date).toISOString().slice(0, 10);
       const area = obs.lakeArea ? sanitizeFilename(obs.lakeArea) : "unknown";
       const speciesTag =
-        obs.species.length > 0 ? `_${obs.species[0]}` : "";
+        getSpeciesKeys(obs.speciesCounts, obs.species).length > 0
+          ? `_${getSpeciesKeys(obs.speciesCounts, obs.species)[0]}`
+          : "";
       for (let i = 0; i < obs.imageUrls.length; i++) {
         const suffix = obs.imageUrls.length > 1 ? `_${i + 1}` : "";
         photos.push({
@@ -377,7 +419,7 @@ export default function FishingContent({
     <div className="flex h-full flex-col">
       <div
         ref={scrollRef}
-        className="flex-1 overflow-x-hidden overflow-y-scroll"
+        className="flex-1 overflow-x-hidden overflow-y-scroll pb-20 md:pb-0"
       >
         <PageHeader
           icon={<Fish className="h-6 w-6" />}
@@ -542,12 +584,13 @@ export default function FishingContent({
           </div>
 
           {/* Observation map */}
-          <div className="mb-6">
+          <div ref={mapSectionRef} className="mb-6">
             <ObservationMapWrapper
               observations={observations}
               savedLocations={savedLocations}
               filterLakeArea={filterLakeArea}
               onSelectArea={setFilterLakeArea}
+              focusedLocation={focusedMapLocation}
             />
           </div>
 
@@ -784,6 +827,7 @@ export default function FishingContent({
               isAdmin={isAdmin}
               onUpdated={handleUpdated}
               onDeleted={handleDeleted}
+              onViewOnMap={handleViewOnMap}
             />
           ) : editingCardId ? (
             (() => {
@@ -848,7 +892,11 @@ export default function FishingContent({
         panelClassName="w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-xl border bg-background p-5 shadow-xl md:p-6"
       >
         {highlightedObs && (
-          <HighlightedObservationModal observation={highlightedObs} />
+          <HighlightedObservationModal
+            observation={highlightedObs}
+            onViewOnMap={() => handleViewOnMap(highlightedObs)}
+            onClose={() => setHighlightedObs(null)}
+          />
         )}
       </Modal>
     </div>
@@ -857,8 +905,12 @@ export default function FishingContent({
 
 function HighlightedObservationModal({
   observation,
+  onViewOnMap,
+  onClose,
 }: {
   observation: FishObservation;
+  onViewOnMap: () => void;
+  onClose: () => void;
 }) {
   return (
     <div className="space-y-5">
@@ -894,6 +946,16 @@ function HighlightedObservationModal({
             />
           </div>
         )}
+        <div className="mt-3">
+          <ViewOnMapButton
+            latitude={observation.latitude}
+            longitude={observation.longitude}
+            onClick={() => {
+              onViewOnMap();
+              onClose();
+            }}
+          />
+        </div>
       </div>
 
       <div className="rounded-lg border bg-muted/30 p-3 text-center">
@@ -904,14 +966,20 @@ function HighlightedObservationModal({
         </div>
       </div>
 
-      {observation.species.length > 0 && (
+      <CatchSizeDisplay weight={observation.weight} size={observation.size} />
+
+      {observation.species.length > 0 ||
+      (observation.speciesCounts && observation.speciesCounts.length > 0) ? (
         <div className="space-y-1.5">
           <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
             Species
           </div>
-          <SpeciesPills species={observation.species} />
+          <SpeciesPills
+            species={observation.species}
+            speciesCounts={observation.speciesCounts}
+          />
         </div>
-      )}
+      ) : null}
 
       {observation.baits.length > 0 && (
         <div className="space-y-1.5">
