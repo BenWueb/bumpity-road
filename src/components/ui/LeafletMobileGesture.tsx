@@ -20,6 +20,8 @@ export function LeafletMobileGesture() {
   const hintTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const hintShownRef = useRef(false);
+  const dragAttemptCountRef = useRef(0);
+  const gestureIsDragRef = useRef(false);
 
   function clearHintTimer() {
     if (hintTimerRef.current) {
@@ -70,12 +72,14 @@ export function LeafletMobileGesture() {
     function onTouchStart(e: TouchEvent) {
       if (e.touches.length >= 2) {
         touchStartRef.current = null;
+        gestureIsDragRef.current = false;
         hideHint();
         enableMapDrag();
         return;
       }
 
       if (e.touches.length === 1) {
+        gestureIsDragRef.current = false;
         touchStartRef.current = {
           x: e.touches[0].clientX,
           y: e.touches[0].clientY,
@@ -86,6 +90,7 @@ export function LeafletMobileGesture() {
     function onTouchMove(e: TouchEvent) {
       if (e.touches.length >= 2) {
         touchStartRef.current = null;
+        gestureIsDragRef.current = false;
         hideHint();
         enableMapDrag();
         return;
@@ -98,13 +103,20 @@ export function LeafletMobileGesture() {
       const distance = Math.hypot(dx, dy);
 
       if (distance > DRAG_THRESHOLD_PX) {
-        showDragHint();
+        gestureIsDragRef.current = true;
+        if (dragAttemptCountRef.current >= 1) {
+          showDragHint();
+        }
       }
     }
 
     function onTouchEnd(e: TouchEvent) {
       if (e.touches.length >= 2) return;
 
+      if (gestureIsDragRef.current && e.touches.length === 0) {
+        dragAttemptCountRef.current += 1;
+      }
+      gestureIsDragRef.current = false;
       touchStartRef.current = null;
 
       if (e.touches.length === 0) {
