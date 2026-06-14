@@ -360,7 +360,7 @@ export default function AppSidebar() {
             <button
               type="button"
               onClick={toggleCollapsed}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-md border bg-background text-foreground shadow-sm transition-colors hover:bg-accent"
+              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border bg-background text-foreground shadow-sm transition-colors hover:bg-accent"
               aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
             >
               {/* Show X on mobile when open, Menu otherwise */}
@@ -375,6 +375,7 @@ export default function AppSidebar() {
                 <Menu className="h-5 w-5" />
               </span>
             </button>
+            {!collapsed && <NightModeToggle />}
           </div>
 
           <nav className="flex-1 overflow-y-auto overflow-x-hidden px-2 py-3">
@@ -445,8 +446,6 @@ export default function AppSidebar() {
             </ul>
           </nav>
 
-          <SidebarAudioPlayer collapsed={collapsed} />
-
           {/* Help + Feedback buttons */}
           <div className="shrink-0 space-y-1 border-t px-2 py-2">
             <Link
@@ -491,8 +490,9 @@ export default function AppSidebar() {
                 Send Feedback
               </span>
             </button>
-            <NightModeToggle collapsed={collapsed} />
           </div>
+
+          <SidebarAudioPlayer collapsed={collapsed} />
 
           <AccountBar collapsed={collapsed} />
         </div>
