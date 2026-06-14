@@ -58,3 +58,49 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({ users });
 }
 
+export async function PATCH(req: NextRequest) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+    asResponse: false,
+  });
+
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const body = await req.json();
+  const { name, image } = body as { name?: string; image?: string | null };
+
+  if (name !== undefined && !name.trim()) {
+    return NextResponse.json({ error: "Name is required" }, { status: 400 });
+  }
+
+  if (name === undefined && image === undefined) {
+    return NextResponse.json({ error: "Nothing to update" }, { status: 400 });
+  }
+
+  const user = await prisma.user.update({
+    where: { id: session.user.id },
+    data: {
+      ...(name !== undefined ? { name: name.trim() } : {}),
+      ...(image !== undefined ? { image } : {}),
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      image: true,
+      isBugAdmin: true,
+      badges: true,
+      createdAt: true,
+    },
+  });
+
+  return NextResponse.json({
+    user: {
+      ...user,
+      createdAt: user.createdAt.toISOString(),
+    },
+  });
+}
+

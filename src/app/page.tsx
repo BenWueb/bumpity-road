@@ -6,6 +6,8 @@ import { TodoCardSkeleton } from "@/components/TodoCard";
 import { TodoCardServer } from "@/components/TodoCardServer";
 import { GuestbookCarousel, GuestbookCarouselSkeleton } from "@/components/GuestbookCarousel";
 import WelcomeModal from "@/components/WelcomeModal";
+import WhoIsAtCabinCard from "@/components/WhoIsAtCabinCard";
+import { JustArrivedCard, LeavingCard, HomeReportIssueRow } from "@/components/HomeCabinActions";
 import { Suspense } from "react";
 import Link from "next/link";
 import { CARD_GRADIENTS } from "@/lib/ui-gradients";
@@ -28,8 +30,13 @@ export default function Home() {
           <GuestbookCarousel />
         </Suspense>
 
+        <WhoIsAtCabinCard />
+
         {/* Quick Action Cards */}
         <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 sm:gap-3 md:grid-cols-4 md:gap-3 lg:gap-4 xl:grid-cols-5">
+          <JustArrivedCard />
+          <LeavingCard />
+
           <Link
             href="/gallery"
             className="group relative order-2 flex h-16 flex-col items-center justify-center gap-1 overflow-hidden rounded-xl border bg-card p-1.5 shadow-sm transition-all hover:shadow-md sm:h-20 sm:gap-1.5 md:order-0 md:h-20 md:flex-row md:justify-start md:gap-3 md:p-4 lg:h-24 lg:gap-4 lg:p-5 xl:h-28"
@@ -137,6 +144,8 @@ export default function Home() {
             <TodoCardServer />
           </Suspense>
         </div>
+
+        <HomeReportIssueRow />
       </div>
     </div>
   );

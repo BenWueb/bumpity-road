@@ -7,6 +7,7 @@ import BadgeClaimHandler from "@/components/BadgeClaimHandler";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import AnnouncementBar from "@/components/AnnouncementBar";
 import GeneralNoticeBarServer from "@/components/GeneralNoticeBarServer";
+import CabinSiteModals from "@/components/CabinSiteModals";
 import { LoginModalProvider } from "@/components/LoginModal";
 import { AudioPlayerProvider } from "@/components/audio";
 import { Suspense } from "react";
@@ -81,6 +82,7 @@ export default function RootLayout({
               </div>
             </div>
             <BadgeClaimHandler />
+            <CabinSiteModals />
           </AudioPlayerProvider>
         </LoginModalProvider>
       </body>

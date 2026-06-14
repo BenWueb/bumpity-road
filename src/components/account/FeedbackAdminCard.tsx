@@ -3,6 +3,7 @@ import {
   Lightbulb,
   MessageSquarePlus,
   Trash2,
+  Wrench,
 } from "lucide-react";
 import { AccountCard } from "./AccountCard";
 import type { AccountFeedback } from "@/types/account";
@@ -15,6 +16,85 @@ type Props = {
 };
 
 export function FeedbackAdminCard({ feedback, onUpdateStatus, onDelete }: Props) {
+  const issues = feedback.filter((item) => item.type === "issue");
+  const other = feedback.filter((item) => item.type !== "issue");
+
+  function renderItem(item: AccountFeedback) {
+    const iconClassName =
+      item.type === "bug"
+        ? "bg-rose-100 text-rose-600 dark:bg-rose-900/40 dark:text-rose-400"
+        : item.type === "issue"
+        ? "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300"
+        : "bg-violet-100 text-violet-600 dark:bg-violet-900/40 dark:text-violet-400";
+
+    return (
+      <div key={item.id} className="group px-4 py-3 md:px-6 md:py-4">
+        <div className="flex items-start gap-2 md:gap-3">
+          <div
+            className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full md:h-8 md:w-8 ${iconClassName}`}
+          >
+            {item.type === "bug" ? (
+              <Bug className="h-3 w-3 md:h-4 md:w-4" />
+            ) : item.type === "issue" ? (
+              <Wrench className="h-3 w-3 md:h-4 md:w-4" />
+            ) : (
+              <Lightbulb className="h-3 w-3 md:h-4 md:w-4" />
+            )}
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <h4 className="text-xs font-medium md:text-sm">{item.title}</h4>
+                  {item.type === "issue" && (
+                    <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold text-amber-700 dark:text-amber-300">
+                      Cabin issue
+                    </span>
+                  )}
+                </div>
+                <div className="mt-0.5 flex items-center gap-1.5 text-[10px] text-muted-foreground md:gap-2 md:text-xs">
+                  <span>{item.user?.name ?? "Anonymous"}</span>
+                  <span>•</span>
+                  <span>{new Date(item.createdAt).toLocaleDateString()}</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <select
+                  value={item.status}
+                  onChange={(e) => onUpdateStatus(item.id, e.target.value)}
+                  className={`rounded-full border-0 px-2 py-0.5 text-[10px] font-medium focus:outline-none focus:ring-2 focus:ring-ring md:px-2 md:py-1 md:text-xs ${
+                    item.status === "resolved"
+                      ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
+                      : item.status === "in_progress"
+                      ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300"
+                      : item.status === "closed"
+                      ? "bg-slate-100 text-slate-500 dark:bg-slate-900/40 dark:text-slate-400"
+                      : "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300"
+                  }`}
+                >
+                  <option value="open">Open</option>
+                  <option value="in_progress">In Progress</option>
+                  <option value="resolved">Resolved</option>
+                  <option value="closed">Closed</option>
+                </select>
+                <button
+                  onClick={() => onDelete(item.id)}
+                  className="rounded p-1 text-muted-foreground transition-opacity hover:bg-accent hover:text-destructive sm:opacity-0 sm:group-hover:opacity-100"
+                  title="Delete"
+                >
+                  <Trash2 className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                </button>
+              </div>
+            </div>
+            <p className="mt-1.5 text-xs text-muted-foreground md:mt-2 md:text-sm">
+              {item.description}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <AccountCard
       gradientClassName={CARD_GRADIENTS.amber}
@@ -31,80 +111,33 @@ export function FeedbackAdminCard({ feedback, onUpdateStatus, onDelete }: Props)
             {feedback.length} item{feedback.length !== 1 ? "s" : ""}
           </span>
         </div>
-        <div className="divide-y">
-          {feedback.length === 0 ? (
-            <div className="px-4 py-6 text-center text-sm text-muted-foreground md:px-6 md:py-8">
-              <MessageSquarePlus className="mx-auto mb-2 h-6 w-6 opacity-50 md:h-8 md:w-8" />
-              <p>No feedback submitted yet.</p>
-            </div>
-          ) : (
-            feedback.map((item) => (
-              <div key={item.id} className="group px-4 py-3 md:px-6 md:py-4">
-                <div className="flex items-start gap-2 md:gap-3">
-                  <div
-                    className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full md:h-8 md:w-8 ${
-                      item.type === "bug"
-                        ? "bg-rose-100 text-rose-600 dark:bg-rose-900/40 dark:text-rose-400"
-                        : "bg-violet-100 text-violet-600 dark:bg-violet-900/40 dark:text-violet-400"
-                    }`}
-                  >
-                    {item.type === "bug" ? (
-                      <Bug className="h-3 w-3 md:h-4 md:w-4" />
-                    ) : (
-                      <Lightbulb className="h-3 w-3 md:h-4 md:w-4" />
-                    )}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                      <div>
-                        <h4 className="text-xs font-medium md:text-sm">
-                          {item.title}
-                        </h4>
-                        <div className="mt-0.5 flex items-center gap-1.5 text-[10px] text-muted-foreground md:gap-2 md:text-xs">
-                          <span>{item.user?.name ?? "Anonymous"}</span>
-                          <span>•</span>
-                          <span>
-                            {new Date(item.createdAt).toLocaleDateString()}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <select
-                          value={item.status}
-                          onChange={(e) => onUpdateStatus(item.id, e.target.value)}
-                          className={`rounded-full border-0 px-2 py-0.5 text-[10px] font-medium focus:outline-none focus:ring-2 focus:ring-ring md:px-2 md:py-1 md:text-xs ${
-                            item.status === "resolved"
-                              ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
-                              : item.status === "in_progress"
-                              ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300"
-                              : item.status === "closed"
-                              ? "bg-slate-100 text-slate-500 dark:bg-slate-900/40 dark:text-slate-400"
-                              : "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300"
-                          }`}
-                        >
-                          <option value="open">Open</option>
-                          <option value="in_progress">In Progress</option>
-                          <option value="resolved">Resolved</option>
-                          <option value="closed">Closed</option>
-                        </select>
-                        <button
-                          onClick={() => onDelete(item.id)}
-                          className="rounded p-1 text-muted-foreground transition-opacity hover:bg-accent hover:text-destructive sm:opacity-0 sm:group-hover:opacity-100"
-                          title="Delete"
-                        >
-                          <Trash2 className="h-3.5 w-3.5 md:h-4 md:w-4" />
-                        </button>
-                      </div>
-                    </div>
-                    <p className="mt-1.5 text-xs text-muted-foreground md:mt-2 md:text-sm">
-                      {item.description}
-                    </p>
-                  </div>
+        {feedback.length === 0 ? (
+          <div className="px-4 py-6 text-center text-sm text-muted-foreground md:px-6 md:py-8">
+            <MessageSquarePlus className="mx-auto mb-2 h-6 w-6 opacity-50 md:h-8 md:w-8" />
+            <p>No feedback submitted yet.</p>
+          </div>
+        ) : (
+          <div className="divide-y">
+            {issues.length > 0 && (
+              <div>
+                <div className="border-b bg-amber-50/50 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-amber-800 dark:bg-amber-950/20 dark:text-amber-300 md:px-6">
+                  Cabin issues ({issues.length})
                 </div>
+                {issues.map(renderItem)}
               </div>
-            ))
-          )}
-        </div>
+            )}
+            {other.length > 0 && (
+              <div>
+                {issues.length > 0 && (
+                  <div className="border-b bg-muted/30 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground md:px-6">
+                    Bugs & features ({other.length})
+                  </div>
+                )}
+                {other.map(renderItem)}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </AccountCard>
   );

@@ -49,9 +49,9 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  if (!["bug", "feature"].includes(type)) {
+  if (!["bug", "feature", "issue"].includes(type)) {
     return NextResponse.json(
-      { error: "Type must be 'bug' or 'feature'" },
+      { error: "Type must be 'bug', 'feature', or 'issue'" },
       { status: 400 }
     );
   }

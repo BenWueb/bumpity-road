@@ -316,6 +316,14 @@ function AudioPlayerControls({ compact = false }: { compact?: boolean }) {
   );
 }
 
+function NowPlayingLabel({ title }: { title: string }) {
+  return (
+    <p className="truncate px-2 pb-0.5 text-[10px] text-muted-foreground">
+      Now playing: {title}
+    </p>
+  );
+}
+
 type SidebarAudioPlayerProps = {
   collapsed: boolean;
 };
@@ -336,6 +344,15 @@ export default function SidebarAudioPlayer({ collapsed }: SidebarAudioPlayerProp
   useEffect(() => {
     setSectionOpen(readSectionOpen());
     setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    function onOpenAmbience() {
+      setSectionOpen(true);
+      writeSectionOpen(true);
+    }
+    window.addEventListener("openAmbiencePlayer", onOpenAmbience);
+    return () => window.removeEventListener("openAmbiencePlayer", onOpenAmbience);
   }, []);
 
   const toggleSection = () => {
@@ -389,10 +406,16 @@ export default function SidebarAudioPlayer({ collapsed }: SidebarAudioPlayerProp
       ref={popoverRef}
       left={popoverPosition.left}
       bottom={popoverPosition.bottom}
+      nowPlayingTrack={isPlaying ? currentTrack : null}
     >
       <AudioPlayerControls compact />
     </PopoverPanel>
   ) : null;
+
+  const headphonesTitle =
+    isPlaying && currentTrack
+      ? `Now playing: ${currentTrack.title}`
+      : "Music & nature sounds";
 
   if (isDesktopCollapsed) {
     return (
@@ -403,8 +426,8 @@ export default function SidebarAudioPlayer({ collapsed }: SidebarAudioPlayerProp
             type="button"
             onClick={() => setPopoverOpen((open) => !open)}
             className="relative inline-flex h-9 w-9 items-center justify-center rounded-md border bg-background text-muted-foreground shadow-sm transition-colors hover:bg-accent hover:text-foreground"
-            title="Music & nature sounds"
-            aria-label="Music and nature sounds"
+            title={headphonesTitle}
+            aria-label={headphonesTitle}
           >
             <Headphones className="h-5 w-5" />
             {isPlaying && currentTrack && (
@@ -419,40 +442,45 @@ export default function SidebarAudioPlayer({ collapsed }: SidebarAudioPlayerProp
 
   return (
     <div className="shrink-0 border-t">
-      <div className="flex items-center gap-1 px-1 py-1">
-        <button
-          type="button"
-          onClick={toggleSection}
-          className="flex min-w-0 flex-1 items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-accent/50"
-          aria-expanded={sectionOpen}
-        >
-          <Headphones className="h-4 w-4 shrink-0 text-muted-foreground" />
-          <span className="min-w-0 truncate text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Ambience
-          </span>
-          <AmbienceNewPill />
-          {isPlaying && currentTrack && (
-            <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-500" />
-          )}
-          {sectionOpen ? (
-            <ChevronUp className="ml-auto h-4 w-4 shrink-0 text-muted-foreground" />
-          ) : (
-            <ChevronDown className="ml-auto h-4 w-4 shrink-0 text-muted-foreground" />
-          )}
-        </button>
-        {!sectionOpen && currentTrack && (
+      <div className="px-1 py-1">
+        <div className="flex items-center gap-1">
           <button
             type="button"
-            onClick={togglePlay}
-            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border bg-background text-foreground shadow-sm transition-colors hover:bg-accent"
-            aria-label={isPlaying ? "Pause" : "Play"}
+            onClick={toggleSection}
+            className="flex min-w-0 flex-1 items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-accent/50"
+            aria-expanded={sectionOpen}
           >
-            {isPlaying ? (
-              <Pause className="h-3.5 w-3.5" />
+            <Headphones className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <span className="min-w-0 truncate text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Ambience
+            </span>
+            <AmbienceNewPill />
+            {isPlaying && currentTrack && (
+              <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-500" />
+            )}
+            {sectionOpen ? (
+              <ChevronUp className="ml-auto h-4 w-4 shrink-0 text-muted-foreground" />
             ) : (
-              <Play className="h-3.5 w-3.5" />
+              <ChevronDown className="ml-auto h-4 w-4 shrink-0 text-muted-foreground" />
             )}
           </button>
+          {!sectionOpen && currentTrack && (
+            <button
+              type="button"
+              onClick={togglePlay}
+              className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border bg-background text-foreground shadow-sm transition-colors hover:bg-accent"
+              aria-label={isPlaying ? "Pause" : "Play"}
+            >
+              {isPlaying ? (
+                <Pause className="h-3.5 w-3.5" />
+              ) : (
+                <Play className="h-3.5 w-3.5" />
+              )}
+            </button>
+          )}
+        </div>
+        {isPlaying && currentTrack && (
+          <NowPlayingLabel title={currentTrack.title} />
         )}
       </div>
       {sectionOpen && <AudioPlayerControls />}
@@ -462,8 +490,13 @@ export default function SidebarAudioPlayer({ collapsed }: SidebarAudioPlayerProp
 
 const PopoverPanel = forwardRef<
   HTMLDivElement,
-  { left: number; bottom: number; children: ReactNode }
->(function PopoverPanel({ left, bottom, children }, ref) {
+  {
+    left: number;
+    bottom: number;
+    children: ReactNode;
+    nowPlayingTrack?: { title: string } | null;
+  }
+>(function PopoverPanel({ left, bottom, children, nowPlayingTrack }, ref) {
   return (
     <div
       ref={ref}
@@ -480,7 +513,13 @@ const PopoverPanel = forwardRef<
           <p className="text-sm font-semibold">Ambience</p>
           <AmbienceNewPill />
         </div>
-        <p className="text-xs text-muted-foreground">Music & nature sounds</p>
+        {nowPlayingTrack ? (
+          <p className="truncate text-xs text-muted-foreground">
+            Now playing: {nowPlayingTrack.title}
+          </p>
+        ) : (
+          <p className="text-xs text-muted-foreground">Music & nature sounds</p>
+        )}
       </div>
       {children}
     </div>

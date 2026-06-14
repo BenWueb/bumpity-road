@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ArrowRight, HelpCircle, Sparkles, UserPlus, X } from "lucide-react";
+import { ArrowRight, DoorOpen, HelpCircle, Sparkles, UserPlus, X } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { CARD_GRADIENTS } from "@/lib/ui-gradients";
 import { authClient } from "@/lib/auth-client";
@@ -64,6 +64,26 @@ export default function WelcomeModal() {
         </p>
 
         <div className="space-y-2">
+          <button
+            type="button"
+            onClick={() => {
+              handleClose();
+              window.dispatchEvent(new Event("openArrivalMode"));
+            }}
+            className="flex w-full items-center gap-3 rounded-lg border bg-card p-3 shadow-sm transition-colors hover:bg-accent"
+          >
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300">
+              <DoorOpen className="h-4 w-4" />
+            </div>
+            <div className="min-w-0 flex-1 text-left">
+              <div className="text-sm font-semibold">Just arrived at the cabin?</div>
+              <div className="text-xs text-muted-foreground">
+                Arrival checklist, wifi, and contacts
+              </div>
+            </div>
+            <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+          </button>
+
           <Link
             href="/signup"
             onClick={handleClose}

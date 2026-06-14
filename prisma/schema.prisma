@@ -193,7 +193,7 @@ model GuestbookEntry {
 
 model Feedback {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  type        String   // "bug" | "feature"
+  type        String   // "bug" | "feature" | "issue"
   title       String
   description String
   status      String   @default("open") // "open" | "in_progress" | "resolved" | "closed"

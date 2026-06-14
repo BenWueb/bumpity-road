@@ -95,7 +95,7 @@ describe("POST /api/feedback", () => {
     expect(res.status).toBe(400);
   });
 
-  it("returns 400 when type is not 'bug' or 'feature'", async () => {
+  it("returns 400 when type is not 'bug', 'feature', or 'issue'", async () => {
     const res = await POST(
       makeRequest("/api/feedback", {
         method: "POST",
@@ -103,6 +103,21 @@ describe("POST /api/feedback", () => {
       })
     );
     expect(res.status).toBe(400);
+  });
+
+  it("creates cabin issue feedback", async () => {
+    setSession(null);
+    db.feedback.create.mockResolvedValue({ id: "f2" });
+
+    const res = await POST(
+      makeRequest("/api/feedback", {
+        method: "POST",
+        body: { type: "issue", title: "Broken faucet", description: "Kitchen sink" },
+      })
+    );
+
+    expect(res.status).toBe(200);
+    expect(db.feedback.create.mock.calls[0][0].data.type).toBe("issue");
   });
 
   it("creates feedback with userId=null when not logged in and skips badge award", async () => {

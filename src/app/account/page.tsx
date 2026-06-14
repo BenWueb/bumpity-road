@@ -6,6 +6,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { AccountContent } from "./AccountContent";
 import { coerceTodoStatus } from "@/types/todo";
+import { computeMembershipYears } from "@/lib/badge-progress";
 
 // `headers()`/`getSession` already mark this route as dynamic implicitly,
 // so we don't need an explicit `force-dynamic`. Removing it lets Next opt
@@ -48,7 +49,17 @@ async function getAccountData() {
   }
 
   // Fetch todos, posts, adventures, gallery images, loon + fish observations in parallel
-  const [todos, posts, adventures, galleryImages, loonObservations, fishObservations] = await Promise.all([
+  const [
+    todos,
+    posts,
+    adventures,
+    galleryImages,
+    loonObservations,
+    fishObservations,
+    tasksCompleted,
+    userFeedback,
+    puzzlesOwnedCount,
+  ] = await Promise.all([
     prisma.todo.findMany({
       where: {
         OR: [{ userId: session.user.id }, { assignedToId: session.user.id }],
@@ -129,6 +140,27 @@ async function getAccountData() {
         createdAt: true,
       },
     }),
+    prisma.todo.count({
+      where: {
+        completedById: session.user.id,
+        completed: true,
+      },
+    }),
+    prisma.feedback.findMany({
+      where: { userId: session.user.id },
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        type: true,
+        title: true,
+        description: true,
+        status: true,
+        createdAt: true,
+      },
+    }),
+    prisma.puzzleEntry.count({
+      where: { userId: session.user.id },
+    }),
   ]);
 
   const formattedTodos = todos.map((t) => ({
@@ -201,6 +233,16 @@ async function getAccountData() {
     createdAt: obs.createdAt.toISOString(),
   }));
 
+  const formattedUserFeedback = userFeedback.map((f) => ({
+    id: f.id,
+    type: f.type,
+    title: f.title,
+    description: f.description,
+    status: f.status,
+    createdAt: f.createdAt.toISOString(),
+    user: null,
+  }));
+
   // Fetch feedback if user is a bug admin
   let formattedFeedback: {
     id: string;
@@ -243,7 +285,17 @@ async function getAccountData() {
     galleryImages: formattedGalleryImages,
     loonObservations: formattedLoonObservations,
     fishObservations: formattedFishObservations,
+    userFeedback: formattedUserFeedback,
     feedback: formattedFeedback,
+    badgeProgress: {
+      tasksCompleted,
+      blogPosts: formattedPosts.length,
+      feedbackSubmitted: formattedUserFeedback.length,
+      loonObservations: formattedLoonObservations.length,
+      fishObservations: formattedFishObservations.length,
+      membershipYears: computeMembershipYears(user.createdAt),
+    },
+    puzzlesCount: puzzlesOwnedCount,
     newMembershipBadges,
   };
 }
@@ -277,7 +329,10 @@ async function AccountData() {
       galleryImages={data.galleryImages}
       loonObservations={data.loonObservations}
       fishObservations={data.fishObservations}
+      userFeedback={data.userFeedback}
       feedback={data.feedback}
+      badgeProgress={data.badgeProgress}
+      puzzlesCount={data.puzzlesCount}
       newMembershipBadges={data.newMembershipBadges}
     />
   );

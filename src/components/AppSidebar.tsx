@@ -211,8 +211,17 @@ export default function AppSidebar() {
     function onOpen() {
       setFeedbackOpen(true);
     }
+    function onOpenAmbience() {
+      if (window.innerWidth < 768) {
+        setCollapsed(false);
+      }
+    }
     window.addEventListener("openFeedbackModal", onOpen);
-    return () => window.removeEventListener("openFeedbackModal", onOpen);
+    window.addEventListener("openAmbiencePlayer", onOpenAmbience);
+    return () => {
+      window.removeEventListener("openFeedbackModal", onOpen);
+      window.removeEventListener("openAmbiencePlayer", onOpenAmbience);
+    };
   }, []);
 
   const items: NavItem[] = useMemo(

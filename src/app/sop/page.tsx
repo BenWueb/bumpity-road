@@ -9,6 +9,7 @@ import {
   MessageSquarePlus,
 } from "lucide-react";
 import FeedbackTrigger from "@/components/help/FeedbackTrigger";
+import IssueReportTrigger from "@/components/IssueReportTrigger";
 import { headers } from "next/headers";
 import { PageHeader } from "@/components/PageHeader";
 import { getAllDocs } from "@/lib/sop-server";
@@ -116,9 +117,8 @@ export default function SopPage() {
               <p className="mb-1 text-sm font-semibold text-sky-800 dark:text-sky-300">
                 If something needs attention
               </p>
-              <p className="text-sm text-foreground">
-                If something is broken or needs attention, please make a note and
-                call{" "}
+              <p className="mb-2 text-sm text-foreground">
+                If something is broken or needs attention, report it here or call{" "}
                 <Link
                   href="/sop/reference/contacts#family"
                   className="font-medium text-primary underline underline-offset-2 hover:text-primary/80"
@@ -127,6 +127,9 @@ export default function SopPage() {
                 </Link>
                 .
               </p>
+              <IssueReportTrigger className="inline-flex items-center rounded-md border bg-background px-3 py-1.5 text-sm font-medium shadow-sm transition-colors hover:bg-accent">
+                Report an issue
+              </IssueReportTrigger>
             </div>
           </div>
         </div>
