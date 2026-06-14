@@ -39,7 +39,7 @@ export function GuestbookEntryCard({
           entry.color
         )}`}
       />
-      <div className="relative p-4">
+      <div className="relative flex flex-col p-4">
         <div className="mb-2 flex items-center justify-between gap-2">
           <span className="font-semibold">{entry.name}</span>
           <div className="flex items-center gap-1">
@@ -63,14 +63,14 @@ export function GuestbookEntryCard({
                 <Trash2 className="h-3.5 w-3.5" />
               </button>
             )}
-            <span className="shrink-0 text-xs text-muted-foreground">
-              {formatDate(entry.createdAt)}
-            </span>
           </div>
         </div>
-        <p className="whitespace-pre-wrap text-sm text-muted-foreground">
+        <p className="mb-3 whitespace-pre-wrap text-sm text-muted-foreground">
           {entry.message}
         </p>
+        <span className="mt-auto text-xs text-muted-foreground">
+          {formatDate(entry.createdAt)}
+        </span>
       </div>
     </div>
   );

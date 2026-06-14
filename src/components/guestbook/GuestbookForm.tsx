@@ -126,8 +126,7 @@ export function GuestbookForm({ onSubmit, id }: Props) {
               <Link href="/blog" className="text-blue-600 hover:text-primary/90">
                 {" "}
                 Blog post
-              </Link>{" "}
-              instead!
+              </Link>!
             </p>
           </form>
         </div>
