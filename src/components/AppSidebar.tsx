@@ -3,6 +3,7 @@
 import AccountBar from "@/components/AccountBar";
 import { authClient } from "@/lib/auth-client";
 import FeedbackModal from "@/components/FeedbackModal";
+import { SidebarAudioPlayer } from "@/components/audio";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -433,6 +434,8 @@ export default function AppSidebar() {
               })}
             </ul>
           </nav>
+
+          <SidebarAudioPlayer collapsed={collapsed} />
 
           {/* Help + Feedback buttons */}
           <div className="shrink-0 space-y-1 border-t px-2 py-2">

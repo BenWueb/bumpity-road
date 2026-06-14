@@ -8,6 +8,7 @@ import GoogleAnalytics from "@/components/GoogleAnalytics";
 import AnnouncementBar from "@/components/AnnouncementBar";
 import GeneralNoticeBarServer from "@/components/GeneralNoticeBarServer";
 import { LoginModalProvider } from "@/components/LoginModal";
+import { AudioPlayerProvider } from "@/components/audio";
 import { Suspense } from "react";
 
 const poppins = Poppins({
@@ -68,17 +69,19 @@ export default function RootLayout({
       >
         <GoogleAnalytics />
         <LoginModalProvider>
-          <div className="flex h-dvh w-full flex-col overflow-hidden">
-            <AnnouncementBar />
-            <Suspense fallback={null}>
-              <GeneralNoticeBarServer />
-            </Suspense>
-            <div className="flex min-h-0 flex-1 overflow-hidden">
-              <AppSidebar />
-              <MainScroll>{children}</MainScroll>
+          <AudioPlayerProvider>
+            <div className="flex h-dvh w-full flex-col overflow-hidden">
+              <AnnouncementBar />
+              <Suspense fallback={null}>
+                <GeneralNoticeBarServer />
+              </Suspense>
+              <div className="flex min-h-0 flex-1 overflow-hidden">
+                <AppSidebar />
+                <MainScroll>{children}</MainScroll>
+              </div>
             </div>
-          </div>
-          <BadgeClaimHandler />
+            <BadgeClaimHandler />
+          </AudioPlayerProvider>
         </LoginModalProvider>
       </body>
     </html>
