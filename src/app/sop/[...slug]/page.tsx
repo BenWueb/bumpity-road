@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { MDXRemote } from "next-mdx-remote/rsc";
-import { ArrowLeft, Calendar, Tag } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { getDocBySlug, getAllDocs } from "@/lib/sop-server";
 import { getCategoryMeta } from "@/content/sop/_categories";
@@ -69,24 +69,10 @@ export default async function SopDocPage({ params }: Props) {
         <header className="mb-8">
           <h1 className="mb-2 text-2xl font-bold md:text-3xl">{doc.title}</h1>
           {doc.description && (
-            <p className="mb-3 text-sm text-muted-foreground md:text-base">
+            <p className="text-sm text-muted-foreground md:text-base">
               {doc.description}
             </p>
           )}
-          <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-            {doc.updatedAt && (
-              <span className="flex items-center gap-1">
-                <Calendar className="h-3 w-3" />
-                Updated {doc.updatedAt}
-              </span>
-            )}
-            {doc.tags.length > 0 && (
-              <span className="flex items-center gap-1">
-                <Tag className="h-3 w-3" />
-                {doc.tags.join(", ")}
-              </span>
-            )}
-          </div>
         </header>
 
         {/* MDX Content */}
