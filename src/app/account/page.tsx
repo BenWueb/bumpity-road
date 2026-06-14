@@ -79,7 +79,11 @@ async function getAccountData() {
         title: true,
         slug: true,
         createdAt: true,
-        images: { take: 1, select: { url: true, publicId: true } },
+        images: {
+          orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+          take: 1,
+          select: { url: true, publicId: true },
+        },
         _count: { select: { comments: true } },
       },
     }),

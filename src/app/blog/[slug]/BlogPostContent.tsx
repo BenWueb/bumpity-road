@@ -1,13 +1,16 @@
 "use client";
 
 import { authClient } from "@/lib/auth-client";
-import { CldImage } from "next-cloudinary";
-import { LazyCldUploadButton as CldUploadButton } from "@/components/cloudinary/LazyUpload";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Calendar, ImagePlus, Pencil, Trash2, User, X } from "lucide-react";
-import { PostDetail, PostImage, UploadedImage } from "@/types/blog";
+import { Calendar, Pencil, User, X } from "lucide-react";
+import { PostDetail } from "@/types/blog";
 import { wasEdited, formatLongDate } from "@/lib/blog-utils";
+import {
+  getInitialHeaderKey,
+  parseHeaderKey,
+} from "@/lib/blog-images";
+import { BlogEditImagesSection } from "@/components/blog/BlogEditImagesSection";
 import BlogPostImages from "./BlogPostImages";
 
 type Props = {
@@ -24,9 +27,14 @@ export default function BlogPostContent({ post: initialPost, formattedDate }: Pr
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(post.title);
   const [editContent, setEditContent] = useState(post.content);
-  const [editImages, setEditImages] = useState<PostImage[]>(post.images);
+  const [editImages, setEditImages] = useState(post.images);
   const [imagesToRemove, setImagesToRemove] = useState<string[]>([]);
-  const [newImages, setNewImages] = useState<UploadedImage[]>([]);
+  const [newImages, setNewImages] = useState<
+    { publicId: string; url: string; width?: number; height?: number }[]
+  >([]);
+  const [headerKey, setHeaderKey] = useState<string | null>(
+    getInitialHeaderKey(post.images),
+  );
   const [saving, setSaving] = useState(false);
 
   const isOwner = session?.user?.id === post.user?.id;
@@ -37,7 +45,17 @@ export default function BlogPostContent({ post: initialPost, formattedDate }: Pr
     setEditImages(post.images);
     setImagesToRemove([]);
     setNewImages([]);
+    setHeaderKey(getInitialHeaderKey(post.images));
     setIsEditing(true);
+  }
+
+  function pickFallbackHeader(
+    nextExisting: typeof editImages,
+    nextNew: typeof newImages,
+  ) {
+    if (nextExisting[0]) return `existing:${nextExisting[0].id}`;
+    if (nextNew[0]) return `new:${nextNew[0].publicId}`;
+    return null;
   }
 
   function closeEditModal() {
@@ -46,35 +64,48 @@ export default function BlogPostContent({ post: initialPost, formattedDate }: Pr
 
   function handleRemoveExistingImage(imageId: string) {
     setImagesToRemove((prev) => [...prev, imageId]);
-    setEditImages((prev) => prev.filter((img) => img.id !== imageId));
+    const nextExisting = editImages.filter((img) => img.id !== imageId);
+    setEditImages(nextExisting);
+    if (headerKey === `existing:${imageId}`) {
+      setHeaderKey(pickFallbackHeader(nextExisting, newImages));
+    }
   }
 
   function handleRemoveNewImage(publicId: string) {
-    setNewImages((prev) => prev.filter((img) => img.publicId !== publicId));
+    const nextNew = newImages.filter((img) => img.publicId !== publicId);
+    setNewImages(nextNew);
+    if (headerKey === `new:${publicId}`) {
+      setHeaderKey(pickFallbackHeader(editImages, nextNew));
+    }
   }
 
   const handleUploadSuccess = (result: unknown) => {
     const info = (result as { info?: { public_id?: string; secure_url?: string; width?: number; height?: number } })?.info;
     if (info?.public_id && info?.secure_url) {
-      setNewImages((prev) => [
-        ...prev,
-        {
-          publicId: info.public_id!,
-          url: info.secure_url!,
-          width: info.width,
-          height: info.height,
-        },
-      ]);
+      const uploaded = {
+        publicId: info.public_id!,
+        url: info.secure_url!,
+        width: info.width,
+        height: info.height,
+      };
+      setNewImages((prev) => [...prev, uploaded]);
+      if (!headerKey && editImages.length === 0 && newImages.length === 0) {
+        setHeaderKey(`new:${uploaded.publicId}`);
+      }
     }
   };
+
+  const remainingImages = editImages.length + newImages.length;
 
   async function handleSaveEdit(e: React.FormEvent) {
     e.preventDefault();
     if (!editTitle.trim() || !editContent.trim() || saving) return;
+    if (remainingImages === 0) return;
 
     setSaving(true);
 
     try {
+      const header = parseHeaderKey(headerKey);
       const res = await fetch("/api/blog", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -84,6 +115,7 @@ export default function BlogPostContent({ post: initialPost, formattedDate }: Pr
           content: editContent.trim(),
           removeImageIds: imagesToRemove.length > 0 ? imagesToRemove : undefined,
           addImages: newImages.length > 0 ? newImages : undefined,
+          ...header,
         }),
       });
 
@@ -235,68 +267,17 @@ export default function BlogPostContent({ post: initialPost, formattedDate }: Pr
               </div>
 
               {/* Images Section */}
-              <div>
-                <label className="mb-2 block text-sm font-medium">Images</label>
-                <div className="flex flex-wrap gap-3">
-                  {/* Existing images */}
-                  {editImages.map((img) => (
-                    <div key={img.id} className="group relative">
-                      <CldImage
-                        src={img.publicId}
-                        width={100}
-                        height={100}
-                        alt="Post image"
-                        crop="fill"
-                        className="h-20 w-20 rounded-lg border object-cover"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveExistingImage(img.id)}
-                        className="absolute -right-2 -top-2 rounded-full bg-destructive p-1 text-destructive-foreground shadow-sm"
-                        title="Remove image"
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </button>
-                    </div>
-                  ))}
-
-                  {/* New images to add */}
-                  {newImages.map((img) => (
-                    <div key={img.publicId} className="group relative">
-                      <CldImage
-                        src={img.publicId}
-                        width={100}
-                        height={100}
-                        alt="New image"
-                        crop="fill"
-                        className="h-20 w-20 rounded-lg border object-cover ring-2 ring-primary"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveNewImage(img.publicId)}
-                        className="absolute -right-2 -top-2 rounded-full bg-destructive p-1 text-destructive-foreground shadow-sm"
-                        title="Remove image"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </div>
-                  ))}
-
-                  {/* Upload button */}
-                  <CldUploadButton
-                    uploadPreset="bumpity-road"
-                    onSuccess={handleUploadSuccess}
-                    className="flex h-20 w-20 items-center justify-center rounded-lg border-2 border-dashed text-muted-foreground transition-colors hover:border-primary hover:text-primary"
-                  >
-                    <ImagePlus className="h-6 w-6" />
-                  </CldUploadButton>
-                </div>
-                {imagesToRemove.length > 0 && (
-                  <p className="mt-2 text-xs text-muted-foreground">
-                    {imagesToRemove.length} image(s) will be removed on save
-                  </p>
-                )}
-              </div>
+              <BlogEditImagesSection
+                existingImages={editImages}
+                newImages={newImages}
+                headerKey={headerKey}
+                imagesToRemoveCount={imagesToRemove.length}
+                remainingImages={remainingImages}
+                onHeaderChange={setHeaderKey}
+                onRemoveExisting={handleRemoveExistingImage}
+                onRemoveNew={handleRemoveNewImage}
+                onUploadSuccess={handleUploadSuccess}
+              />
 
               <div className="flex justify-end gap-2 pt-2">
                 <button
@@ -308,7 +289,12 @@ export default function BlogPostContent({ post: initialPost, formattedDate }: Pr
                 </button>
                 <button
                   type="submit"
-                  disabled={saving || !editTitle.trim() || !editContent.trim()}
+                  disabled={
+                    saving ||
+                    !editTitle.trim() ||
+                    !editContent.trim() ||
+                    remainingImages === 0
+                  }
                   className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
                 >
                   {saving ? "Saving..." : "Save Changes"}

@@ -1,5 +1,6 @@
 import { auth } from "@/utils/auth";
 import { checkAndAwardBlogBadges } from "@/utils/badges";
+import { postImageOrderBy, reorderPostImagesForHeader } from "@/lib/blog-images";
 import { deleteCloudinaryImages } from "@/utils/cloudinary";
 import { prisma } from "@/utils/prisma";
 import { headers } from "next/headers";
@@ -28,7 +29,10 @@ export async function GET() {
       createdAt: true,
       updatedAt: true,
       user: { select: { id: true, name: true, image: true } },
-      images: { select: { id: true, publicId: true, url: true, width: true, height: true } },
+      images: {
+        orderBy: postImageOrderBy,
+        select: { id: true, publicId: true, url: true, width: true, height: true },
+      },
       _count: { select: { comments: true } },
     },
   });
@@ -71,18 +75,22 @@ export async function POST(req: NextRequest) {
       userId: session.user.id,
       images: images?.length
         ? {
-            create: images.map((img) => ({
+            create: images.map((img, index) => ({
               publicId: img.publicId,
               url: img.url,
               width: img.width,
               height: img.height,
+              sortOrder: index,
             })),
           }
         : undefined,
     },
     include: {
       user: { select: { id: true, name: true, image: true } },
-      images: { select: { id: true, publicId: true, url: true, width: true, height: true } },
+      images: {
+        orderBy: postImageOrderBy,
+        select: { id: true, publicId: true, url: true, width: true, height: true },
+      },
       _count: { select: { comments: true } },
     },
   });
@@ -105,12 +113,14 @@ export async function PATCH(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { id, title, content, addImages, removeImageIds } = body as {
+  const { id, title, content, addImages, removeImageIds, headerImageId, headerImagePublicId } = body as {
     id?: string;
     title?: string;
     content?: string;
     addImages?: { publicId: string; url: string; width?: number; height?: number }[];
     removeImageIds?: string[];
+    headerImageId?: string;
+    headerImagePublicId?: string;
   };
 
   if (!id) {
@@ -154,15 +164,21 @@ export async function PATCH(req: NextRequest) {
 
   // Add new images if specified
   if (addImages && addImages.length > 0) {
+    const currentCount = await prisma.postImage.count({ where: { postId: id } });
     await prisma.postImage.createMany({
-      data: addImages.map((img) => ({
+      data: addImages.map((img, index) => ({
         publicId: img.publicId,
         url: img.url,
         width: img.width,
         height: img.height,
         postId: id,
+        sortOrder: currentCount + index,
       })),
     });
+  }
+
+  if (headerImageId || headerImagePublicId) {
+    await reorderPostImagesForHeader(id, { headerImageId, headerImagePublicId });
   }
 
   const post = await prisma.post.update({
@@ -179,7 +195,10 @@ export async function PATCH(req: NextRequest) {
       createdAt: true,
       updatedAt: true,
       user: { select: { id: true, name: true, image: true } },
-      images: { select: { id: true, publicId: true, url: true, width: true, height: true } },
+      images: {
+        orderBy: postImageOrderBy,
+        select: { id: true, publicId: true, url: true, width: true, height: true },
+      },
       _count: { select: { comments: true } },
     },
   });

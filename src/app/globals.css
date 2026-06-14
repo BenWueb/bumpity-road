@@ -79,37 +79,37 @@
 }
 
 .dark {
-  --background: oklch(0.129 0.042 264.695);
-  --foreground: oklch(0.984 0.003 247.858);
-  --card: oklch(0.208 0.042 265.755);
-  --card-foreground: oklch(0.984 0.003 247.858);
-  --popover: oklch(0.208 0.042 265.755);
-  --popover-foreground: oklch(0.984 0.003 247.858);
-  --primary: oklch(0.929 0.013 255.508);
-  --primary-foreground: oklch(0.208 0.042 265.755);
-  --secondary: oklch(0.279 0.041 260.031);
-  --secondary-foreground: oklch(0.984 0.003 247.858);
-  --muted: oklch(0.279 0.041 260.031);
-  --muted-foreground: oklch(0.704 0.04 256.788);
-  --accent: oklch(0.279 0.041 260.031);
-  --accent-foreground: oklch(0.984 0.003 247.858);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.551 0.027 264.364);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.208 0.042 265.755);
-  --sidebar-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.279 0.041 260.031);
-  --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.551 0.027 264.364);
+  --background: oklch(0.14 0.035 155);
+  --foreground: oklch(0.93 0.02 210);
+  --card: oklch(0.19 0.03 160);
+  --card-foreground: oklch(0.93 0.02 210);
+  --popover: oklch(0.2 0.032 158);
+  --popover-foreground: oklch(0.93 0.02 210);
+  --primary: oklch(0.72 0.11 185);
+  --primary-foreground: oklch(0.16 0.04 155);
+  --secondary: oklch(0.24 0.028 158);
+  --secondary-foreground: oklch(0.9 0.02 210);
+  --muted: oklch(0.24 0.028 158);
+  --muted-foreground: oklch(0.72 0.03 185);
+  --accent: oklch(0.26 0.035 165);
+  --accent-foreground: oklch(0.93 0.02 210);
+  --destructive: oklch(0.65 0.18 25);
+  --border: oklch(0.55 0.04 160 / 18%);
+  --input: oklch(0.55 0.04 160 / 22%);
+  --ring: oklch(0.62 0.08 185);
+  --chart-1: oklch(0.62 0.12 185);
+  --chart-2: oklch(0.58 0.1 155);
+  --chart-3: oklch(0.72 0.08 85);
+  --chart-4: oklch(0.55 0.1 230);
+  --chart-5: oklch(0.68 0.1 45);
+  --sidebar: oklch(0.17 0.032 158);
+  --sidebar-foreground: oklch(0.91 0.02 210);
+  --sidebar-primary: oklch(0.68 0.11 185);
+  --sidebar-primary-foreground: oklch(0.16 0.04 155);
+  --sidebar-accent: oklch(0.24 0.03 160);
+  --sidebar-accent-foreground: oklch(0.93 0.02 210);
+  --sidebar-border: oklch(0.55 0.04 160 / 16%);
+  --sidebar-ring: oklch(0.62 0.08 185);
 }
 
 @layer base {
@@ -119,6 +119,29 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+.dark body {
+  background: linear-gradient(
+    180deg,
+    oklch(0.18 0.04 230) 0%,
+    oklch(0.13 0.035 165) 45%,
+    oklch(0.11 0.03 145) 100%
+  );
+  background-attachment: fixed;
+}
+
+.dark body::before {
+  content: "";
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  opacity: 0.35;
+  background:
+    radial-gradient(circle at 12% 8%, oklch(0.75 0.06 85 / 35%) 0, transparent 28%),
+    radial-gradient(circle at 88% 12%, oklch(0.7 0.08 210 / 25%) 0, transparent 24%),
+    radial-gradient(circle at 50% 0%, oklch(0.55 0.1 195 / 20%) 0, transparent 40%);
 }
 
 button:hover {
@@ -140,9 +163,9 @@ select:hover {
   --fc-list-event-hover-bg-color: var(--accent);
 }
 .dark .fc-custom {
-  --fc-today-bg-color: oklch(0.279 0.041 260.031 / 50%);
-  --fc-event-bg-color: oklch(0.488 0.243 264.376);
-  --fc-event-border-color: oklch(0.488 0.243 264.376);
+  --fc-today-bg-color: oklch(0.26 0.035 165 / 50%);
+  --fc-event-bg-color: oklch(0.52 0.1 175);
+  --fc-event-border-color: oklch(0.52 0.1 175);
 }
 
 .fc-custom .fc-scrollgrid {
@@ -185,7 +208,7 @@ select:hover {
   padding: 0;
 }
 .dark .fc-custom .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
-  background: oklch(0.488 0.243 264.376);
+  background: oklch(0.52 0.1 175);
 }
 
 .fc-custom .fc-daygrid-day.fc-day-other .fc-daygrid-day-number {
@@ -217,7 +240,11 @@ select:hover {
   border-color: oklch(0.588 0.158 241.966);
 }
 .dark .fc-custom .fc-daygrid-event-dot {
-  border-color: oklch(0.488 0.243 264.376);
+  border-color: oklch(0.52 0.1 175);
+}
+
+.dark .leaflet-container {
+  filter: brightness(0.9) saturate(0.85);
 }
 
 .fc-custom .fc-daygrid-more-link {

@@ -57,5 +57,7 @@ export type UpdatePostInput = {
   content: string;
   addImages?: UploadedImage[];
   removeImageIds?: string[];
+  headerImageId?: string;
+  headerImagePublicId?: string;
 };
 

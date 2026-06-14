@@ -1,4 +1,5 @@
 import { prisma } from "@/utils/prisma";
+import { postImageOrderBy } from "@/lib/blog-images";
 import { Post, PostSummary } from "@/types/blog";
 
 export async function fetchPosts(): Promise<Post[]> {
@@ -13,6 +14,7 @@ export async function fetchPosts(): Promise<Post[]> {
       updatedAt: true,
       user: { select: { id: true, name: true, image: true } },
       images: {
+        orderBy: postImageOrderBy,
         select: { id: true, publicId: true, url: true, width: true, height: true },
       },
       _count: { select: { comments: true } },
@@ -38,6 +40,7 @@ export async function fetchPostBySlug(slug: string) {
       updatedAt: true,
       user: { select: { id: true, name: true, image: true } },
       images: {
+        orderBy: postImageOrderBy,
         select: { id: true, publicId: true, url: true, width: true, height: true },
       },
     },
@@ -63,7 +66,11 @@ export async function fetchOtherPosts(excludeSlug: string): Promise<PostSummary[
       slug: true,
       createdAt: true,
       user: { select: { name: true } },
-      images: { take: 1, select: { url: true } },
+      images: {
+        orderBy: postImageOrderBy,
+        take: 1,
+        select: { url: true },
+      },
     },
   });
 }

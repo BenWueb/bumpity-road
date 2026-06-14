@@ -8,6 +8,8 @@ import GoogleAnalytics from "@/components/GoogleAnalytics";
 import AnnouncementBar from "@/components/AnnouncementBar";
 import GeneralNoticeBarServer from "@/components/GeneralNoticeBarServer";
 import CabinSiteModals from "@/components/CabinSiteModals";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { ThemeScript } from "@/components/ThemeScript";
 import { LoginModalProvider } from "@/components/LoginModal";
 import { AudioPlayerProvider } from "@/components/audio";
 import { Suspense } from "react";
@@ -64,27 +66,32 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <ThemeScript />
+      </head>
       <body
         className={`${poppins.className} antialiased h-dvh overflow-hidden`}
       >
         <GoogleAnalytics />
-        <LoginModalProvider>
-          <AudioPlayerProvider>
-            <div className="flex h-dvh w-full flex-col overflow-hidden">
-              <AnnouncementBar />
-              <Suspense fallback={null}>
-                <GeneralNoticeBarServer />
-              </Suspense>
-              <div className="flex min-h-0 flex-1 overflow-hidden">
-                <AppSidebar />
-                <MainScroll>{children}</MainScroll>
+        <ThemeProvider>
+          <LoginModalProvider>
+            <AudioPlayerProvider>
+              <div className="flex h-dvh w-full flex-col overflow-hidden">
+                <AnnouncementBar />
+                <Suspense fallback={null}>
+                  <GeneralNoticeBarServer />
+                </Suspense>
+                <div className="flex min-h-0 flex-1 overflow-hidden">
+                  <AppSidebar />
+                  <MainScroll>{children}</MainScroll>
+                </div>
               </div>
-            </div>
-            <BadgeClaimHandler />
-            <CabinSiteModals />
-          </AudioPlayerProvider>
-        </LoginModalProvider>
+              <BadgeClaimHandler />
+              <CabinSiteModals />
+            </AudioPlayerProvider>
+          </LoginModalProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

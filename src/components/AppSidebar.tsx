@@ -1,6 +1,7 @@
 "use client";
 
 import AccountBar from "@/components/AccountBar";
+import NightModeToggle from "@/components/NightModeToggle";
 import { authClient } from "@/lib/auth-client";
 import FeedbackModal from "@/components/FeedbackModal";
 import { SidebarAudioPlayer } from "@/components/audio";
@@ -490,6 +491,7 @@ export default function AppSidebar() {
                 Send Feedback
               </span>
             </button>
+            <NightModeToggle collapsed={collapsed} />
           </div>
 
           <AccountBar collapsed={collapsed} />
