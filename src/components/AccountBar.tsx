@@ -107,21 +107,24 @@ export default function AccountBar({ collapsed }: { collapsed: boolean }) {
               type="button"
               onClick={() => {
                 setOpen(false);
-                openLoginModal();
+                openLoginModal({ mode: "signin" });
               }}
               className="flex w-full items-center gap-2 whitespace-nowrap rounded-sm px-2 py-2 text-left text-sm hover:bg-accent"
             >
               <LogIn className="h-4 w-4 shrink-0" />
               Log in
             </button>
-            <Link
-              href="/signup"
-              onClick={() => setOpen(false)}
-              className="flex items-center gap-2 whitespace-nowrap rounded-sm px-2 py-2 text-sm hover:bg-accent"
+            <button
+              type="button"
+              onClick={() => {
+                setOpen(false);
+                openLoginModal({ mode: "signup" });
+              }}
+              className="flex w-full items-center gap-2 whitespace-nowrap rounded-sm px-2 py-2 text-left text-sm hover:bg-accent"
             >
               <User className="h-4 w-4 shrink-0" />
               Create account
-            </Link>
+            </button>
           </>
         )}
       </div>

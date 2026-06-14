@@ -4,6 +4,7 @@ import { authClient } from "@/lib/auth-client";
 import { useEffect, useState } from "react";
 import { Award, X } from "lucide-react";
 import { getBadgeInfo } from "@/lib/badge-definitions";
+import { PENDING_BADGE_ANSWER_KEY } from "@/lib/og-badge-client";
 
 export default function BadgeClaimHandler() {
   const { data: session } = authClient.useSession();
@@ -15,10 +16,10 @@ export default function BadgeClaimHandler() {
   useEffect(() => {
     if (!session?.user?.id) return;
 
-    const pendingAnswer = localStorage.getItem("pendingBadgeAnswer");
+    const pendingAnswer = localStorage.getItem(PENDING_BADGE_ANSWER_KEY);
     if (!pendingAnswer) return;
 
-    localStorage.removeItem("pendingBadgeAnswer");
+    localStorage.removeItem(PENDING_BADGE_ANSWER_KEY);
 
     async function claimBadge() {
       try {

@@ -1,42 +1,33 @@
 "use client";
 
 import { authClient } from "@/lib/auth-client";
-import { useEffect, useState } from "react";
-import { Award } from "lucide-react";
+import { useState } from "react";
 import { useLoginModal } from "@/components/LoginModal";
+import {
+  OgBadgeQuestionSection,
+  useOgBadgeAnswer,
+} from "@/components/OgBadgeQuestionSection";
 
 type Provider = "google" | "apple" | "facebook" | "twitter";
-
-// The secret question for the OG badge - hardcoded here
-const OG_QUESTION =
-  "What are you supposed to yell when turning off of Cty Rd 5?";
 
 export default function SignUpPage() {
   const { openLoginModal } = useLoginModal();
   const [loading, setLoading] = useState<Provider | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [secretAnswer, setSecretAnswer] = useState("");
-  const [showSecretField, setShowSecretField] = useState(false);
-
-  // Load any previously stored answer
-  useEffect(() => {
-    const stored = localStorage.getItem("pendingBadgeAnswer");
-    if (stored) {
-      setSecretAnswer(stored);
-      setShowSecretField(true);
-    }
-  }, []);
+  const {
+    secretAnswer,
+    setSecretAnswer,
+    showSecretField,
+    setShowSecretField,
+    persistPendingAnswer,
+  } = useOgBadgeAnswer();
 
   async function handleSignIn(provider: Provider) {
     setError(null);
     setLoading(provider);
 
     // Store the answer in localStorage before redirect (if provided)
-    if (secretAnswer.trim()) {
-      localStorage.setItem("pendingBadgeAnswer", secretAnswer.trim());
-    } else {
-      localStorage.removeItem("pendingBadgeAnswer");
-    }
+    persistPendingAnswer();
 
     try {
       await authClient.signIn.social({
@@ -63,34 +54,12 @@ export default function SignUpPage() {
           Get started with Bumpity Road
         </p>
 
-        {/* Secret Question Section */}
-        <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950/30">
-          <button
-            type="button"
-            onClick={() => setShowSecretField(!showSecretField)}
-            className="flex w-full items-center gap-2 text-left text-sm font-medium text-amber-800 dark:text-amber-200"
-          >
-            <Award className="h-4 w-4" />
-            <span>Earn the OG Badge (optional)</span>
-            <span className="ml-auto text-xs text-amber-600 dark:text-amber-400">
-              {showSecretField ? "▲" : "▼"}
-            </span>
-          </button>
-          {showSecretField && (
-            <div className="mt-3">
-              <label className="block text-xs text-amber-700 dark:text-amber-300">
-                {OG_QUESTION}
-              </label>
-              <input
-                type="text"
-                value={secretAnswer}
-                onChange={(e) => setSecretAnswer(e.target.value)}
-                placeholder="Your answer..."
-                className="mt-1 w-full rounded-md border border-amber-300 bg-white px-3 py-2 text-sm placeholder:text-amber-400 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 dark:border-amber-700 dark:bg-amber-900/30 dark:placeholder:text-amber-600"
-              />
-            </div>
-          )}
-        </div>
+        <OgBadgeQuestionSection
+          secretAnswer={secretAnswer}
+          onSecretAnswerChange={setSecretAnswer}
+          showSecretField={showSecretField}
+          onToggleShow={() => setShowSecretField((prev) => !prev)}
+        />
 
         <div className="mt-4 space-y-3 md:mt-6">
           {error && (
