@@ -96,6 +96,10 @@ async function SopNotice() {
   );
 }
 
+const issueButtonClassName = `inline-flex shrink-0 items-center gap-1.5 overflow-hidden rounded-md border border-sky-200/70 bg-card px-3 py-1.5 text-sm font-medium text-foreground shadow-sm transition-all hover:shadow-md dark:border-sky-800/40 ${CARD_GRADIENTS.sky}`;
+
+const feedbackButtonClassName = `inline-flex shrink-0 items-center gap-1.5 overflow-hidden rounded-md border border-amber-200/70 bg-card px-3 py-1.5 text-sm font-medium text-foreground shadow-sm transition-all hover:shadow-md dark:border-amber-800/40 ${CARD_GRADIENTS.amber}`;
+
 export default function SopPage() {
   const docs = getAllDocs();
 
@@ -109,55 +113,36 @@ export default function SopPage() {
       />
 
       <div className="mx-auto max-w-5xl p-4 md:p-6">
-        {/* If something needs attention */}
-        <div className="mb-6 rounded-lg border border-sky-200 bg-sky-50 p-4 dark:border-sky-900 dark:bg-sky-950/40">
-          <div className="flex items-start gap-3">
-            <Info className="mt-0.5 h-5 w-5 shrink-0 text-sky-600 dark:text-sky-400" />
-            <div className="min-w-0 flex-1">
-              <p className="mb-1 text-sm font-semibold text-sky-800 dark:text-sky-300">
-                If something needs attention
-              </p>
-              <p className="mb-2 text-sm text-foreground">
-                If something is broken or needs attention, report it here or call{" "}
-                <Link
-                  href="/sop/reference/contacts#family"
-                  className="font-medium text-primary underline underline-offset-2 hover:text-primary/80"
-                >
-                  Jenny, Scott, or Teri
-                </Link>
-                .
-              </p>
-              <IssueReportTrigger className="inline-flex items-center rounded-md border bg-background px-3 py-1.5 text-sm font-medium shadow-sm transition-colors hover:bg-accent">
-                Report an issue
-              </IssueReportTrigger>
-            </div>
-          </div>
-        </div>
-
-        {/* Submit a ticket for updates */}
-        <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-900 dark:bg-amber-950/40">
-          <div className="flex items-start gap-3">
-            <MessageSquarePlus className="mt-0.5 h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" />
-            <div className="min-w-0 flex-1">
-              <p className="mb-1 text-sm font-semibold text-amber-800 dark:text-amber-300">
-                See something out of date?
-              </p>
-              <p className="text-sm text-foreground">
-                If any guide or info here needs updating,{" "}
-                <FeedbackTrigger className="font-medium text-primary underline underline-offset-2 hover:text-primary/80">
-                  submit a ticket
-                </FeedbackTrigger>{" "}
-                and we&apos;ll get it fixed.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Announcement */}
         <div className="mb-6">
           <Suspense fallback={null}>
             <SopNotice />
           </Suspense>
+        </div>
+
+        <div className="mb-6 grid gap-4 sm:grid-cols-2">
+          <div className="rounded-lg border border-sky-200 bg-sky-50 p-4 dark:border-sky-900 dark:bg-sky-950/40">
+            <div className="flex items-center gap-3">
+              <Info className="h-5 w-5 shrink-0 text-sky-600 dark:text-sky-400" />
+              <p className="min-w-0 flex-1 text-sm font-semibold text-sky-800 dark:text-sky-300">
+                If something needs attention
+              </p>
+              <IssueReportTrigger className={issueButtonClassName}>
+                Report an issue
+              </IssueReportTrigger>
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-900 dark:bg-amber-950/40">
+            <div className="flex items-center gap-3">
+              <MessageSquarePlus className="h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" />
+              <p className="min-w-0 flex-1 text-sm font-semibold text-amber-800 dark:text-amber-300">
+                See something out of date?
+              </p>
+              <FeedbackTrigger className={feedbackButtonClassName}>
+                Submit a ticket
+              </FeedbackTrigger>
+            </div>
+          </div>
         </div>
 
         {/* Category cards */}
