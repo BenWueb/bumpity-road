@@ -172,7 +172,7 @@ export default function AccountBar({ collapsed }: { collapsed: boolean }) {
           ) : (
             <button
               type="button"
-              onClick={openLoginModal}
+              onClick={() => openLoginModal()}
               className={[
                 "min-w-0 flex-1 rounded-md px-2 py-2 transition-colors",
                 "flex items-center gap-3",

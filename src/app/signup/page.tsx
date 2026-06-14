@@ -146,7 +146,7 @@ export default function SignUpPage() {
           Already have an account?{" "}
           <button
             type="button"
-            onClick={openLoginModal}
+            onClick={() => openLoginModal()}
             className="text-foreground underline"
           >
             Log in

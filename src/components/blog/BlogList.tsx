@@ -47,7 +47,7 @@ export function BlogList({ initialPosts }: Props) {
           ) : (
             <button
               type="button"
-              onClick={openLoginModal}
+              onClick={() => openLoginModal()}
               className="hidden items-center gap-2 rounded-lg bg-linear-to-r from-emerald-500 to-teal-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:from-emerald-600 hover:to-teal-600 md:flex"
             >
               Sign in to post
@@ -66,7 +66,7 @@ export function BlogList({ initialPosts }: Props) {
           ) : (
             <button
               type="button"
-              onClick={openLoginModal}
+              onClick={() => openLoginModal()}
               className="flex w-full items-center justify-center gap-2 rounded-lg bg-linear-to-r from-emerald-500 to-teal-500 px-4 py-2.5 text-sm font-medium text-white shadow-sm"
             >
               Sign in to post
