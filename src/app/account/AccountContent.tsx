@@ -14,7 +14,6 @@ import type {
   AccountPost,
   AccountUser,
 } from "@/types/account";
-import type { BadgeProgressStats } from "@/lib/badge-progress";
 import type { AccountTab } from "@/lib/account-tabs";
 import { FeedbackAdminCard } from "@/components/account/FeedbackAdminCard";
 import { ProfileCard } from "@/components/account/ProfileCard";
@@ -40,7 +39,6 @@ type Props = {
   fishObservations: AccountFishObservation[];
   userFeedback: AccountFeedback[];
   feedback: AccountFeedback[];
-  badgeProgress: BadgeProgressStats;
   puzzlesCount: number;
   newMembershipBadges?: string[];
 };
@@ -55,7 +53,6 @@ export function AccountContent({
   fishObservations,
   userFeedback,
   feedback: initialFeedback,
-  badgeProgress,
   puzzlesCount,
   newMembershipBadges,
 }: Props) {
@@ -159,10 +156,7 @@ export function AccountContent({
 
         <AccountTabBar activeTab={activeTab} onTabChange={setActiveTab} />
 
-        <BadgesSection
-          badges={user.badges ?? []}
-          progressStats={badgeProgress}
-        />
+        <BadgesSection badges={user.badges ?? []} />
 
         {activeTab === "overview" && (
           <div className="space-y-6 md:space-y-8">

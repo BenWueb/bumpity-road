@@ -2,17 +2,12 @@ import {
   getAccountBadgeInfo,
   getBadgesForDisplay,
 } from "@/lib/account-badges";
-import {
-  getBadgeProgressHint,
-  type BadgeProgressStats,
-} from "@/lib/badge-progress";
 
 type Props = {
   badges: string[];
-  progressStats: BadgeProgressStats;
 };
 
-export function BadgesSection({ badges, progressStats }: Props) {
+export function BadgesSection({ badges }: Props) {
   const earnedCount = badges.length;
 
   return (
@@ -26,12 +21,7 @@ export function BadgesSection({ badges, progressStats }: Props) {
       <div className="flex flex-wrap items-start justify-center gap-x-1.5 gap-y-2 md:gap-x-3 md:gap-y-3">
         {getBadgesForDisplay(badges).map(({ badge, earned }) => {
           const info = getAccountBadgeInfo(badge);
-          const progressHint = earned
-            ? null
-            : getBadgeProgressHint(badge, progressStats);
-          const mysteryTitle = progressHint
-            ? `${info?.name ?? "Mystery badge"} — ${progressHint}`
-            : "Mystery badge - keep exploring!";
+          const name = info?.name || badge;
 
           return earned ? (
             <div
@@ -47,17 +37,11 @@ export function BadgesSection({ badges, progressStats }: Props) {
           ) : (
             <div
               key={badge}
-              className="flex w-14 flex-col items-center gap-0.5 md:w-28"
-              title={mysteryTitle}
+              className="flex min-h-6 w-16 items-center justify-center rounded-full border-2 border-dashed border-amber-300 bg-amber-50/30 px-1.5 py-1 dark:border-amber-700 dark:bg-amber-950/20 md:min-h-10 md:w-28 md:px-2 md:py-1.5"
+              title={info?.description}
             >
-              <div className="h-6 w-14 shrink-0 rounded-full border-2 border-dashed border-amber-300 bg-amber-50/30 dark:border-amber-700 dark:bg-amber-950/20 md:h-10 md:w-28" />
-              {info?.name && (
-                <span className="w-full truncate text-center text-[9px] font-medium text-muted-foreground md:text-[10px]">
-                  {info.name}
-                </span>
-              )}
-              <span className="w-full text-center text-[9px] leading-tight text-muted-foreground md:text-[10px]">
-                {progressHint ?? "Keep exploring"}
+              <span className="truncate text-center text-[8px] font-medium leading-tight text-muted-foreground md:text-[10px]">
+                {name}
               </span>
             </div>
           );
